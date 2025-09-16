@@ -73,14 +73,32 @@ public class MeetingApp {
         }
 
         private String uid() { return Long.toString(System.nanoTime(), 36); }
-        private int findIndexByName(String name) {
+        private int findIndexByNameUnsafe(String name) {
             for (int i = 0; i < queue.size(); i++) {
                 if (queue.get(i).name().equalsIgnoreCase(name)) return i;
             }
             return -1;
         }
-        private void broadcast() { broker.convertAndSend("/topic/state", snapshot()); }
-        private State snapshot() { return new State(List.copyOf(queue), current, meetingStartSec, defaultLimitSec); }
+        private int findIndexByName(String name) {
+            lock.lock();
+            try {
+                return findIndexByNameUnsafe(name);
+            } finally {
+                lock.unlock();
+            }
+        }
+        private void broadcast() {
+            State s = snapshot();
+            broker.convertAndSend("/topic/state", s);
+        }
+        private State snapshot() {
+            lock.lock();
+            try {
+                return new State(List.copyOf(queue), current, meetingStartSec, defaultLimitSec);
+            } finally {
+                lock.unlock();
+            }
+        }
 
         @MessageMapping("/join")
         public void join(@Payload Join msg) { broadcast(); }
@@ -93,7 +111,7 @@ public class MeetingApp {
             lock.lock();
             try {
                 if (current != null && current.entry().name().equalsIgnoreCase(msg.name())) return;
-                if (findIndexByName(msg.name()) >= 0) return;
+                if (findIndexByNameUnsafe(msg.name()) >= 0) return;
                 queue.add(new Participant(uid(), msg.name().trim(), role, Instant.now().getEpochSecond()));
             } finally { lock.unlock(); }
             broadcast();
@@ -104,7 +122,7 @@ public class MeetingApp {
             if (msg == null || msg.name() == null || msg.name().isBlank()) return;
             lock.lock();
             try {
-                int idx = findIndexByName(msg.name());
+                int idx = findIndexByNameUnsafe(msg.name());
                 if (idx >= 0) queue.remove(idx);
             } finally { lock.unlock(); }
             broadcast();
