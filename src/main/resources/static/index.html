@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Request-to-Speak (WebSocket only)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="stylesheet" href="styles.css"/>
+  <!-- STOMP over WebSocket -->
+  <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="header">
+      <h1>Request-to-Speak</h1>
+      <div id="conn" class="pill">Connecting…</div>
+    </header>
+
+    <main class="grid">
+      <!-- Participant -->
+      <section class="card">
+        <h2>Participant</h2>
+        <div class="row">
+          <input id="name" placeholder="Your name"/>
+          <select id="role">
+            <option>Member</option>
+            <option>Chair</option>
+            <option>Guest</option>
+          </select>
+        </div>
+        <div class="row">
+          <button id="btnJoin" class="ghost">Join / Update</button>
+          <button id="btnRequest" class="primary">✋ Request</button>
+          <button id="btnWithdraw" class="ghost">Withdraw</button>
+        </div>
+        <div id="status" class="muted small">Not joined.</div>
+      </section>
+
+      <!-- Chair controls -->
+      <section class="card">
+        <h2>Chair</h2>
+        <div class="row">
+          <button id="btnNext" class="accent">🎙️ Next speaker</button>
+          <button id="btnPause" class="ghost">⏸ Pause</button>
+          <button id="btnStart" class="primary">▶ Start</button>
+          <button id="btnReset" class="ghost">↺ Reset</button>
+        </div>
+        <div class="row">
+          <label class="muted">Per-speaker limit (sec)</label>
+          <input id="limit" type="number" min="10" step="10" value="180" style="width:110px"/>
+          <button id="btnSetLimit" class="ghost">Set</button>
+        </div>
+
+        <div class="two">
+          <div>
+            <div class="muted small">Current speaker</div>
+            <div id="curName" class="big">--</div>
+            <div id="curRole" class="muted">--</div>
+          </div>
+          <div>
+            <div class="muted small">Speaker time</div>
+            <div id="speakTimer" class="timer ok">00:00</div>
+            <div class="muted tiny" id="remaining">(remaining: 00:00)</div>
+          </div>
+          <div>
+            <div class="muted small">Meeting time</div>
+            <div id="meetingTimer" class="timer">00:00</div>
+          </div>
+        </div>
+
+        <div class="muted small">Queue (<span id="qCount">0</span>)</div>
+        <ul id="queue" class="list"></ul>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // --- Utilities ---
+    const $ = sel => document.querySelector(sel);
+    const fmt = ms => {
+      const s = Math.max(0, Math.floor(ms/1000));
+      const mm = String(Math.floor(s/60)).padStart(2,'0');
+      const ss = String(s%60).padStart(2,'0');
+      return `${mm}:${ss}`;
+    };
+    const setTimerClass = (el, warn, danger)=>{
+      el.classList.remove('ok','warn','danger');
+      if (danger) el.classList.add('danger'); else if (warn) el.classList.add('warn'); else el.classList.add('ok');
+    };
+
+    // --- DOM refs ---
+    const elConn = $('#conn');
+    const elStatus = $('#status');
+    const elQueue = $('#queue'); const elQCount = $('#qCount');
+    const elCurName = $('#curName'); const elCurRole = $('#curRole');
+    const elSpeakTimer = $('#speakTimer'); const elRemaining = $('#remaining');
+    const elMeeting = $('#meetingTimer'); const elLimit = $('#limit');
+
+    const elName = $('#name'); const elRole = $('#role');
+
+    // --- WebSocket/STOMP ---
+    let stomp = null;
+    let state = { queue:[], current:null, meetingStartSec: Math.floor(Date.now()/1000), defaultLimitSec:180 };
+
+    function connect(){
+      const url = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/ws";
+      const socket = new WebSocket(url);
+      stomp = Stomp.over(socket);
+      stomp.debug = null;
+
+      stomp.connect({}, () => {
+        elConn.textContent = "Connected";
+        elConn.classList.add('ok');
+
+        stomp.subscribe("/topic/state", msg => {
+          state = JSON.parse(msg.body);
+          elLimit.value = String(state.defaultLimitSec);
+          render();
+        });
+
+        // Send a join so server may broadcast initial state
+        send("/app/join", { name: elName.value || "Anonymous", role: elRole.value || "Member" });
+      }, () => {
+        elConn.textContent = "Disconnected";
+        elConn.classList.remove('ok');
+      });
+    }
+    function send(dest, body){ if (stomp && stomp.connected) stomp.send(dest, {}, JSON.stringify(body || {})); }
+
+    // --- Actions ---
+    $('#btnJoin').addEventListener('click', ()=>{
+      const name = elName.value.trim(); if(!name){ alert('Enter your name'); return; }
+      send('/app/join', {name, role: elRole.value});
+      elStatus.textContent = 'Joined as ' + name;
+    });
+    $('#btnRequest').addEventListener('click', ()=>{
+      const name = elName.value.trim(); if(!name){ alert('Enter your name'); return; }
+      send('/app/request', {name, role: elRole.value});
+    });
+    $('#btnWithdraw').addEventListener('click', ()=>{
+      const name = elName.value.trim(); if(!name){ alert('Enter your name'); return; }
+      send('/app/withdraw', {name});
+    });
+    $('#btnNext').addEventListener('click', ()=> send('/app/next', {}));
+    $('#btnPause').addEventListener('click', ()=> send('/app/timer', {action:"pause"}));
+    $('#btnStart').addEventListener('click', ()=> send('/app/timer', {action:"start"}));
+    $('#btnReset').addEventListener('click', ()=> send('/app/timer', {action:"reset"}));
+    $('#btnSetLimit').addEventListener('click', ()=>{
+      const seconds = parseInt(elLimit.value || '180', 10);
+      send('/app/setLimit', {seconds});
+    });
+
+    // --- Render & tick ---
+    function render(){
+      // queue
+      elQueue.innerHTML = '';
+      elQCount.textContent = String(state.queue.length);
+      state.queue.forEach((e,i)=>{
+        const li = document.createElement('li');
+        li.className = 'tile';
+        li.innerHTML = `<div><div class="who">${e.name}</div><div class="muted tiny">${new Date(e.requestedAt*1000).toLocaleTimeString()} · ${e.role}</div></div><div class="muted tiny">#${i+1}</div>`;
+        elQueue.appendChild(li);
+      });
+
+      // current
+      if (state.current){
+        elCurName.textContent = state.current.entry.name;
+        elCurRole.textContent = state.current.entry.role;
+      } else {
+        elCurName.textContent = '--'; elCurRole.textContent = '--';
+      }
+    }
+
+    function tick(){
+      // meeting
+      const mtMs = (Date.now()/1000 - state.meetingStartSec) * 1000;
+      elMeeting.textContent = fmt(mtMs);
+
+      // speaker
+      if (state.current){
+        let elapsed = state.current.elapsedMs;
+        if (state.current.running){
+          elapsed += Math.max(0, Math.round((Date.now()/1000 - state.current.startedAtSec) * 1000));
+        }
+        elSpeakTimer.textContent = fmt(elapsed);
+
+        const remainingMs = Math.max(0, (state.current.limitSec*1000) - elapsed);
+        elRemaining.textContent = `(remaining: ${fmt(remainingMs)})`;
+
+        const danger = remainingMs <= 15000;
+        const warn = remainingMs <= 45000 && !danger;
+        setTimerClass(elSpeakTimer, warn, danger);
+      } else {
+        elSpeakTimer.textContent = '00:00';
+        elRemaining.textContent = '(remaining: 00:00)';
+        setTimerClass(elSpeakTimer, false, false);
+      }
+
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+
+    // go
+    connect();
+  </script>
+</body>
+</html>
