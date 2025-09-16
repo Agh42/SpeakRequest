@@ -74,13 +74,28 @@ public class MeetingApp {
 
         private String uid() { return Long.toString(System.nanoTime(), 36); }
         private int findIndexByName(String name) {
-            for (int i = 0; i < queue.size(); i++) {
-                if (queue.get(i).name().equalsIgnoreCase(name)) return i;
+            lock.lock();
+            try {
+                for (int i = 0; i < queue.size(); i++) {
+                    if (queue.get(i).name().equalsIgnoreCase(name)) return i;
+                }
+                return -1;
+            } finally {
+                lock.unlock();
             }
-            return -1;
         }
-        private void broadcast() { broker.convertAndSend("/topic/state", snapshot()); }
-        private State snapshot() { return new State(List.copyOf(queue), current, meetingStartSec, defaultLimitSec); }
+        private void broadcast() {
+            State s = snapshot();
+            broker.convertAndSend("/topic/state", s);
+        }
+        private State snapshot() {
+            lock.lock();
+            try {
+                return new State(List.copyOf(queue), current, meetingStartSec, defaultLimitSec);
+            } finally {
+                lock.unlock();
+            }
+        }
 
         @MessageMapping("/join")
         public void join(@Payload Join msg) { broadcast(); }
