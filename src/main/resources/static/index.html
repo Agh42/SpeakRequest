@@ -153,11 +153,18 @@
     function render(){
       // queue
       elQueue.innerHTML = '';
-      elQCount.textContent = String(state.queue.length);
-      state.queue.forEach((e,i)=>{
+      const q = state.queue || [];
+      elQCount.textContent = String(q.length);
+      q.forEach((e,i) => {
         const li = document.createElement('li');
         li.className = 'tile';
-        li.innerHTML = `<div><div class="who">${e.name}</div><div class="muted tiny">${new Date(e.requestedAt*1000).toLocaleTimeString()} · ${e.role}</div></div><div class="muted tiny">#${i+1}</div>`;
+        li.innerHTML = `
+        <div>
+          <div class="who">${e.name}</div>
+          <div class="muted tiny">${new Date(e.requestedAt*1000).toLocaleTimeString()} · ${e.role}</div>
+        </div>
+        <div class="muted tiny">#${i+1}</div>
+      `;
         elQueue.appendChild(li);
       });
 
