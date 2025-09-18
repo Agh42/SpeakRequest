@@ -3,7 +3,7 @@ FROM eclipse-temurin:17 AS builder
 WORKDIR /app
 
 # Copy Gradle files and source
-COPY build.gradle settings.gradle gradlew* ./
+COPY build.gradle gradlew* ./
 COPY gradle gradle
 COPY src src
 
