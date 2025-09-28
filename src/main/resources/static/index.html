@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <link rel="stylesheet" href="styles.css"/>
   <!-- STOMP over WebSocket -->
-  <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+  <script src="stomp.min.js"></script>
 </head>
 <body>
   <div class="wrap">
@@ -43,6 +43,9 @@
           <button id="btnPause" class="ghost">⏸ Pause</button>
           <button id="btnStart" class="primary">▶ Start</button>
           <button id="btnReset" class="ghost">↺ Reset</button>
+        </div>
+        <div class="row">
+          <button id="btnPopout" class="accent">📺 Open Popout Window</button>
         </div>
         <div class="row">
           <label class="muted">Per-speaker limit (sec)</label>
@@ -205,6 +208,24 @@
       requestAnimationFrame(tick);
     }
     requestAnimationFrame(tick);
+
+    // --- Popout window functionality ---
+    let popoutWindow = null;
+    $('#btnPopout').addEventListener('click', ()=>{
+      if (popoutWindow && !popoutWindow.closed) {
+        popoutWindow.focus();
+        return;
+      }
+      
+      popoutWindow = window.open('popout.html', 'speaker-display', 'width=600,height=800,scrollbars=no,resizable=yes');
+      
+      // Handle popout window close
+      if (popoutWindow) {
+        popoutWindow.addEventListener('beforeunload', () => {
+          popoutWindow = null;
+        });
+      }
+    });
 
     // go
     connect();
