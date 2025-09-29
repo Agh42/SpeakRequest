@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Speaker Display - Request-to-Speak</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <style>
+    :root{
+      --bg:#0f172a; --card:#0b1221; --text:#e5e7eb; --muted:#94a3b8;
+      --accent:#60a5fa; --ok:#10b981; --warn:#f59e0b; --danger:#ef4444;
+      --border: rgba(255,255,255,.12);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:radial-gradient(1000px 600px at 15% -10%, #1e293b 0%, #0b1020 60%, #060914 100%);
+      color:var(--text); font:16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", sans-serif;
+      padding:20px;
+    }
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0));
+      border:1px solid var(--border); border-radius:14px; padding:20px; margin-bottom:20px;
+    }
+    .big{font-weight:800;font-size:2.4rem; margin-bottom:10px;}
+    .medium{font-weight:700;font-size:1.6rem; margin-bottom:8px;}
+    .small{font-size:1rem; margin-bottom:15px;}
+    .muted{color:var(--muted)}
+    .timer{font-variant-numeric:tabular-nums;font-weight:800;font-size:2.4rem}
+    .timer.ok{color:#bbf7d0}.timer.warn{color:#fde68a}.timer.danger{color:#fecaca}
+    .status{color:var(--accent); font-weight:600;}
+    .conn-status{position:fixed;top:10px;right:10px;background:#0c1324;border:1px solid var(--border);padding:.35rem .7rem;border-radius:999px;color:var(--muted);font-size:0.8rem;}
+    .conn-status.ok{color:#bbf7d0;border-color:rgba(16,185,129,.6)}
+  </style>
+  <script src="stomp.min.js"></script>
+</head>
+<body>
+  <div class="conn-status" id="conn">Connecting…</div>
+  
+  <div class="card">
+    <div class="muted small">Current Speaker</div>
+    <div id="currentSpeaker" class="big">--</div>
+    <div id="currentRole" class="muted medium">--</div>
+    <div class="muted small">Speaking since</div>
+    <div id="speakingSince" class="status medium">--</div>
+  </div>
+
+  <div class="card">
+    <div class="muted small">Next Speaker</div>
+    <div id="nextSpeaker" class="medium">--</div>
+  </div>
+
+  <div class="card">
+    <div class="muted small">Meeting Time</div>
+    <div id="meetingTime" class="timer ok">00:00</div>
+    <div class="muted small">Queued Speakers</div>
+    <div id="queueCount" class="status medium">0</div>
+  </div>
+
+  <script>
+    let stomp = null;
+    let state = { queue:[], current:null, meetingStartSec: Math.floor(Date.now()/1000), defaultLimitSec:180 };
+    
+    const $ = sel => document.querySelector(sel);
+    const fmt = ms => {
+      const s = Math.max(0, Math.floor(ms/1000));
+      const mm = String(Math.floor(s/60)).padStart(2,'0');
+      const ss = String(s%60).padStart(2,'0');
+      return `${mm}:${ss}`;
+    };
+
+    const elConn = $('#conn');
+    const elCurrentSpeaker = $('#currentSpeaker');
+    const elCurrentRole = $('#currentRole');
+    const elSpeakingSince = $('#speakingSince');
+    const elNextSpeaker = $('#nextSpeaker');
+    const elMeetingTime = $('#meetingTime');
+    const elQueueCount = $('#queueCount');
+
+    function connect(){
+      const url = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/ws";
+      const socket = new WebSocket(url);
+      stomp = Stomp.over(socket);
+      stomp.debug = null;
+
+      stomp.connect({}, () => {
+        elConn.textContent = "Connected";
+        elConn.classList.add('ok');
+
+        stomp.subscribe("/topic/state", msg => {
+          state = JSON.parse(msg.body);
+          render();
+        });
+
+        // Send a join so server may broadcast initial state
+        if (stomp && stomp.connected) stomp.send("/app/join", {}, JSON.stringify({ name: "Popout Display", role: "Display" }));
+      }, () => {
+        elConn.textContent = "Disconnected";
+        elConn.classList.remove('ok');
+        setTimeout(connect, 2000); // Reconnect after 2 seconds
+      });
+    }
+
+    function render(){
+      // Current speaker
+      if (state.current){
+        elCurrentSpeaker.textContent = state.current.entry.name;
+        elCurrentRole.textContent = state.current.entry.role;
+        const speakingDate = new Date(state.current.startedAtSec * 1000);
+        elSpeakingSince.textContent = speakingDate.toLocaleTimeString();
+      } else {
+        elCurrentSpeaker.textContent = '--';
+        elCurrentRole.textContent = '--';
+        elSpeakingSince.textContent = '--';
+      }
+
+      // Next speaker
+      if (state.queue && state.queue.length > 0) {
+        elNextSpeaker.textContent = state.queue[0].name + ' (' + state.queue[0].role + ')';
+      } else {
+        elNextSpeaker.textContent = '--';
+      }
+
+      // Queue count
+      elQueueCount.textContent = String((state.queue || []).length);
+    }
+
+    function tick(){
+      // Meeting time
+      const mtMs = (Date.now()/1000 - state.meetingStartSec) * 1000;
+      elMeetingTime.textContent = fmt(mtMs);
+      
+      requestAnimationFrame(tick);
+    }
+    
+    requestAnimationFrame(tick);
+    connect();
+  </script>
+</body>
+</html>
