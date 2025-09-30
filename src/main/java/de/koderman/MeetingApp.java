@@ -3,12 +3,16 @@ package de.koderman;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -16,6 +20,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 @SpringBootApplication
@@ -46,21 +51,59 @@ public class MeetingApp {
     public record TimerCtrl(String action) {} // "start" | "pause" | "reset"
     public record SetLimit(int seconds) {}
     public record Join(String name, String role) {}
+    public record CreateRoom() {}
 
     public record Participant(String id, String name, String role, long requestedAt) {}
     public record Current(Participant entry, long startedAtSec, int elapsedMs, boolean running, int limitSec) {}
-    public record State(List<Participant> queue, Current current, long meetingStartSec, int defaultLimitSec) {}
+    public record State(List<Participant> queue, Current current, long meetingStartSec, int defaultLimitSec, String roomCode) {}
+    public record RoomInfo(String roomCode, boolean exists) {}
+
+    // ---------------- Room Management ----------------
+    public static class Room {
+        private final String roomCode;
+        private final List<Participant> queue = new ArrayList<>();
+        private Current current = null;
+        private final long meetingStartSec = Instant.now().getEpochSecond();
+        private int defaultLimitSec = 180; // per-speaker
+        private final ReentrantLock lock = new ReentrantLock();
+
+        public Room(String roomCode) {
+            this.roomCode = roomCode;
+        }
+
+        // Getters and state management methods
+        public String getRoomCode() { return roomCode; }
+        public ReentrantLock getLock() { return lock; }
+        public List<Participant> getQueue() { return queue; }
+        public Current getCurrent() { return current; }
+        public void setCurrent(Current current) { this.current = current; }
+        public long getMeetingStartSec() { return meetingStartSec; }
+        public int getDefaultLimitSec() { return defaultLimitSec; }
+        public void setDefaultLimitSec(int defaultLimitSec) { this.defaultLimitSec = defaultLimitSec; }
+
+        public State snapshot() {
+            lock.lock();
+            try {
+                return new State(List.copyOf(queue), current, meetingStartSec, defaultLimitSec, roomCode);
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        public int findIndexByNameUnsafe(String name) {
+            for (int i = 0; i < queue.size(); i++) {
+                if (queue.get(i).name().equalsIgnoreCase(name)) return i;
+            }
+            return -1;
+        }
+    }
 
     // ---------------- In-memory meeting state ----------------
     @Controller
     public static class MeetingController {
         private final SimpMessagingTemplate broker;
-        private final ReentrantLock lock = new ReentrantLock();
-
-        private final List<Participant> queue = new ArrayList<>();
-        private Current current = null;
-        private final long meetingStartSec = Instant.now().getEpochSecond();
-        private int defaultLimitSec = 180; // per-speaker
+        private final ConcurrentHashMap<String, Room> rooms = new ConcurrentHashMap<>();
+        private final Random random = new Random();
 
         public MeetingController(SimpMessagingTemplate broker) {
             this.broker = broker;
@@ -72,112 +115,174 @@ public class MeetingApp {
             public Map<String, String> ok() { return Map.of("status", "ok"); }
         }
 
+        // Route handlers for different views
+        @GetMapping("/")
+        public String home() {
+            return "redirect:/landing.html";
+        }
+
+        @GetMapping("/chair/{roomCode}")
+        public String chairView(@PathVariable String roomCode) {
+            return "redirect:/chair.html?room=" + roomCode;
+        }
+
+        @GetMapping("/participant/{roomCode}")
+        public String participantView(@PathVariable String roomCode) {
+            return "redirect:/participant.html?room=" + roomCode;
+        }
+
+        private String generateRoomCode() {
+            String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            StringBuilder code = new StringBuilder();
+            for (int i = 0; i < 4; i++) {
+                code.append(chars.charAt(random.nextInt(chars.length())));
+            }
+            return code.toString();
+        }
+
+        private String createUniqueRoomCode() {
+            String code;
+            do {
+                code = generateRoomCode();
+            } while (rooms.containsKey(code));
+            return code;
+        }
+
+        private Room getOrCreateRoom(String roomCode) {
+            return rooms.computeIfAbsent(roomCode, Room::new);
+        }
+
+        @PostMapping("/api/rooms")
+        @ResponseBody
+        public RoomInfo createRoom() {
+            String roomCode = createUniqueRoomCode();
+            Room room = new Room(roomCode);
+            rooms.put(roomCode, room);
+            return new RoomInfo(roomCode, true);
+        }
+
+        @GetMapping("/api/rooms/{roomCode}")
+        @ResponseBody
+        public RoomInfo checkRoom(@PathVariable String roomCode) {
+            return new RoomInfo(roomCode, rooms.containsKey(roomCode));
+        }
+
         private String uid() { return Long.toString(System.nanoTime(), 36); }
-        private int findIndexByNameUnsafe(String name) {
-            for (int i = 0; i < queue.size(); i++) {
-                if (queue.get(i).name().equalsIgnoreCase(name)) return i;
-            }
-            return -1;
-        }
-        private int findIndexByName(String name) {
-            lock.lock();
-            try {
-                return findIndexByNameUnsafe(name);
-            } finally {
-                lock.unlock();
-            }
-        }
-        private void broadcast() {
-            State s = snapshot();
-            broker.convertAndSend("/topic/state", s);
-        }
-        private State snapshot() {
-            lock.lock();
-            try {
-                return new State(List.copyOf(queue), current, meetingStartSec, defaultLimitSec);
-            } finally {
-                lock.unlock();
+
+        private void broadcast(String roomCode) {
+            Room room = rooms.get(roomCode);
+            if (room != null) {
+                State s = room.snapshot();
+                broker.convertAndSend("/topic/room/" + roomCode + "/state", s);
             }
         }
 
-        @MessageMapping("/join")
-        public void join(@Payload Join msg) { broadcast(); }
+        @MessageMapping("/room/{roomCode}/join")
+        public void join(@DestinationVariable String roomCode, @Payload Join msg) {
+            getOrCreateRoom(roomCode); // Ensure room exists
+            broadcast(roomCode);
+        }
 
-        @MessageMapping("/request")
-        public void request(@Payload RequestSpeak msg) {
+        @MessageMapping("/room/{roomCode}/request")
+        public void request(@DestinationVariable String roomCode, @Payload RequestSpeak msg) {
             if (msg == null || msg.name() == null || msg.name().isBlank()) return;
             String role = (msg.role() == null || msg.role().isBlank()) ? "Member" : msg.role().trim();
 
-            lock.lock();
+            Room room = getOrCreateRoom(roomCode);
+            room.getLock().lock();
             try {
-                if (current != null && current.entry().name().equalsIgnoreCase(msg.name())) return;
-                if (findIndexByNameUnsafe(msg.name()) >= 0) return;
-                queue.add(new Participant(uid(), msg.name().trim(), role, Instant.now().getEpochSecond()));
-            } finally { lock.unlock(); }
-            broadcast();
+                if (room.getCurrent() != null && room.getCurrent().entry().name().equalsIgnoreCase(msg.name())) return;
+                if (room.findIndexByNameUnsafe(msg.name()) >= 0) return;
+                room.getQueue().add(new Participant(uid(), msg.name().trim(), role, Instant.now().getEpochSecond()));
+            } finally {
+                room.getLock().unlock();
+            }
+            broadcast(roomCode);
         }
 
-        @MessageMapping("/withdraw")
-        public void withdraw(@Payload Withdraw msg) {
+        @MessageMapping("/room/{roomCode}/withdraw")
+        public void withdraw(@DestinationVariable String roomCode, @Payload Withdraw msg) {
             if (msg == null || msg.name() == null || msg.name().isBlank()) return;
-            lock.lock();
+            Room room = rooms.get(roomCode);
+            if (room == null) return;
+
+            room.getLock().lock();
             try {
-                int idx = findIndexByNameUnsafe(msg.name());
-                if (idx >= 0) queue.remove(idx);
-            } finally { lock.unlock(); }
-            broadcast();
+                int idx = room.findIndexByNameUnsafe(msg.name());
+                if (idx >= 0) room.getQueue().remove(idx);
+            } finally {
+                room.getLock().unlock();
+            }
+            broadcast(roomCode);
         }
 
-        @MessageMapping("/next")
-        public void next() {
-            lock.lock();
+        @MessageMapping("/room/{roomCode}/next")
+        public void next(@DestinationVariable String roomCode) {
+            Room room = rooms.get(roomCode);
+            if (room == null) return;
+
+            room.getLock().lock();
             try {
-                current = null;
-                if (!queue.isEmpty()) {
-                    Participant next = queue.remove(0);
-                    current = new Current(next, Instant.now().getEpochSecond(), 0, true, defaultLimitSec);
+                room.setCurrent(null);
+                if (!room.getQueue().isEmpty()) {
+                    Participant next = room.getQueue().remove(0);
+                    room.setCurrent(new Current(next, Instant.now().getEpochSecond(), 0, true, room.getDefaultLimitSec()));
                 }
-            } finally { lock.unlock(); }
-            broadcast();
+            } finally {
+                room.getLock().unlock();
+            }
+            broadcast(roomCode);
         }
 
-        @MessageMapping("/timer")
-        public void timer(@Payload TimerCtrl ctrl) {
+        @MessageMapping("/room/{roomCode}/timer")
+        public void timer(@DestinationVariable String roomCode, @Payload TimerCtrl ctrl) {
             if (ctrl == null || ctrl.action() == null) return;
-            lock.lock();
+            Room room = rooms.get(roomCode);
+            if (room == null) return;
+
+            room.getLock().lock();
             try {
-                if (current == null) return;
+                if (room.getCurrent() == null) return;
                 long nowSec = Instant.now().getEpochSecond();
+                Current current = room.getCurrent();
                 switch (ctrl.action().toLowerCase()) {
                     case "start" -> {
                         if (!current.running())
-                            current = new Current(current.entry(), nowSec, current.elapsedMs(), true, current.limitSec());
+                            room.setCurrent(new Current(current.entry(), nowSec, current.elapsedMs(), true, current.limitSec()));
                     }
                     case "pause" -> {
                         if (current.running()) {
                             int addMs = (int) ((nowSec - current.startedAtSec()) * 1000);
-                            current = new Current(current.entry(), current.startedAtSec(),
-                                    current.elapsedMs() + addMs, false, current.limitSec());
+                            room.setCurrent(new Current(current.entry(), current.startedAtSec(),
+                                    current.elapsedMs() + addMs, false, current.limitSec()));
                         }
                     }
-                    case "reset" -> current = new Current(current.entry(), nowSec, 0, true, current.limitSec());
+                    case "reset" -> room.setCurrent(new Current(current.entry(), nowSec, 0, true, current.limitSec()));
                 }
-            } finally { lock.unlock(); }
-            broadcast();
+            } finally {
+                room.getLock().unlock();
+            }
+            broadcast(roomCode);
         }
 
-        @MessageMapping("/setLimit")
-        public void setLimit(@Payload SetLimit msg) {
+        @MessageMapping("/room/{roomCode}/setLimit")
+        public void setLimit(@DestinationVariable String roomCode, @Payload SetLimit msg) {
             if (msg == null) return;
             int s = Math.max(10, Math.min(3600, msg.seconds()));
-            lock.lock();
+            Room room = rooms.get(roomCode);
+            if (room == null) return;
+
+            room.getLock().lock();
             try {
-                defaultLimitSec = s;
-                if (current != null) {
-                    current = new Current(current.entry(), current.startedAtSec(), current.elapsedMs(), current.running(), s);
+                room.setDefaultLimitSec(s);
+                if (room.getCurrent() != null) {
+                    Current current = room.getCurrent();
+                    room.setCurrent(new Current(current.entry(), current.startedAtSec(), current.elapsedMs(), current.running(), s));
                 }
-            } finally { lock.unlock(); }
-            broadcast();
+            } finally {
+                room.getLock().unlock();
+            }
+            broadcast(roomCode);
         }
     }
 }

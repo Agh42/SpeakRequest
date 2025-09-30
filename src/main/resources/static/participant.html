@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Participant View - SpeakRequest</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="stylesheet" href="styles.css"/>
+  <script src="stomp.min.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="header">
+      <h1>Participant View</h1>
+      <div class="room-code-display">
+        <span class="muted small">Room Code:</span>
+        <span id="roomCodeDisplay" class="room-code">----</span>
+      </div>
+      <div id="conn" class="pill">Connecting…</div>
+    </header>
+
+    <main class="grid">
+      <!-- Participant Controls -->
+      <section class="card">
+        <h2>Request to Speak</h2>
+        <div class="row">
+          <input id="name" placeholder="Your initials or name"/>
+          <select id="role">
+            <option>Member</option>
+            <option>Guest</option>
+            <option>Observer</option>
+          </select>
+        </div>
+        <div class="row">
+          <button id="btnRequest" class="primary">✋ Request to Speak</button>
+          <button id="btnWithdraw" class="ghost">Withdraw Request</button>
+        </div>
+        <div id="status" class="muted small">Enter your initials and click Request to Speak.</div>
+      </section>
+
+      <!-- Meeting Status -->
+      <section class="card">
+        <h2>Meeting Status</h2>
+
+        <div class="two">
+          <div>
+            <div class="muted small">Current speaker</div>
+            <div id="curName" class="big">--</div>
+            <div id="curRole" class="muted">--</div>
+          </div>
+          <div>
+            <div class="muted small">Speaker time</div>
+            <div id="speakTimer" class="timer ok">00:00</div>
+            <div class="muted tiny" id="remaining">(remaining: 00:00)</div>
+          </div>
+          <div>
+            <div class="muted small">Meeting time</div>
+            <div id="meetingTimer" class="timer">00:00</div>
+          </div>
+        </div>
+
+        <div class="muted small">Speaking Queue (<span id="qCount">0</span>)</div>
+        <ul id="queue" class="list"></ul>
+      </section>
+
+      <!-- Room Info -->
+      <section class="card">
+        <h2>Room Information</h2>
+        <div class="room-info">
+          <div class="room-code-large">
+            <div class="muted small">Room Code:</div>
+            <div id="roomCodeLarge" class="room-code-big">----</div>
+          </div>
+          <div class="row">
+            <button id="btnCopyCode" class="ghost">📋 Copy Room Code</button>
+          </div>
+          <div id="copyStatus" class="muted small"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // Extract room code from URL query parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomCode = urlParams.get('room');
+
+    if (!roomCode || roomCode.length !== 4) {
+      alert('Invalid room code. Redirecting to home page.');
+      window.location.href = '/landing.html';
+    }
+
+    // Display room code
+    document.getElementById('roomCodeDisplay').textContent = roomCode;
+    document.getElementById('roomCodeLarge').textContent = roomCode;
+
+    // --- Utilities ---
+    const $ = sel => document.querySelector(sel);
+    const fmt = ms => {
+      const s = Math.max(0, Math.floor(ms/1000));
+      const mm = String(Math.floor(s/60)).padStart(2,'0');
+      const ss = String(s%60).padStart(2,'0');
+      return `${mm}:${ss}`;
+    };
+    const setTimerClass = (el, warn, danger)=>{
+      el.classList.remove('ok','warn','danger');
+      if (danger) el.classList.add('danger'); else if (warn) el.classList.add('warn'); else el.classList.add('ok');
+    };
+
+    // --- DOM refs ---
+    const elConn = $('#conn');
+    const elStatus = $('#status');
+    const elQueue = $('#queue'); const elQCount = $('#qCount');
+    const elCurName = $('#curName'); const elCurRole = $('#curRole');
+    const elSpeakTimer = $('#speakTimer'); const elRemaining = $('#remaining');
+    const elMeeting = $('#meetingTimer');
+
+    const elName = $('#name'); const elRole = $('#role');
+
+    // --- State ---
+    let client = null;
+    let meetingStart = 0;
+    let timerInterval = null;
+    let myName = '';
+
+    // --- WebSocket ---
+    function connect() {
+      const sock = new WebSocket(`ws://${location.host}/ws`);
+      client = Stomp.over(sock);
+      client.debug = () => {}; // silence debug
+
+      client.connect({}, () => {
+        elConn.textContent = 'Connected';
+        elConn.classList.remove('warn');
+        elConn.classList.add('ok');
+
+        client.subscribe(`/topic/room/${roomCode}/state`, msg => {
+          const state = JSON.parse(msg.body);
+          updateUI(state);
+        });
+
+        // Join to get initial state
+        client.send(`/app/room/${roomCode}/join`, {}, JSON.stringify({name:'Anonymous', role:'Observer'}));
+      }, () => {
+        elConn.textContent = 'Disconnected';
+        elConn.classList.remove('ok');
+        elConn.classList.add('warn');
+        setTimeout(connect, 2000);
+      });
+    }
+
+    function updateUI(state) {
+      meetingStart = state.meetingStartSec;
+
+      // Queue
+      elQCount.textContent = state.queue.length;
+      elQueue.innerHTML = '';
+      let myPosition = -1;
+      state.queue.forEach((p, i) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span class="name">${p.name}</span> <span class="role muted">${p.role}</span>`;
+
+        // Highlight my entry
+        if (p.name.toLowerCase() === myName.toLowerCase()) {
+          li.style.backgroundColor = '#e8f4fd';
+          li.style.fontWeight = 'bold';
+          myPosition = i + 1;
+        }
+
+        elQueue.appendChild(li);
+      });
+
+      // Update status based on my position
+      if (myName) {
+        if (state.current && state.current.entry.name.toLowerCase() === myName.toLowerCase()) {
+          elStatus.textContent = `🎙️ You are currently speaking!`;
+          elStatus.className = 'ok small';
+        } else if (myPosition > 0) {
+          elStatus.textContent = `✋ You are #${myPosition} in the queue`;
+          elStatus.className = 'muted small';
+        } else {
+          elStatus.textContent = `Joined as ${myName}`;
+          elStatus.className = 'muted small';
+        }
+      }
+
+      // Current speaker
+      if (state.current) {
+        const c = state.current;
+        elCurName.textContent = c.entry.name;
+        elCurRole.textContent = c.entry.role;
+      } else {
+        elCurName.textContent = '--';
+        elCurRole.textContent = '--';
+      }
+
+      updateTimers(state);
+    }
+
+    function updateTimers(state) {
+      const nowSec = Math.floor(Date.now() / 1000);
+
+      // Meeting timer
+      const meetingMs = (nowSec - meetingStart) * 1000;
+      elMeeting.textContent = fmt(meetingMs);
+
+      // Speaker timer
+      if (state.current) {
+        const c = state.current;
+        let elapsedMs = c.elapsedMs;
+        if (c.running) {
+          elapsedMs += (nowSec - c.startedAtSec) * 1000;
+        }
+        elSpeakTimer.textContent = fmt(elapsedMs);
+
+        const remainingMs = Math.max(0, (c.limitSec * 1000) - elapsedMs);
+        elRemaining.textContent = `(remaining: ${fmt(remainingMs)})`;
+
+        const warnThreshold = c.limitSec * 1000 * 0.8;
+        const dangerThreshold = c.limitSec * 1000 * 0.95;
+        setTimerClass(elSpeakTimer, elapsedMs > warnThreshold, elapsedMs > dangerThreshold);
+      } else {
+        elSpeakTimer.textContent = '00:00';
+        elRemaining.textContent = '(remaining: 00:00)';
+        setTimerClass(elSpeakTimer, false, false);
+      }
+    }
+
+    // --- Event handlers ---
+    $('#btnRequest').onclick = () => {
+      const name = elName.value.trim();
+      const role = elRole.value;
+      if (!name) {
+        elStatus.textContent = 'Please enter your name first';
+        elStatus.className = 'warn small';
+        return;
+      }
+      myName = name;
+      client?.send(`/app/room/${roomCode}/request`, {}, JSON.stringify({name, role}));
+    };
+
+    $('#btnWithdraw').onclick = () => {
+      const name = elName.value.trim();
+      if (!name) {
+        elStatus.textContent = 'Please enter your name first';
+        elStatus.className = 'warn small';
+        return;
+      }
+      client?.send(`/app/room/${roomCode}/withdraw`, {}, JSON.stringify({name}));
+    };
+
+    // Copy room code
+    $('#btnCopyCode').onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(roomCode);
+        $('#copyStatus').textContent = 'Room code copied to clipboard!';
+        setTimeout(() => $('#copyStatus').textContent = '', 3000);
+      } catch (err) {
+        $('#copyStatus').textContent = 'Could not copy to clipboard';
+      }
+    };
+
+    // Load name from localStorage
+    const savedName = localStorage.getItem('speakRequestName');
+    if (savedName) {
+      elName.value = savedName;
+    }
+
+    // Save name to localStorage when changed
+    elName.onchange = () => {
+      localStorage.setItem('speakRequestName', elName.value);
+    };
+
+    // --- Start ---
+    connect();
+    timerInterval = setInterval(() => {
+      if (meetingStart > 0) {
+        // This will update both timers based on current state
+        updateTimers({
+          current: null, // Will be updated by actual state
+          meetingStartSec: meetingStart
+        });
+      }
+    }, 250);
+  </script>
+</body>
+</html>

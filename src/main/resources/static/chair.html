@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Chair View - SpeakRequest</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="stylesheet" href="styles.css"/>
+  <script src="stomp.min.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="header">
+      <h1>Chair View</h1>
+      <div class="room-code-display">
+        <span class="muted small">Room Code:</span>
+        <span id="roomCodeDisplay" class="room-code">----</span>
+      </div>
+      <div id="conn" class="pill">Connecting…</div>
+    </header>
+
+    <main class="grid">
+      <!-- Chair controls -->
+      <section class="card">
+        <h2>Meeting Controls</h2>
+        <div class="row">
+          <button id="btnNext" class="accent">🎙️ Next speaker</button>
+          <button id="btnPause" class="ghost">⏸ Pause</button>
+          <button id="btnStart" class="primary">▶ Start</button>
+          <button id="btnReset" class="ghost">↺ Reset</button>
+        </div>
+        <div class="row">
+          <button id="btnPopout" class="accent">📺 Open Popout Window</button>
+        </div>
+        <div class="row">
+          <label class="muted">Per-speaker limit (sec)</label>
+          <input id="limit" type="number" min="10" step="10" value="180" style="width:110px"/>
+          <button id="btnSetLimit" class="ghost">Set</button>
+        </div>
+
+        <div class="two">
+          <div>
+            <div class="muted small">Current speaker</div>
+            <div id="curName" class="big">--</div>
+            <div id="curRole" class="muted">--</div>
+          </div>
+          <div>
+            <div class="muted small">Speaker time</div>
+            <div id="speakTimer" class="timer ok">00:00</div>
+            <div class="muted tiny" id="remaining">(remaining: 00:00)</div>
+          </div>
+          <div>
+            <div class="muted small">Meeting time</div>
+            <div id="meetingTimer" class="timer">00:00</div>
+          </div>
+        </div>
+
+        <div class="muted small">Queue (<span id="qCount">0</span>)</div>
+        <ul id="queue" class="list"></ul>
+      </section>
+
+      <!-- Room Info -->
+      <section class="card">
+        <h2>Room Information</h2>
+        <div class="room-info">
+          <div class="room-code-large">
+            <div class="muted small">Share this code with participants:</div>
+            <div id="roomCodeLarge" class="room-code-big">----</div>
+          </div>
+          <div class="row">
+            <button id="btnCopyCode" class="ghost">📋 Copy Code</button>
+            <button id="btnShareLink" class="ghost">🔗 Copy Participant Link</button>
+          </div>
+          <div id="copyStatus" class="muted small"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // Extract room code from URL query parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomCode = urlParams.get('room');
+
+    if (!roomCode || roomCode.length !== 4) {
+      alert('Invalid room code. Redirecting to home page.');
+      window.location.href = '/landing.html';
+    }
+
+    // Display room code
+    document.getElementById('roomCodeDisplay').textContent = roomCode;
+    document.getElementById('roomCodeLarge').textContent = roomCode;
+
+    // --- Utilities ---
+    const $ = sel => document.querySelector(sel);
+    const fmt = ms => {
+      const s = Math.max(0, Math.floor(ms/1000));
+      const mm = String(Math.floor(s/60)).padStart(2,'0');
+      const ss = String(s%60).padStart(2,'0');
+      return `${mm}:${ss}`;
+    };
+    const setTimerClass = (el, warn, danger)=>{
+      el.classList.remove('ok','warn','danger');
+      if (danger) el.classList.add('danger'); else if (warn) el.classList.add('warn'); else el.classList.add('ok');
+    };
+
+    // --- DOM refs ---
+    const elConn = $('#conn');
+    const elQueue = $('#queue'); const elQCount = $('#qCount');
+    const elCurName = $('#curName'); const elCurRole = $('#curRole');
+    const elSpeakTimer = $('#speakTimer'); const elRemaining = $('#remaining');
+    const elMeeting = $('#meetingTimer'); const elLimit = $('#limit');
+
+    // --- State ---
+    let client = null;
+    let meetingStart = 0;
+    let timerInterval = null;
+
+    // --- WebSocket ---
+    function connect() {
+      const sock = new WebSocket(`ws://${location.host}/ws`);
+      client = Stomp.over(sock);
+      client.debug = () => {}; // silence debug
+
+      client.connect({}, () => {
+        elConn.textContent = 'Connected';
+        elConn.classList.remove('warn');
+        elConn.classList.add('ok');
+
+        client.subscribe(`/topic/room/${roomCode}/state`, msg => {
+          const state = JSON.parse(msg.body);
+          updateUI(state);
+        });
+
+        // Join to get initial state
+        client.send(`/app/room/${roomCode}/join`, {}, JSON.stringify({name:'Chair', role:'Chair'}));
+      }, () => {
+        elConn.textContent = 'Disconnected';
+        elConn.classList.remove('ok');
+        elConn.classList.add('warn');
+        setTimeout(connect, 2000);
+      });
+    }
+
+    function updateUI(state) {
+      meetingStart = state.meetingStartSec;
+      elLimit.value = state.defaultLimitSec;
+
+      // Queue
+      elQCount.textContent = state.queue.length;
+      elQueue.innerHTML = '';
+      state.queue.forEach((p, i) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span class="name">${p.name}</span> <span class="role muted">${p.role}</span>`;
+        elQueue.appendChild(li);
+      });
+
+      // Current speaker
+      if (state.current) {
+        const c = state.current;
+        elCurName.textContent = c.entry.name;
+        elCurRole.textContent = c.entry.role;
+      } else {
+        elCurName.textContent = '--';
+        elCurRole.textContent = '--';
+      }
+
+      updateTimers(state);
+    }
+
+    function updateTimers(state) {
+      const nowSec = Math.floor(Date.now() / 1000);
+
+      // Meeting timer
+      const meetingMs = (nowSec - meetingStart) * 1000;
+      elMeeting.textContent = fmt(meetingMs);
+
+      // Speaker timer
+      if (state.current) {
+        const c = state.current;
+        let elapsedMs = c.elapsedMs;
+        if (c.running) {
+          elapsedMs += (nowSec - c.startedAtSec) * 1000;
+        }
+        elSpeakTimer.textContent = fmt(elapsedMs);
+
+        const remainingMs = Math.max(0, (c.limitSec * 1000) - elapsedMs);
+        elRemaining.textContent = `(remaining: ${fmt(remainingMs)})`;
+
+        const warnThreshold = c.limitSec * 1000 * 0.8;
+        const dangerThreshold = c.limitSec * 1000 * 0.95;
+        setTimerClass(elSpeakTimer, elapsedMs > warnThreshold, elapsedMs > dangerThreshold);
+      } else {
+        elSpeakTimer.textContent = '00:00';
+        elRemaining.textContent = '(remaining: 00:00)';
+        setTimerClass(elSpeakTimer, false, false);
+      }
+    }
+
+    // --- Event handlers ---
+    $('#btnNext').onclick = () => client?.send(`/app/room/${roomCode}/next`, {}, '{}');
+    $('#btnPause').onclick = () => client?.send(`/app/room/${roomCode}/timer`, {}, JSON.stringify({action:'pause'}));
+    $('#btnStart').onclick = () => client?.send(`/app/room/${roomCode}/timer`, {}, JSON.stringify({action:'start'}));
+    $('#btnReset').onclick = () => client?.send(`/app/room/${roomCode}/timer`, {}, JSON.stringify({action:'reset'}));
+    $('#btnSetLimit').onclick = () => {
+      const sec = parseInt(elLimit.value, 10);
+      if (sec >= 10) client?.send(`/app/room/${roomCode}/setLimit`, {}, JSON.stringify({seconds:sec}));
+    };
+
+    $('#btnPopout').onclick = () => {
+      const url = `/popout.html?room=${roomCode}`;
+      window.open(url, 'popout', 'width=800,height=600,resizable=yes');
+    };
+
+    // Copy room code
+    $('#btnCopyCode').onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(roomCode);
+        $('#copyStatus').textContent = 'Room code copied to clipboard!';
+        setTimeout(() => $('#copyStatus').textContent = '', 3000);
+      } catch (err) {
+        $('#copyStatus').textContent = 'Could not copy to clipboard';
+      }
+    };
+
+    // Copy participant link
+    $('#btnShareLink').onclick = async () => {
+      const link = `${window.location.origin}/participant/${roomCode}`;
+      try {
+        await navigator.clipboard.writeText(link);
+        $('#copyStatus').textContent = 'Participant link copied to clipboard!';
+        setTimeout(() => $('#copyStatus').textContent = '', 3000);
+      } catch (err) {
+        $('#copyStatus').textContent = 'Could not copy to clipboard';
+      }
+    };
+
+    // --- Start ---
+    connect();
+    timerInterval = setInterval(() => {
+      if (meetingStart > 0) {
+        // This will update both timers based on current state
+        updateTimers({
+          current: null, // Will be updated by actual state
+          meetingStartSec: meetingStart
+        });
+      }
+    }, 250);
+  </script>
+</body>
+</html>

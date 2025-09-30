@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <title>Speaker Display - Request-to-Speak</title>
+  <title>Speaker Display - SpeakRequest</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <style>
     :root{
@@ -30,37 +30,45 @@
     .status{color:var(--accent); font-weight:600;}
     .conn-status{position:fixed;top:10px;right:10px;background:#0c1324;border:1px solid var(--border);padding:.35rem .7rem;border-radius:999px;color:var(--muted);font-size:0.8rem;}
     .conn-status.ok{color:#bbf7d0;border-color:rgba(16,185,129,.6)}
+    .room-code{position:fixed;top:10px;left:10px;background:#0c1324;border:1px solid var(--border);padding:.35rem .7rem;border-radius:999px;color:var(--accent);font-size:0.8rem;font-weight:bold;}
   </style>
   <script src="stomp.min.js"></script>
 </head>
 <body>
+  <div class="room-code" id="roomCodeDisplay">Room: ----</div>
   <div class="conn-status" id="conn">Connecting…</div>
   
   <div class="card">
     <div class="muted small">Current Speaker</div>
     <div id="currentSpeaker" class="big">--</div>
     <div id="currentRole" class="muted medium">--</div>
-    <div class="muted small">Speaking since</div>
-    <div id="speakingSince" class="status medium">--</div>
+    <div class="muted small">Speaker Time</div>
+    <div id="speakerTimer" class="timer ok">00:00</div>
   </div>
 
   <div class="card">
     <div class="muted small">Next Speaker</div>
     <div id="nextSpeaker" class="medium">--</div>
+    <div id="nextRole" class="muted">--</div>
   </div>
 
   <div class="card">
-    <div class="muted small">Meeting Time</div>
-    <div id="meetingTime" class="timer ok">00:00</div>
-    <div class="muted small">Queued Speakers</div>
-    <div id="queueCount" class="status medium">0</div>
+    <div class="muted small">Queue (<span id="queueCount">0</span> waiting)</div>
+    <div id="queueList" class="medium">--</div>
   </div>
 
   <script>
-    let stomp = null;
-    let state = { queue:[], current:null, meetingStartSec: Math.floor(Date.now()/1000), defaultLimitSec:180 };
-    
-    const $ = sel => document.querySelector(sel);
+    // Get room code from URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomCode = urlParams.get('room');
+
+    if (!roomCode || roomCode.length !== 4) {
+      document.body.innerHTML = '<div class="card"><div class="big">Invalid room code</div></div>';
+    } else {
+      document.getElementById('roomCodeDisplay').textContent = `Room: ${roomCode}`;
+    }
+
+    // --- Utilities ---
     const fmt = ms => {
       const s = Math.max(0, Math.floor(ms/1000));
       const mm = String(Math.floor(s/60)).padStart(2,'0');
@@ -68,72 +76,122 @@
       return `${mm}:${ss}`;
     };
 
-    const elConn = $('#conn');
-    const elCurrentSpeaker = $('#currentSpeaker');
-    const elCurrentRole = $('#currentRole');
-    const elSpeakingSince = $('#speakingSince');
-    const elNextSpeaker = $('#nextSpeaker');
-    const elMeetingTime = $('#meetingTime');
-    const elQueueCount = $('#queueCount');
+    const setTimerClass = (el, warn, danger) => {
+      el.classList.remove('ok','warn','danger');
+      if (danger) el.classList.add('danger');
+      else if (warn) el.classList.add('warn');
+      else el.classList.add('ok');
+    };
 
-    function connect(){
-      const url = (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/ws";
-      const socket = new WebSocket(url);
-      stomp = Stomp.over(socket);
-      stomp.debug = null;
+    // --- DOM refs ---
+    const elConn = document.getElementById('conn');
+    const elCurrentSpeaker = document.getElementById('currentSpeaker');
+    const elCurrentRole = document.getElementById('currentRole');
+    const elSpeakerTimer = document.getElementById('speakerTimer');
+    const elNextSpeaker = document.getElementById('nextSpeaker');
+    const elNextRole = document.getElementById('nextRole');
+    const elQueueCount = document.getElementById('queueCount');
+    const elQueueList = document.getElementById('queueList');
 
-      stomp.connect({}, () => {
-        elConn.textContent = "Connected";
+    // --- State ---
+    let client = null;
+    let currentState = null;
+
+    // --- WebSocket ---
+    function connect() {
+      if (!roomCode) return;
+
+      const sock = new WebSocket(`ws://${location.host}/ws`);
+      client = Stomp.over(sock);
+      client.debug = () => {}; // silence debug
+
+      client.connect({}, () => {
+        elConn.textContent = 'Connected';
         elConn.classList.add('ok');
 
-        stomp.subscribe("/topic/state", msg => {
-          state = JSON.parse(msg.body);
-          render();
+        client.subscribe(`/topic/room/${roomCode}/state`, msg => {
+          const state = JSON.parse(msg.body);
+          currentState = state;
+          updateDisplay(state);
         });
 
-        // Send a join so server may broadcast initial state
-        if (stomp && stomp.connected) stomp.send("/app/join", {}, JSON.stringify({ name: "Popout Display", role: "Display" }));
+        // Join to get initial state
+        client.send(`/app/room/${roomCode}/join`, {}, JSON.stringify({name:'Display', role:'Observer'}));
       }, () => {
-        elConn.textContent = "Disconnected";
+        elConn.textContent = 'Disconnected';
         elConn.classList.remove('ok');
-        setTimeout(connect, 2000); // Reconnect after 2 seconds
+        setTimeout(connect, 2000);
       });
     }
 
-    function render(){
+    function updateDisplay(state) {
       // Current speaker
-      if (state.current){
-        elCurrentSpeaker.textContent = state.current.entry.name;
-        elCurrentRole.textContent = state.current.entry.role;
-        const speakingDate = new Date(state.current.startedAtSec * 1000);
-        elSpeakingSince.textContent = speakingDate.toLocaleTimeString();
+      if (state.current) {
+        const c = state.current;
+        elCurrentSpeaker.textContent = c.entry.name;
+        elCurrentRole.textContent = c.entry.role;
       } else {
         elCurrentSpeaker.textContent = '--';
         elCurrentRole.textContent = '--';
-        elSpeakingSince.textContent = '--';
       }
 
       // Next speaker
-      if (state.queue && state.queue.length > 0) {
-        elNextSpeaker.textContent = state.queue[0].name + ' (' + state.queue[0].role + ')';
+      if (state.queue.length > 0) {
+        const next = state.queue[0];
+        elNextSpeaker.textContent = next.name;
+        elNextRole.textContent = next.role;
       } else {
         elNextSpeaker.textContent = '--';
+        elNextRole.textContent = '--';
       }
 
-      // Queue count
-      elQueueCount.textContent = String((state.queue || []).length);
+      // Queue
+      elQueueCount.textContent = state.queue.length;
+      if (state.queue.length > 1) {
+        const remaining = state.queue.slice(1, 4); // Show next 3
+        const names = remaining.map(p => p.name).join(', ');
+        const more = state.queue.length > 4 ? ` (+${state.queue.length - 4} more)` : '';
+        elQueueList.textContent = names + more;
+      } else {
+        elQueueList.textContent = '--';
+      }
+
+      updateTimer(state);
     }
 
-    function tick(){
-      // Meeting time
-      const mtMs = (Date.now()/1000 - state.meetingStartSec) * 1000;
-      elMeetingTime.textContent = fmt(mtMs);
-      
-      requestAnimationFrame(tick);
+    function updateTimer(state) {
+      if (!state.current) {
+        elSpeakerTimer.textContent = '00:00';
+        setTimerClass(elSpeakerTimer, false, false);
+        return;
+      }
+
+      const c = state.current;
+      const nowSec = Math.floor(Date.now() / 1000);
+      let elapsedMs = c.elapsedMs;
+
+      if (c.running) {
+        elapsedMs += (nowSec - c.startedAtSec) * 1000;
+      }
+
+      elSpeakerTimer.textContent = fmt(elapsedMs);
+
+      const warnThreshold = c.limitSec * 1000 * 0.8;
+      const dangerThreshold = c.limitSec * 1000 * 0.95;
+      setTimerClass(elSpeakerTimer, elapsedMs > warnThreshold, elapsedMs > dangerThreshold);
     }
-    
-    requestAnimationFrame(tick);
-    connect();
+
+    // --- Start ---
+    if (roomCode) {
+      connect();
+
+      // Update timer every 250ms
+      setInterval(() => {
+        if (currentState) {
+          updateTimer(currentState);
+        }
+      }, 250);
+    }
   </script>
 </body>
 </html>

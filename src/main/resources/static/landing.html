@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>SpeakRequest - Meeting Rooms</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <div class="wrap">
+    <header class="header">
+      <h1>SpeakRequest</h1>
+      <div class="pill">Meeting Room Manager</div>
+    </header>
+
+    <main class="grid">
+      <!-- Create New Room -->
+      <section class="card">
+        <h2>🎤 Chair a Meeting</h2>
+        <p class="muted">Create a new meeting room and get chair privileges to manage speakers and timers.</p>
+        <div class="row">
+          <button id="btnCreateRoom" class="primary">Create New Room</button>
+        </div>
+        <div id="createStatus" class="muted small"></div>
+      </section>
+
+      <!-- Join as Participant -->
+      <section class="card">
+        <h2>🙋 Join as Participant</h2>
+        <p class="muted">Join an existing meeting room with a 4-character room code to request speaking time.</p>
+        <div class="row">
+          <input id="roomCode" placeholder="Room Code (e.g., A1B2)" maxlength="4" style="text-transform: uppercase"/>
+          <button id="btnJoinRoom" class="accent">Join Room</button>
+        </div>
+        <div id="joinStatus" class="muted small"></div>
+      </section>
+
+      <!-- Instructions -->
+      <section class="card">
+        <h2>ℹ️ How it Works</h2>
+        <div class="muted">
+          <p><strong>Chair:</strong> Create a room to get a unique 4-character code. Share this code with participants. You can manage the speaking queue, timers, and speaking limits.</p>
+          <p><strong>Participant:</strong> Enter the room code to join. You can request to speak and see your position in the queue.</p>
+          <p><strong>Room Codes:</strong> 4 characters using A-Z and 0-9 (e.g., A1B2, XY9Z)</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // --- DOM refs ---
+    const btnCreateRoom = document.getElementById('btnCreateRoom');
+    const btnJoinRoom = document.getElementById('btnJoinRoom');
+    const roomCodeInput = document.getElementById('roomCode');
+    const createStatus = document.getElementById('createStatus');
+    const joinStatus = document.getElementById('joinStatus');
+
+    // Auto-uppercase room code input
+    roomCodeInput.addEventListener('input', (e) => {
+      e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    });
+
+    // Create new room
+    btnCreateRoom.addEventListener('click', async () => {
+      btnCreateRoom.disabled = true;
+      createStatus.textContent = 'Creating room...';
+
+      try {
+        const response = await fetch('/api/rooms', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          createStatus.textContent = `Room created! Redirecting to chair view...`;
+          setTimeout(() => {
+            window.location.href = `/chair/${data.roomCode}`;
+          }, 1000);
+        } else {
+          createStatus.textContent = 'Failed to create room. Please try again.';
+          btnCreateRoom.disabled = false;
+        }
+      } catch (error) {
+        createStatus.textContent = 'Error creating room. Please try again.';
+        btnCreateRoom.disabled = false;
+      }
+    });
+
+    // Join existing room
+    btnJoinRoom.addEventListener('click', async () => {
+      const code = roomCodeInput.value.trim().toUpperCase();
+
+      if (!code || code.length !== 4) {
+        joinStatus.textContent = 'Please enter a valid 4-character room code.';
+        return;
+      }
+
+      btnJoinRoom.disabled = true;
+      joinStatus.textContent = 'Checking room...';
+
+      try {
+        const response = await fetch(`/api/rooms/${code}`);
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.exists) {
+            joinStatus.textContent = 'Room found! Redirecting to participant view...';
+            setTimeout(() => {
+              window.location.href = `/participant/${code}`;
+            }, 1000);
+          } else {
+            joinStatus.textContent = 'Room not found. Please check the code and try again.';
+            btnJoinRoom.disabled = false;
+          }
+        } else {
+          joinStatus.textContent = 'Error checking room. Please try again.';
+          btnJoinRoom.disabled = false;
+        }
+      } catch (error) {
+        joinStatus.textContent = 'Error checking room. Please try again.';
+        btnJoinRoom.disabled = false;
+      }
+    });
+
+    // Allow Enter key to join room
+    roomCodeInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        btnJoinRoom.click();
+      }
+    });
+  </script>
+</body>
+</html>

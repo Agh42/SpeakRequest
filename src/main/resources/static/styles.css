@@ -38,3 +38,38 @@ button{cursor:pointer}
 .who{font-weight:700}
 .timer{font-variant-numeric:tabular-nums;font-weight:800;font-size:1.8rem}
 .timer.ok{color:#bbf7d0}.timer.warn{color:#fde68a}.timer.danger{color:#fecaca}
+
+/* Room code display styles */
+.room-code-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.room-code {
+  background: linear-gradient(180deg, rgba(96,165,250,.14), rgba(96,165,250,.06));
+  border: 1px solid rgba(96,165,250,.5);
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 1.1rem;
+  padding: 6px 12px;
+  border-radius: 8px;
+  letter-spacing: 2px;
+}
+.room-code-big {
+  background: linear-gradient(180deg, rgba(96,165,250,.14), rgba(96,165,250,.06));
+  border: 1px solid rgba(96,165,250,.5);
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 2.5rem;
+  padding: 16px 24px;
+  border-radius: 12px;
+  letter-spacing: 4px;
+  text-align: center;
+  margin: 12px 0;
+}
+.room-info {
+  text-align: center;
+}
+.room-code-large {
+  margin: 16px 0;
+}

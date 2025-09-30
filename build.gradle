@@ -10,7 +10,7 @@ version = '0.0.1-SNAPSHOT'
 description = 'speakrequest'
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
@@ -27,6 +27,11 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    // produce Java 21-compatible class files
+    options.release.set(21)
 }
 
 application {
