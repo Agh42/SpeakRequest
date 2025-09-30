@@ -123,21 +123,29 @@ public class MeetingApp {
 
         @GetMapping("/chair/{roomCode}")
         public String chairView(@PathVariable String roomCode) {
-            return "redirect:/chair.html?room=" + roomCode;
+            String normalizedRoomCode = normalizeRoomCode(roomCode);
+            return "redirect:/chair.html?room=" + normalizedRoomCode;
         }
 
         @GetMapping("/participant/{roomCode}")
         public String participantView(@PathVariable String roomCode) {
-            return "redirect:/participant.html?room=" + roomCode;
+            String normalizedRoomCode = normalizeRoomCode(roomCode);
+            return "redirect:/participant.html?room=" + normalizedRoomCode;
         }
 
         private String generateRoomCode() {
-            String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789"; // Removed "0" to avoid confusion with "O"
             StringBuilder code = new StringBuilder();
             for (int i = 0; i < 4; i++) {
                 code.append(chars.charAt(random.nextInt(chars.length())));
             }
             return code.toString();
+        }
+
+        private String normalizeRoomCode(String roomCode) {
+            if (roomCode == null) return null;
+            // Convert "0" to "O" to avoid confusion when users enter room codes
+            return roomCode.toUpperCase().replace("0", "O");
         }
 
         private String createUniqueRoomCode() {
@@ -164,7 +172,8 @@ public class MeetingApp {
         @GetMapping("/api/rooms/{roomCode}")
         @ResponseBody
         public RoomInfo checkRoom(@PathVariable String roomCode) {
-            return new RoomInfo(roomCode, rooms.containsKey(roomCode));
+            String normalizedRoomCode = normalizeRoomCode(roomCode);
+            return new RoomInfo(normalizedRoomCode, rooms.containsKey(normalizedRoomCode));
         }
 
         private String uid() { return Long.toString(System.nanoTime(), 36); }
@@ -179,8 +188,9 @@ public class MeetingApp {
 
         @MessageMapping("/room/{roomCode}/join")
         public void join(@DestinationVariable String roomCode, @Payload Join msg) {
-            getOrCreateRoom(roomCode); // Ensure room exists
-            broadcast(roomCode);
+            String normalizedRoomCode = normalizeRoomCode(roomCode);
+            getOrCreateRoom(normalizedRoomCode); // Ensure room exists
+            broadcast(normalizedRoomCode);
         }
 
         @MessageMapping("/room/{roomCode}/request")
@@ -188,7 +198,8 @@ public class MeetingApp {
             if (msg == null || msg.name() == null || msg.name().isBlank()) return;
             String role = (msg.role() == null || msg.role().isBlank()) ? "Member" : msg.role().trim();
 
-            Room room = getOrCreateRoom(roomCode);
+            String normalizedRoomCode = normalizeRoomCode(roomCode);
+            Room room = getOrCreateRoom(normalizedRoomCode);
             room.getLock().lock();
             try {
                 if (room.getCurrent() != null && room.getCurrent().entry().name().equalsIgnoreCase(msg.name())) return;
@@ -197,13 +208,14 @@ public class MeetingApp {
             } finally {
                 room.getLock().unlock();
             }
-            broadcast(roomCode);
+            broadcast(normalizedRoomCode);
         }
 
         @MessageMapping("/room/{roomCode}/withdraw")
         public void withdraw(@DestinationVariable String roomCode, @Payload Withdraw msg) {
             if (msg == null || msg.name() == null || msg.name().isBlank()) return;
-            Room room = rooms.get(roomCode);
+            String normalizedRoomCode = normalizeRoomCode(roomCode);
+            Room room = rooms.get(normalizedRoomCode);
             if (room == null) return;
 
             room.getLock().lock();
@@ -213,12 +225,13 @@ public class MeetingApp {
             } finally {
                 room.getLock().unlock();
             }
-            broadcast(roomCode);
+            broadcast(normalizedRoomCode);
         }
 
         @MessageMapping("/room/{roomCode}/next")
         public void next(@DestinationVariable String roomCode) {
-            Room room = rooms.get(roomCode);
+            String normalizedRoomCode = normalizeRoomCode(roomCode);
+            Room room = rooms.get(normalizedRoomCode);
             if (room == null) return;
 
             room.getLock().lock();
@@ -231,13 +244,14 @@ public class MeetingApp {
             } finally {
                 room.getLock().unlock();
             }
-            broadcast(roomCode);
+            broadcast(normalizedRoomCode);
         }
 
         @MessageMapping("/room/{roomCode}/timer")
         public void timer(@DestinationVariable String roomCode, @Payload TimerCtrl ctrl) {
             if (ctrl == null || ctrl.action() == null) return;
-            Room room = rooms.get(roomCode);
+            String normalizedRoomCode = normalizeRoomCode(roomCode);
+            Room room = rooms.get(normalizedRoomCode);
             if (room == null) return;
 
             room.getLock().lock();
@@ -262,14 +276,15 @@ public class MeetingApp {
             } finally {
                 room.getLock().unlock();
             }
-            broadcast(roomCode);
+            broadcast(normalizedRoomCode);
         }
 
         @MessageMapping("/room/{roomCode}/setLimit")
         public void setLimit(@DestinationVariable String roomCode, @Payload SetLimit msg) {
             if (msg == null) return;
             int s = Math.max(10, Math.min(3600, msg.seconds()));
-            Room room = rooms.get(roomCode);
+            String normalizedRoomCode = normalizeRoomCode(roomCode);
+            Room room = rooms.get(normalizedRoomCode);
             if (room == null) return;
 
             room.getLock().lock();
@@ -282,7 +297,7 @@ public class MeetingApp {
             } finally {
                 room.getLock().unlock();
             }
-            broadcast(roomCode);
+            broadcast(normalizedRoomCode);
         }
     }
 }
