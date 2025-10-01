@@ -127,7 +127,7 @@ public class MeetingApp {
             return "redirect:/chair.html?room=" + normalizedRoomCode;
         }
 
-        @GetMapping("/participant/{roomCode}")
+        @GetMapping("/room/{roomCode}")
         public String participantView(@PathVariable String roomCode) {
             String normalizedRoomCode = normalizeRoomCode(roomCode);
             return "redirect:/participant.html?room=" + normalizedRoomCode;

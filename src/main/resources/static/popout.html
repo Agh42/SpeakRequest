@@ -31,13 +31,26 @@
     .conn-status{position:fixed;top:10px;right:10px;background:#0c1324;border:1px solid var(--border);padding:.35rem .7rem;border-radius:999px;color:var(--muted);font-size:0.8rem;}
     .conn-status.ok{color:#bbf7d0;border-color:rgba(16,185,129,.6)}
     .room-code{position:fixed;top:10px;left:10px;background:#0c1324;border:1px solid var(--border);padding:.35rem .7rem;border-radius:999px;color:var(--accent);font-size:0.8rem;font-weight:bold;}
+    .join-instructions{position:fixed;top:40px;left:10px;right:10px;color:var(--muted);font-size:0.75rem;text-align:center;padding-bottom:10px;}
+    .content-wrapper{margin-top:60px;}
+    .queue-list {
+      max-height: 150px;
+      overflow-y: auto;
+      color: var(--text);
+      font-size: 1.2rem;
+      margin-top: 10px;
+    }
   </style>
   <script src="stomp.min.js"></script>
 </head>
 <body>
   <div class="room-code" id="roomCodeDisplay">Room: ----</div>
   <div class="conn-status" id="conn">Connecting…</div>
-  
+
+  <div class="muted small" style="text-align: center; margin-bottom: 15px; margin-top: 35px; color: var(--accent); font-size: 0.8rem;">
+    Go to <span id="joinUrl" style="font-weight: bold;"></span> and enter the room code to join
+  </div>
+
   <div class="card">
     <div class="muted small">Current Speaker</div>
     <div id="currentSpeaker" class="big">--</div>
@@ -47,14 +60,8 @@
   </div>
 
   <div class="card">
-    <div class="muted small">Next Speaker</div>
-    <div id="nextSpeaker" class="medium">--</div>
-    <div id="nextRole" class="muted">--</div>
-  </div>
-
-  <div class="card">
     <div class="muted small">Queue (<span id="queueCount">0</span> waiting)</div>
-    <div id="queueList" class="medium">--</div>
+    <div id="queueList" class="queue-list">--</div>
   </div>
 
   <script>
@@ -66,6 +73,9 @@
       document.body.innerHTML = '<div class="card"><div class="big">Invalid room code</div></div>';
     } else {
       document.getElementById('roomCodeDisplay').textContent = `Room: ${roomCode}`;
+      // Set join instructions with current browser URL
+      const baseUrl = window.location.origin;
+      document.getElementById('joinUrl').textContent = `${baseUrl}`;
     }
 
     // --- Utilities ---
@@ -88,10 +98,9 @@
     const elCurrentSpeaker = document.getElementById('currentSpeaker');
     const elCurrentRole = document.getElementById('currentRole');
     const elSpeakerTimer = document.getElementById('speakerTimer');
-    const elNextSpeaker = document.getElementById('nextSpeaker');
-    const elNextRole = document.getElementById('nextRole');
     const elQueueCount = document.getElementById('queueCount');
     const elQueueList = document.getElementById('queueList');
+    const elJoinInstructions = document.getElementById('joinInstructions');
 
     // --- State ---
     let client = null;
@@ -135,25 +144,15 @@
         elCurrentRole.textContent = '--';
       }
 
-      // Next speaker
-      if (state.queue.length > 0) {
-        const next = state.queue[0];
-        elNextSpeaker.textContent = next.name;
-        elNextRole.textContent = next.role;
-      } else {
-        elNextSpeaker.textContent = '--';
-        elNextRole.textContent = '--';
-      }
-
-      // Queue
+      // Queue - display speakers vertically
       elQueueCount.textContent = state.queue.length;
-      if (state.queue.length > 1) {
-        const remaining = state.queue.slice(1, 4); // Show next 3
-        const names = remaining.map(p => p.name).join(', ');
-        const more = state.queue.length > 4 ? ` (+${state.queue.length - 4} more)` : '';
-        elQueueList.textContent = names + more;
+      if (state.queue.length > 0) {
+        const queueHtml = state.queue.map((p, index) =>
+          `<div style="margin-bottom: 5px;">${index + 1}. ${p.name}</div>`
+        ).join('');
+        elQueueList.innerHTML = queueHtml;
       } else {
-        elQueueList.textContent = '--';
+        elQueueList.innerHTML = '<div>--</div>';
       }
 
       updateTimer(state);

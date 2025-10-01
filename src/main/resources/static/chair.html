@@ -223,7 +223,7 @@
 
     // Copy participant link
     $('#btnShareLink').onclick = async () => {
-      const link = `${window.location.origin}/participant/${roomCode}`;
+      const link = `${window.location.origin}/room/${roomCode}`;
       try {
         await navigator.clipboard.writeText(link);
         $('#copyStatus').textContent = 'Participant link copied to clipboard!';

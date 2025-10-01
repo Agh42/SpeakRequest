@@ -107,7 +107,7 @@
           if (data.exists) {
             joinStatus.textContent = 'Room found! Redirecting to participant view...';
             setTimeout(() => {
-              window.location.href = `/participant/${code}`;
+              window.location.href = `/room/${code}`;
             }, 1000);
           } else {
             joinStatus.textContent = 'Room not found. Please check the code and try again.';
