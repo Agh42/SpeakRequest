@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <title>Participant View - SpeakRequest</title>
+  <title>SpeakRequest - Participant View</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <link rel="stylesheet" href="styles.css"/>
   <script src="stomp.min.js"></script>
@@ -10,7 +10,7 @@
 <body>
   <div class="wrap">
     <header class="header">
-      <h1>Participant View</h1>
+      <h1><a href="/landing.html" style="text-decoration: none; color: inherit;">SpeakRequest</a> - Participant View</h1>
       <div class="room-code-display">
         <span class="muted small">Room Code:</span>
         <span id="roomCodeDisplay" class="room-code">----</span>
@@ -24,11 +24,6 @@
         <h2>Request to Speak</h2>
         <div class="row">
           <input id="name" placeholder="Your initials or name"/>
-          <select id="role">
-            <option>Member</option>
-            <option>Guest</option>
-            <option>Observer</option>
-          </select>
         </div>
         <div class="row">
           <button id="btnRequest" class="primary">✋ Request to Speak</button>
@@ -45,7 +40,6 @@
           <div>
             <div class="muted small">Current speaker</div>
             <div id="curName" class="big">--</div>
-            <div id="curRole" class="muted">--</div>
           </div>
           <div>
             <div class="muted small">Speaker time</div>
@@ -110,17 +104,18 @@
     const elConn = $('#conn');
     const elStatus = $('#status');
     const elQueue = $('#queue'); const elQCount = $('#qCount');
-    const elCurName = $('#curName'); const elCurRole = $('#curRole');
+    const elCurName = $('#curName');
     const elSpeakTimer = $('#speakTimer'); const elRemaining = $('#remaining');
     const elMeeting = $('#meetingTimer');
 
-    const elName = $('#name'); const elRole = $('#role');
+    const elName = $('#name');
 
     // --- State ---
     let client = null;
     let meetingStart = 0;
     let timerInterval = null;
     let myName = '';
+    let currentState = null; // Add this to store the full state
 
     // --- WebSocket ---
     function connect() {
@@ -139,7 +134,7 @@
         });
 
         // Join to get initial state
-        client.send(`/app/room/${roomCode}/join`, {}, JSON.stringify({name:'Anonymous', role:'Observer'}));
+        client.send(`/app/room/${roomCode}/join`, {}, JSON.stringify({name:'Anonymous'}));
       }, () => {
         elConn.textContent = 'Disconnected';
         elConn.classList.remove('ok');
@@ -150,6 +145,7 @@
 
     function updateUI(state) {
       meetingStart = state.meetingStartSec;
+      currentState = state; // Store the current state
 
       // Queue
       elQCount.textContent = state.queue.length;
@@ -157,7 +153,7 @@
       let myPosition = -1;
       state.queue.forEach((p, i) => {
         const li = document.createElement('li');
-        li.innerHTML = `<span class="name">${p.name}</span> <span class="role muted">${p.role}</span>`;
+        li.innerHTML = `<span class="name">${p.name}</span>`;
 
         // Highlight my entry
         if (p.name.toLowerCase() === myName.toLowerCase()) {
@@ -187,10 +183,8 @@
       if (state.current) {
         const c = state.current;
         elCurName.textContent = c.entry.name;
-        elCurRole.textContent = c.entry.role;
       } else {
         elCurName.textContent = '--';
-        elCurRole.textContent = '--';
       }
 
       updateTimers(state);
@@ -228,14 +222,13 @@
     // --- Event handlers ---
     $('#btnRequest').onclick = () => {
       const name = elName.value.trim();
-      const role = elRole.value;
       if (!name) {
         elStatus.textContent = 'Please enter your name first';
         elStatus.className = 'warn small';
         return;
       }
       myName = name;
-      client?.send(`/app/room/${roomCode}/request`, {}, JSON.stringify({name, role}));
+      client?.send(`/app/room/${roomCode}/request`, {}, JSON.stringify({name}));
     };
 
     $('#btnWithdraw').onclick = () => {
@@ -273,12 +266,8 @@
     // --- Start ---
     connect();
     timerInterval = setInterval(() => {
-      if (meetingStart > 0) {
-        // This will update both timers based on current state
-        updateTimers({
-          current: null, // Will be updated by actual state
-          meetingStartSec: meetingStart
-        });
+      if (currentState) {
+        updateTimers(currentState);
       }
     }, 250);
   </script>

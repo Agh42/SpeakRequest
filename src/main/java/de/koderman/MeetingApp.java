@@ -46,14 +46,14 @@ public class MeetingApp {
     }
 
     // ---------------- DTOs ----------------
-    public record RequestSpeak(String name, String role) {}
+    public record RequestSpeak(String name) {}
     public record Withdraw(String name) {}
     public record TimerCtrl(String action) {} // "start" | "pause" | "reset"
     public record SetLimit(int seconds) {}
-    public record Join(String name, String role) {}
+    public record Join(String name) {}
     public record CreateRoom() {}
 
-    public record Participant(String id, String name, String role, long requestedAt) {}
+    public record Participant(String id, String name, long requestedAt) {}
     public record Current(Participant entry, long startedAtSec, int elapsedMs, boolean running, int limitSec) {}
     public record State(List<Participant> queue, Current current, long meetingStartSec, int defaultLimitSec, String roomCode) {}
     public record RoomInfo(String roomCode, boolean exists) {}
@@ -196,7 +196,6 @@ public class MeetingApp {
         @MessageMapping("/room/{roomCode}/request")
         public void request(@DestinationVariable String roomCode, @Payload RequestSpeak msg) {
             if (msg == null || msg.name() == null || msg.name().isBlank()) return;
-            String role = (msg.role() == null || msg.role().isBlank()) ? "Member" : msg.role().trim();
 
             String normalizedRoomCode = normalizeRoomCode(roomCode);
             Room room = getOrCreateRoom(normalizedRoomCode);
@@ -204,7 +203,7 @@ public class MeetingApp {
             try {
                 if (room.getCurrent() != null && room.getCurrent().entry().name().equalsIgnoreCase(msg.name())) return;
                 if (room.findIndexByNameUnsafe(msg.name()) >= 0) return;
-                room.getQueue().add(new Participant(uid(), msg.name().trim(), role, Instant.now().getEpochSecond()));
+                room.getQueue().add(new Participant(uid(), msg.name().trim(), Instant.now().getEpochSecond()));
             } finally {
                 room.getLock().unlock();
             }
