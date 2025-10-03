@@ -1,5 +1,8 @@
 package de.koderman;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Configuration;
@@ -59,27 +62,20 @@ public class MeetingApp {
     public record RoomInfo(String roomCode, boolean exists) {}
 
     // ---------------- Room Management ----------------
+    @Getter
     public static class Room {
         private final String roomCode;
         private final List<Participant> queue = new ArrayList<>();
+        @Setter
         private Current current = null;
         private final long meetingStartSec = Instant.now().getEpochSecond();
+        @Setter
         private int defaultLimitSec = 180; // per-speaker
         private final ReentrantLock lock = new ReentrantLock();
 
         public Room(String roomCode) {
             this.roomCode = roomCode;
         }
-
-        // Getters and state management methods
-        public String getRoomCode() { return roomCode; }
-        public ReentrantLock getLock() { return lock; }
-        public List<Participant> getQueue() { return queue; }
-        public Current getCurrent() { return current; }
-        public void setCurrent(Current current) { this.current = current; }
-        public long getMeetingStartSec() { return meetingStartSec; }
-        public int getDefaultLimitSec() { return defaultLimitSec; }
-        public void setDefaultLimitSec(int defaultLimitSec) { this.defaultLimitSec = defaultLimitSec; }
 
         public State snapshot() {
             lock.lock();
@@ -100,14 +96,11 @@ public class MeetingApp {
 
     // ---------------- In-memory meeting state ----------------
     @Controller
+    @RequiredArgsConstructor
     public static class MeetingController {
         private final SimpMessagingTemplate broker;
         private final ConcurrentHashMap<String, Room> rooms = new ConcurrentHashMap<>();
         private final Random random = new Random();
-
-        public MeetingController(SimpMessagingTemplate broker) {
-            this.broker = broker;
-        }
 
         @RestController
         public static class Health {
