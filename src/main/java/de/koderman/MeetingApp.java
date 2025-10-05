@@ -62,19 +62,24 @@ public class MeetingApp {
     public record RoomInfo(String roomCode, boolean exists) {}
 
     // ---------------- Room Management ----------------
-    @Getter
     public static class Room {
         private final String roomCode;
         private final List<Participant> queue = new ArrayList<>();
-        @Setter
         private Current current = null;
         private final long meetingStartSec = Instant.now().getEpochSecond();
-        @Setter
         private int defaultLimitSec = 180; // per-speaker
         private final ReentrantLock lock = new ReentrantLock();
 
         public Room(String roomCode) {
             this.roomCode = roomCode;
+        }
+
+        public String getRoomCode() {
+            return roomCode;
+        }
+
+        public long getMeetingStartSec() {
+            return meetingStartSec;
         }
 
         public State snapshot() {
@@ -86,11 +91,105 @@ public class MeetingApp {
             }
         }
 
-        public int findIndexByNameUnsafe(String name) {
+        private int findIndexByNameUnsafe(String name) {
             for (int i = 0; i < queue.size(); i++) {
                 if (queue.get(i).name().equalsIgnoreCase(name)) return i;
             }
             return -1;
+        }
+
+        // DDD methods - encapsulate internal state management
+        
+        public void nextParticipant() {
+            lock.lock();
+            try {
+                current = null;
+                if (!queue.isEmpty()) {
+                    Participant next = queue.remove(0);
+                    current = new Current(next, Instant.now().getEpochSecond(), 0, true, defaultLimitSec);
+                }
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        public void withdrawParticipant(String name) {
+            lock.lock();
+            try {
+                int idx = findIndexByNameUnsafe(name);
+                if (idx >= 0) {
+                    queue.remove(idx);
+                }
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        public void startTimer() {
+            lock.lock();
+            try {
+                if (current == null) return;
+                if (!current.running()) {
+                    long nowSec = Instant.now().getEpochSecond();
+                    current = new Current(current.entry(), nowSec, current.elapsedMs(), true, current.limitSec());
+                }
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        public void pauseTimer() {
+            lock.lock();
+            try {
+                if (current == null) return;
+                if (current.running()) {
+                    long nowSec = Instant.now().getEpochSecond();
+                    int addMs = (int) ((nowSec - current.startedAtSec()) * 1000);
+                    current = new Current(current.entry(), current.startedAtSec(),
+                            current.elapsedMs() + addMs, false, current.limitSec());
+                }
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        public void resetTimer() {
+            lock.lock();
+            try {
+                if (current == null) return;
+                long nowSec = Instant.now().getEpochSecond();
+                current = new Current(current.entry(), nowSec, 0, true, current.limitSec());
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        public void updateLimit(int seconds) {
+            lock.lock();
+            try {
+                defaultLimitSec = seconds;
+                if (current != null) {
+                    current = new Current(current.entry(), current.startedAtSec(), 
+                            current.elapsedMs(), current.running(), seconds);
+                }
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        public void addParticipantToQueue(Participant participant) {
+            lock.lock();
+            try {
+                if (current != null && current.entry().name().equalsIgnoreCase(participant.name())) {
+                    return;
+                }
+                if (findIndexByNameUnsafe(participant.name()) >= 0) {
+                    return;
+                }
+                queue.add(participant);
+            } finally {
+                lock.unlock();
+            }
         }
     }
 
@@ -192,14 +291,7 @@ public class MeetingApp {
 
             String normalizedRoomCode = normalizeRoomCode(roomCode);
             Room room = getOrCreateRoom(normalizedRoomCode);
-            room.getLock().lock();
-            try {
-                if (room.getCurrent() != null && room.getCurrent().entry().name().equalsIgnoreCase(msg.name())) return;
-                if (room.findIndexByNameUnsafe(msg.name()) >= 0) return;
-                room.getQueue().add(new Participant(uid(), msg.name().trim(), Instant.now().getEpochSecond()));
-            } finally {
-                room.getLock().unlock();
-            }
+            room.addParticipantToQueue(new Participant(uid(), msg.name().trim(), Instant.now().getEpochSecond()));
             broadcast(normalizedRoomCode);
         }
 
@@ -210,13 +302,7 @@ public class MeetingApp {
             Room room = rooms.get(normalizedRoomCode);
             if (room == null) return;
 
-            room.getLock().lock();
-            try {
-                int idx = room.findIndexByNameUnsafe(msg.name());
-                if (idx >= 0) room.getQueue().remove(idx);
-            } finally {
-                room.getLock().unlock();
-            }
+            room.withdrawParticipant(msg.name());
             broadcast(normalizedRoomCode);
         }
 
@@ -226,16 +312,7 @@ public class MeetingApp {
             Room room = rooms.get(normalizedRoomCode);
             if (room == null) return;
 
-            room.getLock().lock();
-            try {
-                room.setCurrent(null);
-                if (!room.getQueue().isEmpty()) {
-                    Participant next = room.getQueue().remove(0);
-                    room.setCurrent(new Current(next, Instant.now().getEpochSecond(), 0, true, room.getDefaultLimitSec()));
-                }
-            } finally {
-                room.getLock().unlock();
-            }
+            room.nextParticipant();
             broadcast(normalizedRoomCode);
         }
 
@@ -246,27 +323,10 @@ public class MeetingApp {
             Room room = rooms.get(normalizedRoomCode);
             if (room == null) return;
 
-            room.getLock().lock();
-            try {
-                if (room.getCurrent() == null) return;
-                long nowSec = Instant.now().getEpochSecond();
-                Current current = room.getCurrent();
-                switch (ctrl.action().toLowerCase()) {
-                    case "start" -> {
-                        if (!current.running())
-                            room.setCurrent(new Current(current.entry(), nowSec, current.elapsedMs(), true, current.limitSec()));
-                    }
-                    case "pause" -> {
-                        if (current.running()) {
-                            int addMs = (int) ((nowSec - current.startedAtSec()) * 1000);
-                            room.setCurrent(new Current(current.entry(), current.startedAtSec(),
-                                    current.elapsedMs() + addMs, false, current.limitSec()));
-                        }
-                    }
-                    case "reset" -> room.setCurrent(new Current(current.entry(), nowSec, 0, true, current.limitSec()));
-                }
-            } finally {
-                room.getLock().unlock();
+            switch (ctrl.action().toLowerCase()) {
+                case "start" -> room.startTimer();
+                case "pause" -> room.pauseTimer();
+                case "reset" -> room.resetTimer();
             }
             broadcast(normalizedRoomCode);
         }
@@ -279,16 +339,7 @@ public class MeetingApp {
             Room room = rooms.get(normalizedRoomCode);
             if (room == null) return;
 
-            room.getLock().lock();
-            try {
-                room.setDefaultLimitSec(s);
-                if (room.getCurrent() != null) {
-                    Current current = room.getCurrent();
-                    room.setCurrent(new Current(current.entry(), current.startedAtSec(), current.elapsedMs(), current.running(), s));
-                }
-            } finally {
-                room.getLock().unlock();
-            }
+            room.updateLimit(s);
             broadcast(normalizedRoomCode);
         }
     }
