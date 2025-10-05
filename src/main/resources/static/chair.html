@@ -19,6 +19,19 @@
     </header>
 
     <main class="grid">
+      <!-- Participant Controls (for on-behalf requests) -->
+      <section class="card">
+        <h2>Request to Speak (On Behalf)</h2>
+        <div class="row">
+          <input id="participantName" placeholder="Participant initials or name"/>
+        </div>
+        <div class="row">
+          <button id="btnParticipantRequest" class="primary">✋ Request to Speak</button>
+          <button id="btnParticipantWithdraw" class="ghost">Withdraw Request</button>
+        </div>
+        <div id="participantStatus" class="muted small">Enter participant's name and click Request to Speak.</div>
+      </section>
+
       <!-- Chair controls -->
       <section class="card">
         <h2>Meeting Controls</h2>
@@ -108,6 +121,10 @@
     const elCurName = $('#curName');
     const elSpeakTimer = $('#speakTimer'); const elRemaining = $('#remaining');
     const elMeeting = $('#meetingTimer'); const elLimit = $('#limit');
+    
+    // Participant controls
+    const elParticipantName = $('#participantName');
+    const elParticipantStatus = $('#participantStatus');
 
     // --- State ---
     let client = null;
@@ -196,6 +213,32 @@
     }
 
     // --- Event handlers ---
+    // Participant controls (on-behalf requests)
+    $('#btnParticipantRequest').onclick = () => {
+      const name = elParticipantName.value.trim();
+      if (!name) {
+        elParticipantStatus.textContent = 'Please enter participant name first';
+        elParticipantStatus.className = 'warn small';
+        return;
+      }
+      client?.send(`/app/room/${roomCode}/request`, {}, JSON.stringify({name}));
+      elParticipantStatus.textContent = `✋ Request sent for ${name}`;
+      elParticipantStatus.className = 'muted small';
+    };
+
+    $('#btnParticipantWithdraw').onclick = () => {
+      const name = elParticipantName.value.trim();
+      if (!name) {
+        elParticipantStatus.textContent = 'Please enter participant name first';
+        elParticipantStatus.className = 'warn small';
+        return;
+      }
+      client?.send(`/app/room/${roomCode}/withdraw`, {}, JSON.stringify({name}));
+      elParticipantStatus.textContent = `Request withdrawn for ${name}`;
+      elParticipantStatus.className = 'muted small';
+    };
+
+    // Meeting controls
     $('#btnNext').onclick = () => client?.send(`/app/room/${roomCode}/next`, {}, '{}');
     $('#btnPause').onclick = () => client?.send(`/app/room/${roomCode}/timer`, {}, JSON.stringify({action:'pause'}));
     $('#btnStart').onclick = () => client?.send(`/app/room/${roomCode}/timer`, {}, JSON.stringify({action:'start'}));
