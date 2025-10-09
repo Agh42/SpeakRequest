@@ -260,10 +260,9 @@ public class MeetingApp {
             return roomsByCode.containsKey(roomCode);
         }
 
-        public Room getBySessionId(String sessionId) {
+        public Optional<Room> getBySessionId(String sessionId) {
             return Optional.ofNullable(sessionToRoomCode.get(sessionId))
-                    .map(roomsByCode::get)
-                    .orElse(null);
+                    .map(roomsByCode::get);
         }
 
         public void trackSession(String sessionId, String roomCode) {
@@ -460,12 +459,13 @@ public class MeetingApp {
         @EventListener
         public void handleWebSocketDisconnect(SessionDisconnectEvent event) {
             String sessionId = event.getSessionId();
-            Room room = roomRepository.getBySessionId(sessionId);
             
-            if (room != null && room.isChairSession(sessionId)) {
-                room.releaseChairRole(sessionId);
-                broadcast(room.getRoomCode());
-            }
+            roomRepository.getBySessionId(sessionId)
+                    .filter(room -> room.isChairSession(sessionId))
+                    .ifPresent(room -> {
+                        room.releaseChairRole(sessionId);
+                        broadcast(room.getRoomCode());
+                    });
             
             roomRepository.untrackSession(sessionId);
         }
