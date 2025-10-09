@@ -100,7 +100,9 @@ public class MeetingApp {
         public boolean isChairSession(String sessionId) {
             lock.lock();
             try {
-                return sessionId != null && sessionId.equals(chairSessionId);
+                return Optional.ofNullable(sessionId)
+                        .map(sid -> sid.equals(chairSessionId))
+                        .orElse(false);
             } finally {
                 lock.unlock();
             }
@@ -131,9 +133,9 @@ public class MeetingApp {
         public void releaseChairRole(String sessionId) {
             lock.lock();
             try {
-                if (sessionId != null && sessionId.equals(chairSessionId)) {
-                    chairSessionId = null;
-                }
+                Optional.ofNullable(sessionId)
+                        .filter(sid -> sid.equals(chairSessionId))
+                        .ifPresent(sid -> chairSessionId = null);
             } finally {
                 lock.unlock();
             }
@@ -259,8 +261,9 @@ public class MeetingApp {
         }
 
         public Room getBySessionId(String sessionId) {
-            String roomCode = sessionToRoomCode.get(sessionId);
-            return roomCode != null ? roomsByCode.get(roomCode) : null;
+            return Optional.ofNullable(sessionToRoomCode.get(sessionId))
+                    .map(roomsByCode::get)
+                    .orElse(null);
         }
 
         public void trackSession(String sessionId, String roomCode) {
