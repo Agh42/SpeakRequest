@@ -6,11 +6,13 @@ import lombok.Setter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.messaging.SessionConnectEvent;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import java.time.Instant;
 import java.util.*;
@@ -55,10 +59,11 @@ public class MeetingApp {
     public record SetLimit(int seconds) {}
     public record Join(String name) {}
     public record CreateRoom() {}
+    public record AssumeChair(String participantName) {}
 
     public record Participant(String id, String name, long requestedAt) {}
     public record Current(Participant entry, long startedAtSec, int elapsedMs, boolean running, int limitSec) {}
-    public record State(List<Participant> queue, Current current, long meetingStartSec, int defaultLimitSec, String roomCode) {}
+    public record State(List<Participant> queue, Current current, long meetingStartSec, int defaultLimitSec, String roomCode, boolean chairOccupied) {}
     public record RoomInfo(String roomCode, boolean exists) {}
 
     // ---------------- Room Management ----------------
@@ -69,6 +74,7 @@ public class MeetingApp {
         private final long meetingStartSec = Instant.now().getEpochSecond();
         private int defaultLimitSec = 180; // per-speaker
         private final ReentrantLock lock = new ReentrantLock();
+        private String chairSessionId = null; // Track chair WebSocket session
 
         public Room(String roomCode) {
             this.roomCode = roomCode;
@@ -85,7 +91,40 @@ public class MeetingApp {
         public State snapshot() {
             lock.lock();
             try {
-                return new State(List.copyOf(queue), current, meetingStartSec, defaultLimitSec, roomCode);
+                return new State(List.copyOf(queue), current, meetingStartSec, defaultLimitSec, roomCode, chairSessionId != null);
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        public boolean setChairSession(String sessionId) {
+            lock.lock();
+            try {
+                if (chairSessionId == null) {
+                    chairSessionId = sessionId;
+                    return true;
+                }
+                return false; // Chair already occupied
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        public void clearChairSession(String sessionId) {
+            lock.lock();
+            try {
+                if (sessionId != null && sessionId.equals(chairSessionId)) {
+                    chairSessionId = null;
+                }
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        public boolean isChairOccupied() {
+            lock.lock();
+            try {
+                return chairSessionId != null;
             } finally {
                 lock.unlock();
             }
@@ -199,6 +238,8 @@ public class MeetingApp {
     public static class MeetingController {
         private final SimpMessagingTemplate broker;
         private final ConcurrentHashMap<String, Room> rooms = new ConcurrentHashMap<>();
+        private final ConcurrentHashMap<String, String> sessionToRoom = new ConcurrentHashMap<>(); // sessionId -> roomCode
+        private final ConcurrentHashMap<String, Boolean> sessionIsChair = new ConcurrentHashMap<>(); // sessionId -> isChair
         private final Random random = new Random();
 
         @RestController
@@ -279,9 +320,21 @@ public class MeetingApp {
         }
 
         @MessageMapping("/room/{roomCode}/join")
-        public void join(@DestinationVariable String roomCode, @Payload Join msg) {
+        public void join(@DestinationVariable String roomCode, @Payload Join msg, StompHeaderAccessor headerAccessor) {
             String normalizedRoomCode = normalizeRoomCode(roomCode);
+            String sessionId = headerAccessor.getSessionId();
+            
             getOrCreateRoom(normalizedRoomCode); // Ensure room exists
+            sessionToRoom.put(sessionId, normalizedRoomCode);
+            
+            // Check if this is a chair joining (by checking the name)
+            if ("Chair".equals(msg.name())) {
+                Room room = rooms.get(normalizedRoomCode);
+                if (room != null && room.setChairSession(sessionId)) {
+                    sessionIsChair.put(sessionId, true);
+                }
+            }
+            
             broadcast(normalizedRoomCode);
         }
 
@@ -341,6 +394,49 @@ public class MeetingApp {
 
             room.updateLimit(s);
             broadcast(normalizedRoomCode);
+        }
+
+        @MessageMapping("/room/{roomCode}/assumeChair")
+        public void assumeChair(@DestinationVariable String roomCode, @Payload AssumeChair msg, StompHeaderAccessor headerAccessor) {
+            String normalizedRoomCode = normalizeRoomCode(roomCode);
+            Room room = rooms.get(normalizedRoomCode);
+            if (room == null) return;
+
+            String sessionId = headerAccessor.getSessionId();
+            
+            // Try to set this session as chair
+            if (room.setChairSession(sessionId)) {
+                sessionIsChair.put(sessionId, true);
+                sessionToRoom.put(sessionId, normalizedRoomCode);
+                broadcast(normalizedRoomCode);
+                
+                // Send success response
+                broker.convertAndSend("/topic/room/" + normalizedRoomCode + "/chairAssumed", 
+                    Map.of("success", true, "sessionId", sessionId));
+            } else {
+                // Chair is already occupied, send error
+                broker.convertAndSend("/topic/room/" + normalizedRoomCode + "/chairAssumed", 
+                    Map.of("success", false, "error", "Chair is already occupied"));
+            }
+        }
+
+        @EventListener
+        public void handleWebSocketDisconnect(SessionDisconnectEvent event) {
+            String sessionId = event.getSessionId();
+            Boolean isChair = sessionIsChair.get(sessionId);
+            String roomCode = sessionToRoom.get(sessionId);
+            
+            if (isChair != null && isChair && roomCode != null) {
+                Room room = rooms.get(roomCode);
+                if (room != null) {
+                    room.clearChairSession(sessionId);
+                    broadcast(roomCode);
+                }
+            }
+            
+            // Cleanup
+            sessionIsChair.remove(sessionId);
+            sessionToRoom.remove(sessionId);
         }
     }
 }
