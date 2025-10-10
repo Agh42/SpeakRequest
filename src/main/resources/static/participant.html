@@ -16,6 +16,7 @@
         <span id="roomCodeDisplay" class="room-code">----</span>
       </div>
       <div id="conn" class="pill">Connecting…</div>
+      <div id="chairStatus" class="pill">Chair: Checking…</div>
     </header>
 
     <main class="grid">
@@ -69,6 +70,10 @@
           </div>
           <div id="copyStatus" class="muted small"></div>
         </div>
+        <div class="row" style="margin-top: 15px;">
+          <button id="btnAssumeChair" class="accent" style="display: none;">👤 Assume Chair Role</button>
+        </div>
+        <div id="assumeChairStatus" class="muted small"></div>
       </section>
     </main>
   </div>
@@ -102,6 +107,7 @@
 
     // --- DOM refs ---
     const elConn = $('#conn');
+    const elChairStatus = $('#chairStatus');
     const elStatus = $('#status');
     const elQueue = $('#queue'); const elQCount = $('#qCount');
     const elCurName = $('#curName');
@@ -109,6 +115,8 @@
     const elMeeting = $('#meetingTimer');
 
     const elName = $('#name');
+    const elBtnAssumeChair = $('#btnAssumeChair');
+    const elAssumeChairStatus = $('#assumeChairStatus');
 
     // --- State ---
     let client = null;
@@ -133,6 +141,24 @@
           updateUI(state);
         });
 
+        client.subscribe(`/topic/room/${roomCode}/chairAssumed`, msg => {
+          const response = JSON.parse(msg.body);
+          if (response.success) {
+            elAssumeChairStatus.textContent = '✓ Chair role assumed! Redirecting...';
+            elAssumeChairStatus.className = 'ok small';
+            // Redirect to chair view
+            setTimeout(() => {
+              window.location.href = `/chair.html?room=${roomCode}`;
+            }, 1000);
+          } else {
+            elAssumeChairStatus.textContent = '✗ ' + (response.error || 'Failed to assume chair role');
+            elAssumeChairStatus.className = 'warn small';
+            setTimeout(() => {
+              elAssumeChairStatus.textContent = '';
+            }, 3000);
+          }
+        });
+
         // Join to get initial state
         client.send(`/app/room/${roomCode}/join`, {}, JSON.stringify({name:'Anonymous'}));
       }, () => {
@@ -146,6 +172,19 @@
     function updateUI(state) {
       meetingStart = state.meetingStartSec;
       currentState = state; // Store the current state
+
+      // Update chair status
+      if (state.chairOccupied) {
+        elChairStatus.textContent = 'Chair: Occupied';
+        elChairStatus.classList.remove('ok');
+        elChairStatus.classList.add('warn');
+        elBtnAssumeChair.style.display = 'none';
+      } else {
+        elChairStatus.textContent = 'Chair: Vacant';
+        elChairStatus.classList.remove('warn');
+        elChairStatus.classList.add('ok');
+        elBtnAssumeChair.style.display = 'inline-block';
+      }
 
       // Queue
       elQCount.textContent = state.queue.length;
@@ -250,6 +289,20 @@
       } catch (err) {
         $('#copyStatus').textContent = 'Could not copy to clipboard';
       }
+    };
+
+    // Assume chair role
+    elBtnAssumeChair.onclick = () => {
+      if (!client) {
+        elAssumeChairStatus.textContent = 'Not connected to server';
+        elAssumeChairStatus.className = 'warn small';
+        return;
+      }
+      
+      const participantName = myName || 'Participant';
+      client.send(`/app/room/${roomCode}/assumeChair`, {}, JSON.stringify({participantName}));
+      elAssumeChairStatus.textContent = 'Requesting chair role...';
+      elAssumeChairStatus.className = 'muted small';
     };
 
     // Load name from localStorage

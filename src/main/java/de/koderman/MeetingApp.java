@@ -6,11 +6,13 @@ import lombok.Setter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
+import org.springframework.web.socket.messaging.SessionConnectEvent;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import java.time.Instant;
 import java.util.*;
@@ -55,10 +59,11 @@ public class MeetingApp {
     public record SetLimit(int seconds) {}
     public record Join(String name) {}
     public record CreateRoom() {}
+    public record AssumeChair(String participantName) {}
 
     public record Participant(String id, String name, long requestedAt) {}
     public record Current(Participant entry, long startedAtSec, int elapsedMs, boolean running, int limitSec) {}
-    public record State(List<Participant> queue, Current current, long meetingStartSec, int defaultLimitSec, String roomCode) {}
+    public record State(List<Participant> queue, Current current, long meetingStartSec, int defaultLimitSec, String roomCode, boolean chairOccupied) {}
     public record RoomInfo(String roomCode, boolean exists) {}
 
     // ---------------- Room Management ----------------
@@ -69,6 +74,7 @@ public class MeetingApp {
         private final long meetingStartSec = Instant.now().getEpochSecond();
         private int defaultLimitSec = 180; // per-speaker
         private final ReentrantLock lock = new ReentrantLock();
+        private String chairSessionId = null; // Track chair WebSocket session
 
         public Room(String roomCode) {
             this.roomCode = roomCode;
@@ -85,7 +91,51 @@ public class MeetingApp {
         public State snapshot() {
             lock.lock();
             try {
-                return new State(List.copyOf(queue), current, meetingStartSec, defaultLimitSec, roomCode);
+                return new State(List.copyOf(queue), current, meetingStartSec, defaultLimitSec, roomCode, chairSessionId != null);
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        public boolean isChairSession(String sessionId) {
+            lock.lock();
+            try {
+                return Optional.ofNullable(sessionId)
+                        .map(sid -> sid.equals(chairSessionId))
+                        .orElse(false);
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        public boolean hasChair() {
+            lock.lock();
+            try {
+                return chairSessionId != null;
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        public boolean assumeChairRole(String sessionId) {
+            lock.lock();
+            try {
+                if (chairSessionId == null) {
+                    chairSessionId = sessionId;
+                    return true;
+                }
+                return false; // Chair already occupied
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        public void releaseChairRole(String sessionId) {
+            lock.lock();
+            try {
+                Optional.ofNullable(sessionId)
+                        .filter(sid -> sid.equals(chairSessionId))
+                        .ifPresent(sid -> chairSessionId = null);
             } finally {
                 lock.unlock();
             }
@@ -193,12 +243,43 @@ public class MeetingApp {
         }
     }
 
+    // ---------------- Room Repository ----------------
+    public static class RoomRepository {
+        private final ConcurrentHashMap<String, Room> roomsByCode = new ConcurrentHashMap<>();
+        private final ConcurrentHashMap<String, String> sessionToRoomCode = new ConcurrentHashMap<>();
+
+        public Room getOrCreate(String roomCode) {
+            return roomsByCode.computeIfAbsent(roomCode, Room::new);
+        }
+
+        public Optional<Room> getByCode(String roomCode) {
+            return Optional.ofNullable(roomsByCode.get(roomCode));
+        }
+
+        public boolean exists(String roomCode) {
+            return roomsByCode.containsKey(roomCode);
+        }
+
+        public Optional<Room> getBySessionId(String sessionId) {
+            return Optional.ofNullable(sessionToRoomCode.get(sessionId))
+                    .map(roomsByCode::get);
+        }
+
+        public void trackSession(String sessionId, String roomCode) {
+            sessionToRoomCode.put(sessionId, roomCode);
+        }
+
+        public void untrackSession(String sessionId) {
+            sessionToRoomCode.remove(sessionId);
+        }
+    }
+
     // ---------------- In-memory meeting state ----------------
     @Controller
     @RequiredArgsConstructor
     public static class MeetingController {
         private final SimpMessagingTemplate broker;
-        private final ConcurrentHashMap<String, Room> rooms = new ConcurrentHashMap<>();
+        private final RoomRepository roomRepository = new RoomRepository();
         private final Random random = new Random();
 
         @RestController
@@ -244,12 +325,12 @@ public class MeetingApp {
             String code;
             do {
                 code = generateRoomCode();
-            } while (rooms.containsKey(code));
+            } while (roomRepository.exists(code));
             return code;
         }
 
         private Room getOrCreateRoom(String roomCode) {
-            return rooms.computeIfAbsent(roomCode, Room::new);
+            return roomRepository.getOrCreate(roomCode);
         }
 
         @PostMapping("/api/rooms")
@@ -257,7 +338,7 @@ public class MeetingApp {
         public RoomInfo createRoom() {
             String roomCode = createUniqueRoomCode();
             Room room = new Room(roomCode);
-            rooms.put(roomCode, room);
+            roomRepository.getOrCreate(roomCode);
             return new RoomInfo(roomCode, true);
         }
 
@@ -265,23 +346,32 @@ public class MeetingApp {
         @ResponseBody
         public RoomInfo checkRoom(@PathVariable String roomCode) {
             String normalizedRoomCode = normalizeRoomCode(roomCode);
-            return new RoomInfo(normalizedRoomCode, rooms.containsKey(normalizedRoomCode));
+            return new RoomInfo(normalizedRoomCode, roomRepository.exists(normalizedRoomCode));
         }
 
         private String uid() { return Long.toString(System.nanoTime(), 36); }
 
         private void broadcast(String roomCode) {
-            Room room = rooms.get(roomCode);
-            if (room != null) {
-                State s = room.snapshot();
-                broker.convertAndSend("/topic/room/" + roomCode + "/state", s);
-            }
+            roomRepository.getByCode(roomCode)
+                    .ifPresent(room -> {
+                        State s = room.snapshot();
+                        broker.convertAndSend("/topic/room/" + roomCode + "/state", s);
+                    });
         }
 
         @MessageMapping("/room/{roomCode}/join")
-        public void join(@DestinationVariable String roomCode, @Payload Join msg) {
+        public void join(@DestinationVariable String roomCode, @Payload Join msg, StompHeaderAccessor headerAccessor) {
             String normalizedRoomCode = normalizeRoomCode(roomCode);
-            getOrCreateRoom(normalizedRoomCode); // Ensure room exists
+            String sessionId = headerAccessor.getSessionId();
+            
+            Room room = roomRepository.getOrCreate(normalizedRoomCode);
+            roomRepository.trackSession(sessionId, normalizedRoomCode);
+            
+            // Check if this is a chair joining (by checking the name)
+            if ("Chair".equals(msg.name())) {
+                room.assumeChairRole(sessionId);
+            }
+            
             broadcast(normalizedRoomCode);
         }
 
@@ -290,7 +380,7 @@ public class MeetingApp {
             if (msg == null || msg.name() == null || msg.name().isBlank()) return;
 
             String normalizedRoomCode = normalizeRoomCode(roomCode);
-            Room room = getOrCreateRoom(normalizedRoomCode);
+            Room room = roomRepository.getOrCreate(normalizedRoomCode);
             room.addParticipantToQueue(new Participant(uid(), msg.name().trim(), Instant.now().getEpochSecond()));
             broadcast(normalizedRoomCode);
         }
@@ -299,36 +389,39 @@ public class MeetingApp {
         public void withdraw(@DestinationVariable String roomCode, @Payload Withdraw msg) {
             if (msg == null || msg.name() == null || msg.name().isBlank()) return;
             String normalizedRoomCode = normalizeRoomCode(roomCode);
-            Room room = rooms.get(normalizedRoomCode);
-            if (room == null) return;
-
-            room.withdrawParticipant(msg.name());
-            broadcast(normalizedRoomCode);
+            
+            roomRepository.getByCode(normalizedRoomCode)
+                    .ifPresent(room -> {
+                        room.withdrawParticipant(msg.name());
+                        broadcast(normalizedRoomCode);
+                    });
         }
 
         @MessageMapping("/room/{roomCode}/next")
         public void next(@DestinationVariable String roomCode) {
             String normalizedRoomCode = normalizeRoomCode(roomCode);
-            Room room = rooms.get(normalizedRoomCode);
-            if (room == null) return;
-
-            room.nextParticipant();
-            broadcast(normalizedRoomCode);
+            
+            roomRepository.getByCode(normalizedRoomCode)
+                    .ifPresent(room -> {
+                        room.nextParticipant();
+                        broadcast(normalizedRoomCode);
+                    });
         }
 
         @MessageMapping("/room/{roomCode}/timer")
         public void timer(@DestinationVariable String roomCode, @Payload TimerCtrl ctrl) {
             if (ctrl == null || ctrl.action() == null) return;
             String normalizedRoomCode = normalizeRoomCode(roomCode);
-            Room room = rooms.get(normalizedRoomCode);
-            if (room == null) return;
-
-            switch (ctrl.action().toLowerCase()) {
-                case "start" -> room.startTimer();
-                case "pause" -> room.pauseTimer();
-                case "reset" -> room.resetTimer();
-            }
-            broadcast(normalizedRoomCode);
+            
+            roomRepository.getByCode(normalizedRoomCode)
+                    .ifPresent(room -> {
+                        switch (ctrl.action().toLowerCase()) {
+                            case "start" -> room.startTimer();
+                            case "pause" -> room.pauseTimer();
+                            case "reset" -> room.resetTimer();
+                        }
+                        broadcast(normalizedRoomCode);
+                    });
         }
 
         @MessageMapping("/room/{roomCode}/setLimit")
@@ -336,11 +429,57 @@ public class MeetingApp {
             if (msg == null) return;
             int s = Math.max(10, Math.min(3600, msg.seconds()));
             String normalizedRoomCode = normalizeRoomCode(roomCode);
-            Room room = rooms.get(normalizedRoomCode);
-            if (room == null) return;
+            
+            roomRepository.getByCode(normalizedRoomCode)
+                    .ifPresent(room -> {
+                        room.updateLimit(s);
+                        broadcast(normalizedRoomCode);
+                    });
+        }
 
-            room.updateLimit(s);
-            broadcast(normalizedRoomCode);
+        @MessageMapping("/room/{roomCode}/assumeChair")
+        public void assumeChair(@DestinationVariable String roomCode, @Payload AssumeChair msg, StompHeaderAccessor headerAccessor) {
+            String normalizedRoomCode = normalizeRoomCode(roomCode);
+            
+            roomRepository.getByCode(normalizedRoomCode)
+                    .ifPresentOrElse(
+                            room -> {
+                                String sessionId = headerAccessor.getSessionId();
+                                
+                                // Try to assume chair role - Room entity handles the check
+                                if (room.assumeChairRole(sessionId)) {
+                                    roomRepository.trackSession(sessionId, normalizedRoomCode);
+                                    broadcast(normalizedRoomCode);
+                                    
+                                    // Send success response
+                                    broker.convertAndSend("/topic/room/" + normalizedRoomCode + "/chairAssumed", 
+                                        Map.of("success", true, "sessionId", sessionId));
+                                } else {
+                                    // Chair is already occupied, send error
+                                    broker.convertAndSend("/topic/room/" + normalizedRoomCode + "/chairAssumed", 
+                                        Map.of("success", false, "error", "Chair is already occupied"));
+                                }
+                            },
+                            () -> {
+                                // Room doesn't exist
+                                broker.convertAndSend("/topic/room/" + normalizedRoomCode + "/chairAssumed", 
+                                    Map.of("success", false, "error", "Room does not exist"));
+                            }
+                    );
+        }
+
+        @EventListener
+        public void handleWebSocketDisconnect(SessionDisconnectEvent event) {
+            String sessionId = event.getSessionId();
+            
+            roomRepository.getBySessionId(sessionId)
+                    .filter(room -> room.isChairSession(sessionId))
+                    .ifPresent(room -> {
+                        room.releaseChairRole(sessionId);
+                        broadcast(room.getRoomCode());
+                    });
+            
+            roomRepository.untrackSession(sessionId);
         }
     }
 }
