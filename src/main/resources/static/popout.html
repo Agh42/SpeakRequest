@@ -40,8 +40,23 @@
       font-size: 1.2rem;
       margin-top: 10px;
     }
+    .qr-float {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #ffffff;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+    .qr-float canvas {
+      display: block;
+    }
   </style>
   <script src="stomp.min.js"></script>
+  <script src="qrcode.min.js"></script>
 </head>
 <body>
   <div class="room-code" id="roomCodeDisplay">Room: ----</div>
@@ -64,6 +79,8 @@
     <div id="queueList" class="queue-list">--</div>
   </div>
 
+  <div id="qrContainer" class="qr-float"></div>
+
   <script>
     // Get room code from URL parameter
     const urlParams = new URLSearchParams(window.location.search);
@@ -76,6 +93,23 @@
       // Set join instructions with current browser URL
       const baseUrl = window.location.origin;
       document.getElementById('joinUrl').textContent = `${baseUrl}`;
+      
+      // Generate QR code for participant join link
+      const participantJoinUrl = `${baseUrl}/participant.html?room=${roomCode}`;
+      QRCode.toCanvas(participantJoinUrl, {
+        width: 150,
+        margin: 1,
+        color: {
+          dark: '#000000',
+          light: '#ffffff'
+        }
+      }, function (error, canvas) {
+        if (error) {
+          console.error('QR code generation error:', error);
+        } else {
+          document.getElementById('qrContainer').appendChild(canvas);
+        }
+      });
     }
 
     // --- Utilities ---
