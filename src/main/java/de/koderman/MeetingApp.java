@@ -59,7 +59,7 @@ public class MeetingApp {
     public record SetLimit(int seconds) {}
     public record Join(String name) {}
     public record CreateRoom() {}
-    public record AssumeChair(String participantName) {}
+    public record AssumeChair(String participantName, String requestId) {}
 
     public record Participant(String id, String name, long requestedAt) {}
     public record Current(Participant entry, long startedAtSec, int elapsedMs, boolean running, int limitSec) {}
@@ -451,19 +451,16 @@ public class MeetingApp {
                                     roomRepository.trackSession(sessionId, normalizedRoomCode);
                                     broadcast(normalizedRoomCode);
                                     
-                                    // Send success response
+                                    // Send success response back on the general topic but include request ID
                                     broker.convertAndSend("/topic/room/" + normalizedRoomCode + "/chairAssumed", 
-                                        Map.of("success", true, "sessionId", sessionId));
+                                        Map.of("success", true, "requestId", msg.requestId()));
                                 } else {
-                                    // Chair is already occupied, send error
-                                    broker.convertAndSend("/topic/room/" + normalizedRoomCode + "/chairAssumed", 
-                                        Map.of("success", false, "error", "Chair is already occupied"));
+                                    // Chair is already occupied, fail silently - just broadcast state update
+                                    broadcast(normalizedRoomCode);
                                 }
                             },
                             () -> {
-                                // Room doesn't exist
-                                broker.convertAndSend("/topic/room/" + normalizedRoomCode + "/chairAssumed", 
-                                    Map.of("success", false, "error", "Room does not exist"));
+                                // Room doesn't exist, fail silently
                             }
                     );
         }

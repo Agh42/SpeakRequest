@@ -16,8 +16,13 @@
         <span id="roomCodeDisplay" class="room-code">----</span>
       </div>
       <div id="conn" class="pill">Connecting…</div>
-      <div id="chairStatus" class="pill">Chair: Checking…</div>
+      <div class="chair-section">
+        <div id="chairStatus" class="pill">Chair: Checking…</div>
+        <button id="btnAssumeChair" class="floating-assume-chair" style="display: none;">👤 Assume Chair</button>
+      </div>
     </header>
+
+    <div id="assumeChairStatus" class="muted small assume-chair-status"></div>
 
     <main class="grid">
       <!-- Participant Controls -->
@@ -70,9 +75,6 @@
           </div>
           <div id="copyStatus" class="muted small"></div>
         </div>
-        <div class="row" style="margin-top: 15px;">
-          <button id="btnAssumeChair" class="accent" style="display: none;">👤 Assume Chair Role</button>
-        </div>
         <div id="assumeChairStatus" class="muted small"></div>
       </section>
     </main>
@@ -124,6 +126,7 @@
     let timerInterval = null;
     let myName = '';
     let currentState = null; // Add this to store the full state
+    let pendingChairRequestId = null; // Track our pending chair request
 
     // --- WebSocket ---
     function connect() {
@@ -144,18 +147,16 @@
         client.subscribe(`/topic/room/${roomCode}/chairAssumed`, msg => {
           const response = JSON.parse(msg.body);
           if (response.success) {
-            elAssumeChairStatus.textContent = '✓ Chair role assumed! Redirecting...';
-            elAssumeChairStatus.className = 'ok small';
-            // Redirect to chair view
-            setTimeout(() => {
-              window.location.href = `/chair.html?room=${roomCode}`;
-            }, 1000);
-          } else {
-            elAssumeChairStatus.textContent = '✗ ' + (response.error || 'Failed to assume chair role');
-            elAssumeChairStatus.className = 'warn small';
-            setTimeout(() => {
-              elAssumeChairStatus.textContent = '';
-            }, 3000);
+            // Check if this response is for our request
+            if (response.requestId === pendingChairRequestId) {
+              elAssumeChairStatus.textContent = '✓ Chair role assumed! Redirecting...';
+              elAssumeChairStatus.className = 'ok small';
+              pendingChairRequestId = null; // Clear the pending request
+              // Redirect to chair view
+              setTimeout(() => {
+                window.location.href = `/chair.html?room=${roomCode}`;
+              }, 1000);
+            }
           }
         });
 
@@ -183,7 +184,7 @@
         elChairStatus.textContent = 'Chair: Vacant';
         elChairStatus.classList.remove('warn');
         elChairStatus.classList.add('ok');
-        elBtnAssumeChair.style.display = 'inline-block';
+        elBtnAssumeChair.style.display = 'block';
       }
 
       // Queue
@@ -300,9 +301,20 @@
       }
       
       const participantName = myName || 'Participant';
-      client.send(`/app/room/${roomCode}/assumeChair`, {}, JSON.stringify({participantName}));
+      const requestId = Math.random().toString(36).substr(2, 9); // Generate unique request ID
+      pendingChairRequestId = requestId; // Store it for later comparison
+      
+      client.send(`/app/room/${roomCode}/assumeChair`, {}, JSON.stringify({participantName, requestId}));
       elAssumeChairStatus.textContent = 'Requesting chair role...';
       elAssumeChairStatus.className = 'muted small';
+      
+      // Clear the pending request after 5 seconds if no response
+      setTimeout(() => {
+        if (pendingChairRequestId === requestId) {
+          pendingChairRequestId = null;
+          elAssumeChairStatus.textContent = '';
+        }
+      }, 5000);
     };
 
     // Load name from localStorage

@@ -73,3 +73,69 @@ button{cursor:pointer}
 .room-code-large {
   margin: 16px 0;
 }
+
+/* Chair section and floating assume chair button */
+.chair-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+}
+
+.floating-assume-chair {
+  background: linear-gradient(135deg, rgba(96,165,250,.2), rgba(96,165,250,.1));
+  border: 2px solid rgba(96,165,250,.7);
+  color: var(--accent);
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  animation: gentle-pulse 2s ease-in-out infinite;
+  box-shadow: 0 4px 12px rgba(96,165,250,.2);
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+.floating-assume-chair:hover {
+  background: linear-gradient(135deg, rgba(96,165,250,.3), rgba(96,165,250,.15));
+  border-color: rgba(96,165,250,.9);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(96,165,250,.3);
+}
+
+.floating-assume-chair:active {
+  transform: translateY(0);
+}
+
+@keyframes gentle-pulse {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba(96,165,250,.2);
+  }
+  50% {
+    box-shadow: 0 4px 16px rgba(96,165,250,.4);
+  }
+}
+
+.assume-chair-status {
+  text-align: center;
+  margin: 8px 0;
+  min-height: 1.2rem;
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+  
+  .chair-section {
+    justify-content: center;
+  }
+  
+  .floating-assume-chair {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+  }
+}
