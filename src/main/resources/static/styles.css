@@ -11,7 +11,7 @@ body{
 }
 .wrap{max-width:1000px;margin:0 auto;padding:20px}
 .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-.header-logo{height:40px;margin-right:12px;vertical-align:middle}
+.header-logo{height:70px;cursor:pointer}
 .header-with-logo{display:flex;align-items:center}
 .pill{background:#0c1324;border:1px solid var(--border);padding:.35rem .7rem;border-radius:999px;color:var(--muted)}
 .pill.ok{color:#bbf7d0;border-color:rgba(16,185,129,.6)}

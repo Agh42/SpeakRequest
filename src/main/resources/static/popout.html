@@ -30,7 +30,7 @@
     .timer{font-variant-numeric:tabular-nums;font-weight:800;font-size:2.4rem}
     .timer.ok{color:#bbf7d0}.timer.warn{color:#fde68a}.timer.danger{color:#fecaca}
     .status{color:var(--accent); font-weight:600;}
-    .logo{position:fixed;top:10px;left:10px;height:32px;z-index:1001;}
+    .logo{position:fixed;top:10px;left:10px;height:60px;z-index:1001;cursor:pointer;}
     .conn-status{position:fixed;top:10px;right:10px;background:#0c1324;border:1px solid var(--border);padding:.35rem .7rem;border-radius:999px;color:var(--muted);font-size:0.8rem;}
     .conn-status.ok{color:#bbf7d0;border-color:rgba(16,185,129,.6)}
     .room-code{position:fixed;top:50px;left:10px;background:#0c1324;border:1px solid var(--border);padding:.35rem .7rem;border-radius:999px;color:var(--accent);font-size:0.8rem;font-weight:bold;}
@@ -62,7 +62,9 @@
   <script src="qrcode.min.js"></script>
 </head>
 <body>
-  <img src="img/logo-header.png" alt="SpeakRequest Logo" class="logo"/>
+  <a href="/landing.html">
+    <img src="img/logo-header-large.png" alt="SpeakRequest Logo" class="logo"/>
+  </a>
   <div class="room-code" id="roomCodeDisplay">Room: ----</div>
   <div class="conn-status" id="conn">Connecting…</div>
 
