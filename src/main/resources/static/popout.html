@@ -57,6 +57,7 @@
   </style>
   <script src="stomp.min.js"></script>
   <script src="qrcode.min.js"></script>
+  <script src="purify.min.js"></script>
 </head>
 <body>
   <div class="room-code" id="roomCodeDisplay">Room: ----</div>
@@ -171,8 +172,8 @@
       // Current speaker
       if (state.current) {
         const c = state.current;
-        elCurrentSpeaker.textContent = c.entry.name;
-        elCurrentRole.textContent = c.entry.role;
+        elCurrentSpeaker.textContent = DOMPurify.sanitize(c.entry.name);
+        elCurrentRole.textContent = DOMPurify.sanitize(c.entry.role);
       } else {
         elCurrentSpeaker.textContent = '--';
         elCurrentRole.textContent = '--';
@@ -182,7 +183,7 @@
       elQueueCount.textContent = state.queue.length;
       if (state.queue.length > 0) {
         const queueHtml = state.queue.map((p, index) =>
-          `<div style="margin-bottom: 5px;">${index + 1}. ${p.name}</div>`
+          `<div style="margin-bottom: 5px;">${index + 1}. ${DOMPurify.sanitize(p.name)}</div>`
         ).join('');
         elQueueList.innerHTML = queueHtml;
       } else {

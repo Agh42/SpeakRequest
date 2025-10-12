@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <link rel="stylesheet" href="styles.css"/>
   <script src="stomp.min.js"></script>
+  <script src="purify.min.js"></script>
 </head>
 <body>
   <div class="wrap">
@@ -194,7 +195,7 @@
       let myPosition = -1;
       state.queue.forEach((p, i) => {
         const li = document.createElement('li');
-        li.innerHTML = `<span class="name">${p.name}</span>`;
+        li.innerHTML = `<span class="name">${DOMPurify.sanitize(p.name)}</span>`;
 
         // Highlight my entry
         if (p.name.toLowerCase() === myName.toLowerCase()) {
@@ -223,7 +224,7 @@
       // Current speaker
       if (state.current) {
         const c = state.current;
-        elCurName.textContent = c.entry.name;
+        elCurName.textContent = DOMPurify.sanitize(c.entry.name);
       } else {
         elCurName.textContent = '--';
       }
