@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <title>SpeakRequest - Chair View</title>
+  <title>SPEEK.NOW - Chair View</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <link rel="stylesheet" href="styles.css"/>
   <script src="stomp.min.js"></script>
@@ -10,7 +10,7 @@
 <body>
   <div class="wrap">
     <header class="header">
-      <h1><a href="/landing.html" style="text-decoration: none; color: inherit;">SpeakRequest</a> - Chair View</h1>
+      <h1><a href="/landing.html" style="text-decoration: none; color: inherit;">SPEEK.NOW</a> - Chair View</h1>
       <div class="room-code-display">
         <span class="muted small">Room Code:</span>
         <span id="roomCodeDisplay" class="room-code">----</span>
@@ -136,7 +136,8 @@
 
     // --- WebSocket ---
     function connect() {
-      const sock = new WebSocket(`ws://${location.host}/ws`);
+      const scheme = location.protocol === 'https:' ? 'wss' : 'ws';
+      const sock = new WebSocket(`${scheme}://${location.host}/ws`);
       client = Stomp.over(sock);
       client.debug = () => {}; // silence debug
 

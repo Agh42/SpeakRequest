@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <title>Speaker Display - SpeakRequest</title>
+  <title>Speaker Display - SPEEK.NOW</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <style>
     :root{
@@ -143,8 +143,8 @@
     // --- WebSocket ---
     function connect() {
       if (!roomCode) return;
-
-      const sock = new WebSocket(`ws://${location.host}/ws`);
+      const scheme = location.protocol === 'https:' ? 'wss' : 'ws';
+      const sock = new WebSocket(`${scheme}://${location.host}/ws`);
       client = Stomp.over(sock);
       client.debug = () => {}; // silence debug
 
