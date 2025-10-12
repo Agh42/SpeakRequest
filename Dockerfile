@@ -17,6 +17,5 @@ WORKDIR /app
 # Copy only the jar from builder
 COPY --from=builder /app/build/libs/*.jar app.jar
 
-EXPOSE 80
-# Run Spring Boot on port 80 inside the container
-ENTRYPOINT ["java","-Dserver.port=80","-jar","app.jar"]
+EXPOSE 8080
+ENTRYPOINT ["java","-jar","app.jar"]
