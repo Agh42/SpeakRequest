@@ -25,6 +25,11 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -53,13 +58,39 @@ public class MeetingApp {
     }
 
     // ---------------- DTOs ----------------
-    public record RequestSpeak(String name) {}
-    public record Withdraw(String name) {}
+    public record RequestSpeak(
+        @NotBlank(message = "Name is required")
+        @Size(max = 30, message = "Name must not exceed 30 characters")
+        @Pattern(regexp = "^[a-zA-Z0-9 '-]+$", message = "Name can only contain letters, numbers, spaces, hyphens, and apostrophes")
+        String name
+    ) {}
+    
+    public record Withdraw(
+        @NotBlank(message = "Name is required")
+        @Size(max = 30, message = "Name must not exceed 30 characters")
+        @Pattern(regexp = "^[a-zA-Z0-9 '-]+$", message = "Name can only contain letters, numbers, spaces, hyphens, and apostrophes")
+        String name
+    ) {}
+    
     public record TimerCtrl(String action) {} // "start" | "pause" | "reset"
     public record SetLimit(int seconds) {}
-    public record Join(String name) {}
+    
+    public record Join(
+        @NotBlank(message = "Name is required")
+        @Size(max = 30, message = "Name must not exceed 30 characters")
+        @Pattern(regexp = "^[a-zA-Z0-9 '-]+$", message = "Name can only contain letters, numbers, spaces, hyphens, and apostrophes")
+        String name
+    ) {}
+    
     public record CreateRoom() {}
-    public record AssumeChair(String participantName, String requestId) {}
+    
+    public record AssumeChair(
+        @NotBlank(message = "Participant name is required")
+        @Size(max = 30, message = "Participant name must not exceed 30 characters")
+        @Pattern(regexp = "^[a-zA-Z0-9 '-]+$", message = "Participant name can only contain letters, numbers, spaces, hyphens, and apostrophes")
+        String participantName,
+        String requestId
+    ) {}
 
     public record Participant(String id, String name, long requestedAt) {}
     public record Current(Participant entry, long startedAtSec, int elapsedMs, boolean running, int limitSec) {}
@@ -360,7 +391,7 @@ public class MeetingApp {
         }
 
         @MessageMapping("/room/{roomCode}/join")
-        public void join(@DestinationVariable String roomCode, @Payload Join msg, StompHeaderAccessor headerAccessor) {
+        public void join(@DestinationVariable String roomCode, @Valid @Payload Join msg, StompHeaderAccessor headerAccessor) {
             String normalizedRoomCode = normalizeRoomCode(roomCode);
             String sessionId = headerAccessor.getSessionId();
             
@@ -376,7 +407,7 @@ public class MeetingApp {
         }
 
         @MessageMapping("/room/{roomCode}/request")
-        public void request(@DestinationVariable String roomCode, @Payload RequestSpeak msg) {
+        public void request(@DestinationVariable String roomCode, @Valid @Payload RequestSpeak msg) {
             if (msg == null || msg.name() == null || msg.name().isBlank()) return;
 
             String normalizedRoomCode = normalizeRoomCode(roomCode);
@@ -386,7 +417,7 @@ public class MeetingApp {
         }
 
         @MessageMapping("/room/{roomCode}/withdraw")
-        public void withdraw(@DestinationVariable String roomCode, @Payload Withdraw msg) {
+        public void withdraw(@DestinationVariable String roomCode, @Valid @Payload Withdraw msg) {
             if (msg == null || msg.name() == null || msg.name().isBlank()) return;
             String normalizedRoomCode = normalizeRoomCode(roomCode);
             
@@ -438,7 +469,7 @@ public class MeetingApp {
         }
 
         @MessageMapping("/room/{roomCode}/assumeChair")
-        public void assumeChair(@DestinationVariable String roomCode, @Payload AssumeChair msg, StompHeaderAccessor headerAccessor) {
+        public void assumeChair(@DestinationVariable String roomCode, @Valid @Payload AssumeChair msg, StompHeaderAccessor headerAccessor) {
             String normalizedRoomCode = normalizeRoomCode(roomCode);
             
             roomRepository.getByCode(normalizedRoomCode)
