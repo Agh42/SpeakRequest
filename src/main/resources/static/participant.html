@@ -283,6 +283,36 @@
       client?.send(`/app/room/${roomCode}/withdraw`, {}, JSON.stringify({name}));
     };
 
+    // Enter key handler for name input
+    elName.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const name = elName.value.trim();
+        if (!name) {
+          elStatus.textContent = 'Please enter your name first';
+          elStatus.className = 'warn small';
+          return;
+        }
+        
+        // Check if participant is already in queue, if so withdraw, otherwise request
+        const inQueue = currentState && currentState.queue.some(p => p.name.toLowerCase() === name.toLowerCase());
+        if (inQueue) {
+          $('#btnWithdraw').click();
+        } else {
+          $('#btnRequest').click();
+        }
+      }
+    });
+
+    // Select all text when clicking in the input
+    elName.addEventListener('click', () => {
+      elName.select();
+    });
+
+    // Select all text when input gains focus
+    elName.addEventListener('focus', () => {
+      elName.select();
+    });
+
     // Copy room code
     $('#btnCopyCode').onclick = async () => {
       try {

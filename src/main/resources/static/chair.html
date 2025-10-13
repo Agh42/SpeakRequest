@@ -242,6 +242,36 @@
       elParticipantStatus.className = 'muted small';
     };
 
+    // Enter key handler for participant name input
+    elParticipantName.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const name = elParticipantName.value.trim();
+        if (!name) {
+          elParticipantStatus.textContent = 'Please enter participant name first';
+          elParticipantStatus.className = 'warn small';
+          return;
+        }
+        
+        // Check if participant is already in queue, if so withdraw, otherwise request
+        const inQueue = currentState && currentState.queue.some(p => p.name.toLowerCase() === name.toLowerCase());
+        if (inQueue) {
+          $('#btnParticipantWithdraw').click();
+        } else {
+          $('#btnParticipantRequest').click();
+        }
+      }
+    });
+
+    // Select all text when clicking in the input
+    elParticipantName.addEventListener('click', () => {
+      elParticipantName.select();
+    });
+
+    // Select all text when input gains focus
+    elParticipantName.addEventListener('focus', () => {
+      elParticipantName.select();
+    });
+
     // Meeting controls
     $('#btnNext').onclick = () => client?.send(`/app/room/${roomCode}/next`, {}, '{}');
     $('#btnPause').onclick = () => client?.send(`/app/room/${roomCode}/timer`, {}, JSON.stringify({action:'pause'}));
