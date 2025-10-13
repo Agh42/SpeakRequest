@@ -1,0 +1,18 @@
+# Ignore local build and Gradle caches
+.gradle
+build
+out
+
+# Git and IDE files
+.git
+.gitignore
+.idea
+.vscode
+
+# OS files
+.DS_Store
+
+# Logs
+*.log
+
+# Dockerfile itself is fine to include
