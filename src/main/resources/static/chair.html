@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <link rel="stylesheet" href="styles.css"/>
   <script src="stomp.min.js"></script>
+  <script src="purify.min.js"></script>
 </head>
 <body>
   <div class="wrap">
@@ -171,14 +172,14 @@
       elQueue.innerHTML = '';
       state.queue.forEach((p, i) => {
         const li = document.createElement('li');
-        li.innerHTML = `<span class="name">${p.name}</span>`;
+        li.innerHTML = `<span class="name">${DOMPurify.sanitize(p.name)}</span>`;
         elQueue.appendChild(li);
       });
 
       // Current speaker
       if (state.current) {
         const c = state.current;
-        elCurName.textContent = c.entry.name;
+        elCurName.textContent = DOMPurify.sanitize(c.entry.name);
       } else {
         elCurName.textContent = '--';
       }
@@ -240,6 +241,36 @@
       elParticipantStatus.textContent = `Request withdrawn for ${name}`;
       elParticipantStatus.className = 'muted small';
     };
+
+    // Enter key handler for participant name input
+    elParticipantName.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const name = elParticipantName.value.trim();
+        if (!name) {
+          elParticipantStatus.textContent = 'Please enter participant name first';
+          elParticipantStatus.className = 'warn small';
+          return;
+        }
+        
+        // Check if participant is already in queue, if so withdraw, otherwise request
+        const inQueue = currentState && currentState.queue.some(p => p.name.toLowerCase() === name.toLowerCase());
+        if (inQueue) {
+          $('#btnParticipantWithdraw').click();
+        } else {
+          $('#btnParticipantRequest').click();
+        }
+      }
+    });
+
+    // Select all text when clicking in the input
+    elParticipantName.addEventListener('click', () => {
+      elParticipantName.select();
+    });
+
+    // Select all text when input gains focus
+    elParticipantName.addEventListener('focus', () => {
+      elParticipantName.select();
+    });
 
     // Meeting controls
     $('#btnNext').onclick = () => client?.send(`/app/room/${roomCode}/next`, {}, '{}');

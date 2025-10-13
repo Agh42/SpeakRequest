@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <link rel="stylesheet" href="styles.css"/>
   <script src="stomp.min.js"></script>
+  <script src="purify.min.js"></script>
 </head>
 <body>
   <div class="wrap">
@@ -194,7 +195,7 @@
       let myPosition = -1;
       state.queue.forEach((p, i) => {
         const li = document.createElement('li');
-        li.innerHTML = `<span class="name">${p.name}</span>`;
+        li.innerHTML = `<span class="name">${DOMPurify.sanitize(p.name)}</span>`;
 
         // Highlight my entry
         if (p.name.toLowerCase() === myName.toLowerCase()) {
@@ -223,7 +224,7 @@
       // Current speaker
       if (state.current) {
         const c = state.current;
-        elCurName.textContent = c.entry.name;
+        elCurName.textContent = DOMPurify.sanitize(c.entry.name);
       } else {
         elCurName.textContent = '--';
       }
@@ -281,6 +282,36 @@
       }
       client?.send(`/app/room/${roomCode}/withdraw`, {}, JSON.stringify({name}));
     };
+
+    // Enter key handler for name input
+    elName.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const name = elName.value.trim();
+        if (!name) {
+          elStatus.textContent = 'Please enter your name first';
+          elStatus.className = 'warn small';
+          return;
+        }
+        
+        // Check if participant is already in queue, if so withdraw, otherwise request
+        const inQueue = currentState && currentState.queue.some(p => p.name.toLowerCase() === name.toLowerCase());
+        if (inQueue) {
+          $('#btnWithdraw').click();
+        } else {
+          $('#btnRequest').click();
+        }
+      }
+    });
+
+    // Select all text when clicking in the input
+    elName.addEventListener('click', () => {
+      elName.select();
+    });
+
+    // Select all text when input gains focus
+    elName.addEventListener('focus', () => {
+      elName.select();
+    });
 
     // Copy room code
     $('#btnCopyCode').onclick = async () => {
