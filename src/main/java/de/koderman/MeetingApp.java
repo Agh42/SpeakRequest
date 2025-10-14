@@ -455,11 +455,35 @@ public class MeetingApp {
 
     // ---------------- Room Repository ----------------
     public static class RoomRepository {
+        private static final int MAX_ROOMS = 500000;
         private final ConcurrentHashMap<String, Room> roomsByCode = new ConcurrentHashMap<>();
         private final ConcurrentHashMap<String, String> sessionToRoomCode = new ConcurrentHashMap<>();
 
         public Room getOrCreate(String roomCode) {
-            return roomsByCode.computeIfAbsent(roomCode, Room::new);
+            return roomsByCode.computeIfAbsent(roomCode, code -> {
+                // Before creating a new room, check if we've reached the limit
+                if (roomsByCode.size() >= MAX_ROOMS) {
+                    removeOldestRoom();
+                }
+                return new Room(code);
+            });
+        }
+        
+        private void removeOldestRoom() {
+            // Find the room with the oldest meetingStartSec
+            Room oldestRoom = roomsByCode.values().stream()
+                    .min(Comparator.comparingLong(Room::getMeetingStartSec))
+                    .orElse(null);
+            
+            if (oldestRoom != null) {
+                String oldestRoomCode = oldestRoom.getRoomCode();
+                roomsByCode.remove(oldestRoomCode);
+                
+                // Clean up session tracking for the removed room
+                sessionToRoomCode.entrySet().removeIf(entry -> 
+                    oldestRoomCode.equals(entry.getValue())
+                );
+            }
         }
 
         public Optional<Room> getByCode(String roomCode) {
