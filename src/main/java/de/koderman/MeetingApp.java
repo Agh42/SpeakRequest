@@ -458,26 +458,49 @@ public class MeetingApp {
         private static final int MAX_ROOMS = 500000;
         private final ConcurrentHashMap<String, Room> roomsByCode = new ConcurrentHashMap<>();
         private final ConcurrentHashMap<String, String> sessionToRoomCode = new ConcurrentHashMap<>();
+        // TreeMap sorted by creation timestamp for efficient oldest room lookup
+        private final TreeMap<Long, Room> roomsByTimestamp = new TreeMap<>();
+        private final Object roomCreationLock = new Object();
 
         public Room getOrCreate(String roomCode) {
-            return roomsByCode.computeIfAbsent(roomCode, code -> {
+            // First check if room already exists (fast path, no lock needed)
+            Room existingRoom = roomsByCode.get(roomCode);
+            if (existingRoom != null) {
+                return existingRoom;
+            }
+            
+            // Room doesn't exist, need to create it (synchronized)
+            synchronized (roomCreationLock) {
+                // Double-check after acquiring lock
+                existingRoom = roomsByCode.get(roomCode);
+                if (existingRoom != null) {
+                    return existingRoom;
+                }
+                
                 // Before creating a new room, check if we've reached the limit
                 if (roomsByCode.size() >= MAX_ROOMS) {
                     removeOldestRoom();
                 }
-                return new Room(code);
-            });
+                
+                Room newRoom = new Room(roomCode);
+                roomsByCode.put(roomCode, newRoom);
+                roomsByTimestamp.put(newRoom.getMeetingStartSec(), newRoom);
+                return newRoom;
+            }
         }
         
         private void removeOldestRoom() {
-            // Find the room with the oldest meetingStartSec
-            Room oldestRoom = roomsByCode.values().stream()
-                    .min(Comparator.comparingLong(Room::getMeetingStartSec))
-                    .orElse(null);
+            // Must be called within synchronized block
+            // Get the first (oldest) entry from the TreeMap
+            Map.Entry<Long, Room> oldestEntry = roomsByTimestamp.firstEntry();
             
-            if (oldestRoom != null) {
+            if (oldestEntry != null) {
+                Room oldestRoom = oldestEntry.getValue();
                 String oldestRoomCode = oldestRoom.getRoomCode();
+                
+                // Remove from both maps
                 roomsByCode.remove(oldestRoomCode);
+                roomsByTimestamp.remove(oldestEntry.getKey());
                 
                 // Clean up session tracking for the removed room
                 sessionToRoomCode.entrySet().removeIf(entry -> 
