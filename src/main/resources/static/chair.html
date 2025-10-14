@@ -88,6 +88,60 @@
           <div id="copyStatus" class="muted small"></div>
         </div>
       </section>
+
+      <!-- Start Poll -->
+      <section class="card">
+        <h2>Start Poll</h2>
+        
+        <!-- Poll selection screen -->
+        <div id="pollSelection" style="display: block;">
+          <div class="muted small" style="margin-bottom: 8px;">Select a poll type to start polling:</div>
+          <div class="row">
+            <button id="btnYesNoPoll" class="accent">📊 Yes/No Poll</button>
+          </div>
+        </div>
+        
+        <!-- Poll creation screen -->
+        <div id="pollCreation" style="display: none;">
+          <div class="row">
+            <input id="pollQuestion" placeholder="Enter poll question" maxlength="200" style="flex: 1;"/>
+          </div>
+          <div class="row">
+            <button id="btnStartPolling" class="primary">▶️ Start Polling</button>
+            <button id="btnCancelPoll" class="ghost">✖ Cancel</button>
+          </div>
+          <div id="pollCreationStatus" class="muted small"></div>
+        </div>
+        
+        <!-- Active poll screen -->
+        <div id="pollActive" style="display: none;">
+          <div class="muted small">Poll Question:</div>
+          <div id="activePollQuestion" class="big" style="font-size: 1.1rem; margin: 8px 0;"></div>
+          <div class="muted small">Votes received: <span id="pollVoteCount" style="font-weight: bold;">0</span></div>
+          <div class="row" style="margin-top: 12px;">
+            <button id="btnEndPoll" class="accent">📊 End Poll and Show Results</button>
+          </div>
+        </div>
+        
+        <!-- Poll results screen -->
+        <div id="pollResults" style="display: none;">
+          <div class="muted small">Last Poll Results:</div>
+          <div id="pollResultsQuestion" style="font-weight: bold; margin: 8px 0;"></div>
+          <div id="pollResultsData" style="margin: 8px 0;"></div>
+          <div class="row" style="margin-top: 12px;">
+            <button id="btnContinueDiscussion" class="primary">💬 Continue Discussion</button>
+            <button id="btnNewPoll" class="accent">📊 Start New Poll</button>
+          </div>
+        </div>
+        
+        <!-- No polls message -->
+        <div id="pollNone" style="display: none;">
+          <div class="muted small">No polls conducted yet</div>
+          <div class="row" style="margin-top: 12px;">
+            <button id="btnStartFirstPoll" class="accent">📊 Start Poll</button>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -128,6 +182,19 @@
     // Participant controls
     const elParticipantName = $('#participantName');
     const elParticipantStatus = $('#participantStatus');
+    
+    // Poll controls
+    const elPollSelection = $('#pollSelection');
+    const elPollCreation = $('#pollCreation');
+    const elPollActive = $('#pollActive');
+    const elPollResults = $('#pollResults');
+    const elPollNone = $('#pollNone');
+    const elPollQuestion = $('#pollQuestion');
+    const elActivePollQuestion = $('#activePollQuestion');
+    const elPollVoteCount = $('#pollVoteCount');
+    const elPollResultsQuestion = $('#pollResultsQuestion');
+    const elPollResultsData = $('#pollResultsData');
+    const elPollCreationStatus = $('#pollCreationStatus');
 
     // --- State ---
     let client = null;
@@ -185,6 +252,61 @@
       }
 
       updateTimers(state);
+      updatePollUI(state);
+    }
+    
+    function updatePollUI(state) {
+      // Hide all poll screens first
+      elPollSelection.style.display = 'none';
+      elPollCreation.style.display = 'none';
+      elPollActive.style.display = 'none';
+      elPollResults.style.display = 'none';
+      elPollNone.style.display = 'none';
+      
+      if (!state.pollState) {
+        // No poll state - show "no polls conducted yet"
+        elPollNone.style.display = 'block';
+        return;
+      }
+      
+      const poll = state.pollState;
+      
+      if (poll.status === 'ACTIVE') {
+        // Active poll
+        elPollActive.style.display = 'block';
+        elActivePollQuestion.textContent = DOMPurify.sanitize(poll.question);
+        elPollVoteCount.textContent = poll.totalVotes || 0;
+      } else if (poll.status === 'ENDED') {
+        // Poll ended - show results
+        elPollResults.style.display = 'block';
+        elPollResultsQuestion.textContent = DOMPurify.sanitize(poll.question);
+        
+        // Display results
+        let resultsHTML = '<div style="margin-top: 8px;">';
+        for (const [option, count] of Object.entries(poll.results)) {
+          const percentage = poll.totalVotes > 0 ? Math.round((count / poll.totalVotes) * 100) : 0;
+          resultsHTML += `<div style="margin: 4px 0;"><strong>${option}:</strong> ${count} (${percentage}%)</div>`;
+        }
+        resultsHTML += `<div style="margin-top: 8px;" class="muted small">Total votes: ${poll.totalVotes}</div>`;
+        resultsHTML += '</div>';
+        elPollResultsData.innerHTML = resultsHTML;
+      } else if (poll.lastResults) {
+        // No active poll but show last results
+        elPollResults.style.display = 'block';
+        elPollResultsQuestion.textContent = DOMPurify.sanitize(poll.lastResults.question);
+        
+        let resultsHTML = '<div style="margin-top: 8px;">';
+        for (const [option, count] of Object.entries(poll.lastResults.results)) {
+          const percentage = poll.lastResults.totalVotes > 0 ? Math.round((count / poll.lastResults.totalVotes) * 100) : 0;
+          resultsHTML += `<div style="margin: 4px 0;"><strong>${option}:</strong> ${count} (${percentage}%)</div>`;
+        }
+        resultsHTML += `<div style="margin-top: 8px;" class="muted small">Total votes: ${poll.lastResults.totalVotes}</div>`;
+        resultsHTML += '</div>';
+        elPollResultsData.innerHTML = resultsHTML;
+      } else {
+        // No polls yet - show message
+        elPollNone.style.display = 'block';
+      }
     }
 
     function updateTimers(state) {
@@ -309,6 +431,64 @@
         $('#copyStatus').textContent = 'Could not copy to clipboard';
       }
     };
+
+    // Poll event handlers
+    $('#btnYesNoPoll').onclick = () => {
+      elPollSelection.style.display = 'none';
+      elPollCreation.style.display = 'block';
+      elPollQuestion.value = '';
+      elPollQuestion.focus();
+    };
+    
+    $('#btnCancelPoll').onclick = () => {
+      elPollCreation.style.display = 'none';
+      elPollSelection.style.display = 'block';
+    };
+    
+    $('#btnStartPolling').onclick = () => {
+      const question = elPollQuestion.value.trim();
+      if (!question) {
+        elPollCreationStatus.textContent = 'Please enter a question';
+        elPollCreationStatus.className = 'warn small';
+        return;
+      }
+      
+      client?.send(`/app/room/${roomCode}/poll/start`, {}, JSON.stringify({
+        question: question,
+        pollType: 'YES_NO'
+      }));
+      
+      elPollCreationStatus.textContent = 'Poll started!';
+      elPollCreationStatus.className = 'muted small';
+    };
+    
+    $('#btnEndPoll').onclick = () => {
+      client?.send(`/app/room/${roomCode}/poll/end`, {}, '{}');
+    };
+    
+    $('#btnContinueDiscussion').onclick = () => {
+      // Just return to the "no polls" view which shows the message
+      elPollResults.style.display = 'none';
+      elPollNone.style.display = 'block';
+    };
+    
+    $('#btnStartFirstPoll').onclick = () => {
+      elPollNone.style.display = 'none';
+      elPollSelection.style.display = 'block';
+    };
+    
+    $('#btnNewPoll').onclick = () => {
+      elPollResults.style.display = 'none';
+      elPollNone.style.display = 'none';
+      elPollSelection.style.display = 'block';
+    };
+    
+    // Enter key handler for poll question input
+    elPollQuestion.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        $('#btnStartPolling').click();
+      }
+    });
 
     // --- Start ---
     connect();
