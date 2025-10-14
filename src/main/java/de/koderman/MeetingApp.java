@@ -94,8 +94,37 @@ public class MeetingApp {
 
     public record Participant(String id, String name, long requestedAt) {}
     public record Current(Participant entry, long startedAtSec, int elapsedMs, boolean running, int limitSec) {}
-    public record State(List<Participant> queue, Current current, long meetingStartSec, int defaultLimitSec, String roomCode, boolean chairOccupied) {}
+    public record State(List<Participant> queue, Current current, long meetingStartSec, int defaultLimitSec, String roomCode, boolean chairOccupied, PollState pollState) {}
     public record RoomInfo(String roomCode, boolean exists) {}
+    
+    // Polling-related DTOs
+    public record StartPoll(
+        @NotBlank(message = "Question is required")
+        @Size(max = 200, message = "Question must not exceed 200 characters")
+        String question,
+        @NotBlank(message = "Poll type is required")
+        String pollType // "YES_NO" for now, extensible for future types
+    ) {}
+    
+    public record CastVote(
+        @NotBlank(message = "Vote is required")
+        String vote // "YES" or "NO"
+    ) {}
+    
+    public record PollState(
+        String question,
+        String pollType,
+        String status, // "ACTIVE", "ENDED", null
+        Map<String, Integer> results, // vote option -> count
+        Integer totalVotes,
+        PollResults lastResults // Results of the last ended poll
+    ) {}
+    
+    public record PollResults(
+        String question,
+        Map<String, Integer> results,
+        Integer totalVotes
+    ) {}
 
     // ---------------- Room Management ----------------
     public static class Room {
@@ -106,6 +135,14 @@ public class MeetingApp {
         private int defaultLimitSec = 180; // per-speaker
         private final ReentrantLock lock = new ReentrantLock();
         private String chairSessionId = null; // Track chair WebSocket session
+        
+        // Polling state
+        private String pollQuestion = null;
+        private String pollType = null;
+        private String pollStatus = null; // "ACTIVE", "ENDED", null
+        private final Map<String, Integer> pollResults = new HashMap<>();
+        private final Set<String> votedSessions = new HashSet<>(); // Track who has voted
+        private PollResults lastPollResults = null;
 
         public Room(String roomCode) {
             this.roomCode = roomCode;
@@ -122,7 +159,23 @@ public class MeetingApp {
         public State snapshot() {
             lock.lock();
             try {
-                return new State(List.copyOf(queue), current, meetingStartSec, defaultLimitSec, roomCode, chairSessionId != null);
+                PollState pollState = null;
+                if (pollQuestion != null) {
+                    int totalVotes = pollResults.values().stream().mapToInt(Integer::intValue).sum();
+                    pollState = new PollState(
+                        pollQuestion,
+                        pollType,
+                        pollStatus,
+                        new HashMap<>(pollResults),
+                        totalVotes,
+                        lastPollResults
+                    );
+                } else if (lastPollResults != null) {
+                    // No active poll, but we have last results
+                    pollState = new PollState(null, null, null, Map.of(), 0, lastPollResults);
+                }
+                
+                return new State(List.copyOf(queue), current, meetingStartSec, defaultLimitSec, roomCode, chairSessionId != null, pollState);
             } finally {
                 lock.unlock();
             }
@@ -268,6 +321,96 @@ public class MeetingApp {
                     return;
                 }
                 queue.add(participant);
+            } finally {
+                lock.unlock();
+            }
+        }
+        
+        // Polling methods
+        public void startPoll(String question, String pollType) {
+            lock.lock();
+            try {
+                this.pollQuestion = question;
+                this.pollType = pollType;
+                this.pollStatus = "ACTIVE";
+                this.pollResults.clear();
+                this.votedSessions.clear();
+                
+                // Initialize results based on poll type
+                if ("YES_NO".equals(pollType)) {
+                    this.pollResults.put("YES", 0);
+                    this.pollResults.put("NO", 0);
+                }
+            } finally {
+                lock.unlock();
+            }
+        }
+        
+        public boolean castVote(String sessionId, String vote) {
+            lock.lock();
+            try {
+                // Check if poll is active
+                if (!"ACTIVE".equals(pollStatus)) {
+                    return false;
+                }
+                
+                // Check if session has already voted
+                if (votedSessions.contains(sessionId)) {
+                    return false;
+                }
+                
+                // Check if vote is valid
+                if (!pollResults.containsKey(vote)) {
+                    return false;
+                }
+                
+                // Record vote
+                pollResults.put(vote, pollResults.get(vote) + 1);
+                votedSessions.add(sessionId);
+                return true;
+            } finally {
+                lock.unlock();
+            }
+        }
+        
+        public void endPoll() {
+            lock.lock();
+            try {
+                if (pollQuestion != null && "ACTIVE".equals(pollStatus)) {
+                    // Store results for display
+                    int totalVotes = pollResults.values().stream().mapToInt(Integer::intValue).sum();
+                    lastPollResults = new PollResults(
+                        pollQuestion,
+                        new HashMap<>(pollResults),
+                        totalVotes
+                    );
+                    
+                    // Mark poll as ended
+                    pollStatus = "ENDED";
+                }
+            } finally {
+                lock.unlock();
+            }
+        }
+        
+        public void cancelPoll() {
+            lock.lock();
+            try {
+                // Clear all poll state without saving to lastResults
+                pollQuestion = null;
+                pollType = null;
+                pollStatus = null;
+                pollResults.clear();
+                votedSessions.clear();
+            } finally {
+                lock.unlock();
+            }
+        }
+        
+        public boolean isPolling() {
+            lock.lock();
+            try {
+                return "ACTIVE".equals(pollStatus);
             } finally {
                 lock.unlock();
             }
@@ -494,6 +637,64 @@ public class MeetingApp {
                                 // Room doesn't exist, fail silently
                             }
                     );
+        }
+        
+        @MessageMapping("/room/{roomCode}/poll/start")
+        public void startPoll(@DestinationVariable String roomCode, @Valid @Payload StartPoll msg, StompHeaderAccessor headerAccessor) {
+            String normalizedRoomCode = normalizeRoomCode(roomCode);
+            String sessionId = headerAccessor.getSessionId();
+            
+            roomRepository.getByCode(normalizedRoomCode)
+                    .ifPresent(room -> {
+                        // Only chair can start a poll
+                        if (room.isChairSession(sessionId)) {
+                            room.startPoll(msg.question(), msg.pollType());
+                            broadcast(normalizedRoomCode);
+                        }
+                    });
+        }
+        
+        @MessageMapping("/room/{roomCode}/poll/vote")
+        public void castVote(@DestinationVariable String roomCode, @Valid @Payload CastVote msg, StompHeaderAccessor headerAccessor) {
+            String normalizedRoomCode = normalizeRoomCode(roomCode);
+            String sessionId = headerAccessor.getSessionId();
+            
+            roomRepository.getByCode(normalizedRoomCode)
+                    .ifPresent(room -> {
+                        if (room.castVote(sessionId, msg.vote())) {
+                            broadcast(normalizedRoomCode);
+                        }
+                    });
+        }
+        
+        @MessageMapping("/room/{roomCode}/poll/end")
+        public void endPoll(@DestinationVariable String roomCode, StompHeaderAccessor headerAccessor) {
+            String normalizedRoomCode = normalizeRoomCode(roomCode);
+            String sessionId = headerAccessor.getSessionId();
+            
+            roomRepository.getByCode(normalizedRoomCode)
+                    .ifPresent(room -> {
+                        // Only chair can end a poll
+                        if (room.isChairSession(sessionId)) {
+                            room.endPoll();
+                            broadcast(normalizedRoomCode);
+                        }
+                    });
+        }
+        
+        @MessageMapping("/room/{roomCode}/poll/cancel")
+        public void cancelPoll(@DestinationVariable String roomCode, StompHeaderAccessor headerAccessor) {
+            String normalizedRoomCode = normalizeRoomCode(roomCode);
+            String sessionId = headerAccessor.getSessionId();
+            
+            roomRepository.getByCode(normalizedRoomCode)
+                    .ifPresent(room -> {
+                        // Only chair can cancel a poll
+                        if (room.isChairSession(sessionId)) {
+                            room.cancelPoll();
+                            broadcast(normalizedRoomCode);
+                        }
+                    });
         }
 
         @EventListener

@@ -78,6 +78,27 @@
         </div>
         <div id="assumeChairStatus" class="muted small"></div>
       </section>
+
+      <!-- Poll Section -->
+      <section class="card" id="pollSection" style="display: none;">
+        <!-- Active poll voting -->
+        <div id="pollVoting" style="display: none;">
+          <h2>Active Poll</h2>
+          <div id="pollQuestionDisplay" style="font-weight: bold; margin: 12px 0; font-size: 1.1rem;"></div>
+          <div class="row">
+            <button id="btnVoteYes" class="primary" style="flex: 1;">👍 Yes</button>
+            <button id="btnVoteNo" class="accent" style="flex: 1;">👎 No</button>
+          </div>
+          <div id="voteStatus" class="muted small"></div>
+        </div>
+        
+        <!-- Poll results -->
+        <div id="pollResultsParticipant" style="display: none;">
+          <h2>Last Poll Results</h2>
+          <div id="pollResultsQuestionParticipant" style="font-weight: bold; margin: 8px 0;"></div>
+          <div id="pollResultsDataParticipant" style="margin: 8px 0;"></div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -120,6 +141,15 @@
     const elName = $('#name');
     const elBtnAssumeChair = $('#btnAssumeChair');
     const elAssumeChairStatus = $('#assumeChairStatus');
+    
+    // Poll elements
+    const elPollSection = $('#pollSection');
+    const elPollVoting = $('#pollVoting');
+    const elPollResultsParticipant = $('#pollResultsParticipant');
+    const elPollQuestionDisplay = $('#pollQuestionDisplay');
+    const elPollResultsQuestionParticipant = $('#pollResultsQuestionParticipant');
+    const elPollResultsDataParticipant = $('#pollResultsDataParticipant');
+    const elVoteStatus = $('#voteStatus');
 
     // --- State ---
     let client = null;
@@ -128,6 +158,7 @@
     let myName = '';
     let currentState = null; // Add this to store the full state
     let pendingChairRequestId = null; // Track our pending chair request
+    let hasVoted = false; // Track if user has voted in current poll
 
     // --- WebSocket ---
     function connect() {
@@ -230,6 +261,72 @@
       }
 
       updateTimers(state);
+      updatePollUIParticipant(state);
+    }
+    
+    function updatePollUIParticipant(state) {
+      const pollState = state.pollState;
+      
+      // Hide/show poll section
+      if (!pollState || (!pollState.status && !pollState.lastResults)) {
+        elPollSection.style.display = 'none';
+        // Show normal controls
+        $('#btnRequest').disabled = false;
+        $('#btnWithdraw').disabled = false;
+        return;
+      }
+      
+      elPollSection.style.display = 'block';
+      
+      // Hide all poll sub-sections first
+      elPollVoting.style.display = 'none';
+      elPollResultsParticipant.style.display = 'none';
+      
+      if (pollState.status === 'ACTIVE') {
+        // Active poll - show voting interface
+        elPollVoting.style.display = 'block';
+        elPollQuestionDisplay.textContent = DOMPurify.sanitize(pollState.question);
+        
+        // Hide other controls during polling
+        $('#btnRequest').disabled = true;
+        $('#btnWithdraw').disabled = true;
+        
+        // Check if user has already voted (this will be reset when poll status changes)
+        if (hasVoted) {
+          $('#btnVoteYes').disabled = true;
+          $('#btnVoteNo').disabled = true;
+          elVoteStatus.textContent = '✓ Vote submitted!';
+          elVoteStatus.className = 'ok small';
+        } else {
+          $('#btnVoteYes').disabled = false;
+          $('#btnVoteNo').disabled = false;
+          elVoteStatus.textContent = 'Cast your vote:';
+          elVoteStatus.className = 'muted small';
+        }
+      } else if (pollState.status === 'ENDED' || pollState.lastResults) {
+        // Poll ended - show results
+        elPollResultsParticipant.style.display = 'block';
+        hasVoted = false; // Reset for next poll
+        
+        // Re-enable controls
+        $('#btnRequest').disabled = false;
+        $('#btnWithdraw').disabled = false;
+        
+        const results = pollState.status === 'ENDED' ? 
+          { question: pollState.question, results: pollState.results, totalVotes: pollState.totalVotes } :
+          pollState.lastResults;
+        
+        elPollResultsQuestionParticipant.textContent = DOMPurify.sanitize(results.question);
+        
+        let resultsHTML = '<div style="margin-top: 8px;">';
+        for (const [option, count] of Object.entries(results.results)) {
+          const percentage = results.totalVotes > 0 ? Math.round((count / results.totalVotes) * 100) : 0;
+          resultsHTML += `<div style="margin: 4px 0;"><strong>${option}:</strong> ${count} (${percentage}%)</div>`;
+        }
+        resultsHTML += `<div style="margin-top: 8px;" class="muted small">Total votes: ${results.totalVotes}</div>`;
+        resultsHTML += '</div>';
+        elPollResultsDataParticipant.innerHTML = resultsHTML;
+      }
     }
 
     function updateTimers(state) {
@@ -358,6 +455,25 @@
     // Save name to localStorage when changed
     elName.onchange = () => {
       localStorage.setItem('speakRequestName', elName.value);
+    };
+
+    // Poll vote handlers
+    $('#btnVoteYes').onclick = () => {
+      client?.send(`/app/room/${roomCode}/poll/vote`, {}, JSON.stringify({vote: 'YES'}));
+      hasVoted = true;
+      $('#btnVoteYes').disabled = true;
+      $('#btnVoteNo').disabled = true;
+      elVoteStatus.textContent = '✓ Vote submitted!';
+      elVoteStatus.className = 'ok small';
+    };
+    
+    $('#btnVoteNo').onclick = () => {
+      client?.send(`/app/room/${roomCode}/poll/vote`, {}, JSON.stringify({vote: 'NO'}));
+      hasVoted = true;
+      $('#btnVoteYes').disabled = true;
+      $('#btnVoteNo').disabled = true;
+      elVoteStatus.textContent = '✓ Vote submitted!';
+      elVoteStatus.className = 'ok small';
     };
 
     // --- Start ---
