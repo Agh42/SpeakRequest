@@ -141,7 +141,7 @@ public class MeetingApp {
         private String pollType = null;
         private String pollStatus = null; // "ACTIVE", "ENDED", null
         private final Map<String, Integer> pollResults = new HashMap<>();
-        private final Set<String> votedSessions = new HashSet<>(); // Track who has voted
+        private final Map<String, String> sessionVotes = new HashMap<>(); // Track each session's vote (allows vote changes)
         private PollResults lastPollResults = null;
 
         public Room(String roomCode) {
@@ -334,7 +334,7 @@ public class MeetingApp {
                 this.pollType = pollType;
                 this.pollStatus = "ACTIVE";
                 this.pollResults.clear();
-                this.votedSessions.clear();
+                this.sessionVotes.clear();
                 
                 // Initialize results based on poll type
                 if ("YES_NO".equals(pollType)) {
@@ -354,19 +354,21 @@ public class MeetingApp {
                     return false;
                 }
                 
-                // Check if session has already voted
-                if (votedSessions.contains(sessionId)) {
-                    return false;
-                }
-                
                 // Check if vote is valid
                 if (!pollResults.containsKey(vote)) {
                     return false;
                 }
                 
-                // Record vote
+                // Check if session has already voted - if so, remove the old vote
+                String previousVote = sessionVotes.get(sessionId);
+                if (previousVote != null) {
+                    // Decrement previous vote
+                    pollResults.put(previousVote, pollResults.get(previousVote) - 1);
+                }
+                
+                // Record new vote
                 pollResults.put(vote, pollResults.get(vote) + 1);
-                votedSessions.add(sessionId);
+                sessionVotes.put(sessionId, vote);
                 return true;
             } finally {
                 lock.unlock();
@@ -401,7 +403,7 @@ public class MeetingApp {
                 pollType = null;
                 pollStatus = null;
                 pollResults.clear();
-                votedSessions.clear();
+                sessionVotes.clear();
             } finally {
                 lock.unlock();
             }

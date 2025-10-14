@@ -129,7 +129,16 @@
           <div id="pollResultsQuestion" style="font-weight: bold; margin: 8px 0;"></div>
           <div id="pollResultsData" style="margin: 8px 0;"></div>
           <div class="row" style="margin-top: 12px;">
+            <button id="btnContinueDiscussion" class="primary">💬 Continue Discussion</button>
             <button id="btnNewPoll" class="accent">📊 Start New Poll</button>
+          </div>
+        </div>
+        
+        <!-- No polls message -->
+        <div id="pollNone" style="display: none;">
+          <div class="muted small">No polls conducted yet</div>
+          <div class="row" style="margin-top: 12px;">
+            <button id="btnStartFirstPoll" class="accent">📊 Start Poll</button>
           </div>
         </div>
       </section>
@@ -179,6 +188,7 @@
     const elPollCreation = $('#pollCreation');
     const elPollActive = $('#pollActive');
     const elPollResults = $('#pollResults');
+    const elPollNone = $('#pollNone');
     const elPollQuestion = $('#pollQuestion');
     const elActivePollQuestion = $('#activePollQuestion');
     const elPollVoteCount = $('#pollVoteCount');
@@ -251,10 +261,11 @@
       elPollCreation.style.display = 'none';
       elPollActive.style.display = 'none';
       elPollResults.style.display = 'none';
+      elPollNone.style.display = 'none';
       
       if (!state.pollState) {
-        // No poll state - show selection
-        elPollSelection.style.display = 'block';
+        // No poll state - show "no polls conducted yet"
+        elPollNone.style.display = 'block';
         return;
       }
       
@@ -293,8 +304,8 @@
         resultsHTML += '</div>';
         elPollResultsData.innerHTML = resultsHTML;
       } else {
-        // Default - show selection
-        elPollSelection.style.display = 'block';
+        // No polls yet - show message
+        elPollNone.style.display = 'block';
       }
     }
 
@@ -455,8 +466,20 @@
       client?.send(`/app/room/${roomCode}/poll/end`, {}, '{}');
     };
     
+    $('#btnContinueDiscussion').onclick = () => {
+      // Just return to the "no polls" view which shows the message
+      elPollResults.style.display = 'none';
+      elPollNone.style.display = 'block';
+    };
+    
+    $('#btnStartFirstPoll').onclick = () => {
+      elPollNone.style.display = 'none';
+      elPollSelection.style.display = 'block';
+    };
+    
     $('#btnNewPoll').onclick = () => {
       elPollResults.style.display = 'none';
+      elPollNone.style.display = 'none';
       elPollSelection.style.display = 'block';
     };
     

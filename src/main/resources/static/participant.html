@@ -291,22 +291,14 @@
         $('#btnRequest').disabled = true;
         $('#btnWithdraw').disabled = true;
         
-        // Check if user has already voted (this will be reset when poll status changes)
-        if (hasVoted) {
-          $('#btnVoteYes').disabled = true;
-          $('#btnVoteNo').disabled = true;
-          elVoteStatus.textContent = '✓ Vote submitted!';
-          elVoteStatus.className = 'ok small';
-        } else {
-          $('#btnVoteYes').disabled = false;
-          $('#btnVoteNo').disabled = false;
-          elVoteStatus.textContent = 'Cast your vote:';
-          elVoteStatus.className = 'muted small';
-        }
+        // Buttons remain enabled to allow vote changes
+        $('#btnVoteYes').disabled = false;
+        $('#btnVoteNo').disabled = false;
+        elVoteStatus.textContent = 'Cast your vote (you can change it):';
+        elVoteStatus.className = 'muted small';
       } else if (pollState.status === 'ENDED' || pollState.lastResults) {
         // Poll ended - show results
         elPollResultsParticipant.style.display = 'block';
-        hasVoted = false; // Reset for next poll
         
         // Re-enable controls
         $('#btnRequest').disabled = false;
@@ -460,19 +452,13 @@
     // Poll vote handlers
     $('#btnVoteYes').onclick = () => {
       client?.send(`/app/room/${roomCode}/poll/vote`, {}, JSON.stringify({vote: 'YES'}));
-      hasVoted = true;
-      $('#btnVoteYes').disabled = true;
-      $('#btnVoteNo').disabled = true;
-      elVoteStatus.textContent = '✓ Vote submitted!';
+      elVoteStatus.textContent = '✓ Vote sent to server';
       elVoteStatus.className = 'ok small';
     };
     
     $('#btnVoteNo').onclick = () => {
       client?.send(`/app/room/${roomCode}/poll/vote`, {}, JSON.stringify({vote: 'NO'}));
-      hasVoted = true;
-      $('#btnVoteYes').disabled = true;
-      $('#btnVoteNo').disabled = true;
-      elVoteStatus.textContent = '✓ Vote submitted!';
+      elVoteStatus.textContent = '✓ Vote sent to server';
       elVoteStatus.className = 'ok small';
     };
 

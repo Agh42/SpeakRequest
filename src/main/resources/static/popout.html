@@ -80,6 +80,13 @@
     <div id="queueList" class="queue-list">--</div>
   </div>
 
+  <!-- Poll Results Card -->
+  <div class="card" id="pollResultsCard" style="display: none;">
+    <div class="muted small">Last Poll Results</div>
+    <div id="pollResultsQuestion" class="medium" style="margin: 8px 0;">--</div>
+    <div id="pollResultsData" style="margin: 8px 0;">--</div>
+  </div>
+
   <div id="qrContainer" class="qr-float"></div>
 
   <script>
@@ -136,6 +143,9 @@
     const elQueueCount = document.getElementById('queueCount');
     const elQueueList = document.getElementById('queueList');
     const elJoinInstructions = document.getElementById('joinInstructions');
+    const elPollResultsCard = document.getElementById('pollResultsCard');
+    const elPollResultsQuestion = document.getElementById('pollResultsQuestion');
+    const elPollResultsData = document.getElementById('pollResultsData');
 
     // --- State ---
     let client = null;
@@ -190,7 +200,41 @@
         elQueueList.innerHTML = '<div>--</div>';
       }
 
+      // Poll results
+      updatePollResults(state);
+      
       updateTimer(state);
+    }
+    
+    function updatePollResults(state) {
+      if (!state.pollState) {
+        elPollResultsCard.style.display = 'none';
+        return;
+      }
+      
+      const poll = state.pollState;
+      
+      // Show results if poll has ended or if we have last results
+      if (poll.status === 'ENDED' || poll.lastResults) {
+        elPollResultsCard.style.display = 'block';
+        
+        const results = poll.status === 'ENDED' ? 
+          { question: poll.question, results: poll.results, totalVotes: poll.totalVotes } :
+          poll.lastResults;
+        
+        elPollResultsQuestion.textContent = DOMPurify.sanitize(results.question);
+        
+        let resultsHTML = '<div style="margin-top: 8px;">';
+        for (const [option, count] of Object.entries(results.results)) {
+          const percentage = results.totalVotes > 0 ? Math.round((count / results.totalVotes) * 100) : 0;
+          resultsHTML += `<div style="margin: 4px 0; font-size: 1.2rem;"><strong>${option}:</strong> ${count} (${percentage}%)</div>`;
+        }
+        resultsHTML += `<div style="margin-top: 8px;" class="muted small">Total votes: ${results.totalVotes}</div>`;
+        resultsHTML += '</div>';
+        elPollResultsData.innerHTML = resultsHTML;
+      } else {
+        elPollResultsCard.style.display = 'none';
+      }
     }
 
     function updateTimer(state) {
