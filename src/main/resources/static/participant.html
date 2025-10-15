@@ -43,6 +43,52 @@
       border: 2px solid rgba(96,165,250,.8);
       box-shadow: 0 0 12px rgba(96,165,250,.4);
     }
+    
+    /* Gradients of Agreement button styles */
+    .gradient-btn {
+      width: 100%;
+      padding: 12px 16px;
+      text-align: left;
+      border-radius: 8px;
+      border: 2px solid rgba(255,255,255,.12);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.95rem;
+    }
+    
+    .gradient-btn:hover {
+      transform: translateX(4px);
+      border-color: rgba(255,255,255,.3);
+    }
+    
+    .gradient-btn strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+    
+    .gradient-desc {
+      font-size: 0.8rem;
+      font-weight: normal;
+      opacity: 0.8;
+      font-style: italic;
+    }
+    
+    .gradient-btn-green {
+      background: linear-gradient(180deg, rgba(144,238,144,.25), rgba(144,238,144,.15));
+    }
+    
+    .gradient-btn-blue {
+      background: linear-gradient(180deg, rgba(173,216,230,.25), rgba(173,216,230,.15));
+    }
+    
+    .gradient-btn-red {
+      background: linear-gradient(180deg, rgba(255,182,193,.25), rgba(255,182,193,.15));
+    }
+    
+    .gradient-btn.vote-selected {
+      border: 2px solid rgba(96,165,250,.8);
+      box-shadow: 0 0 12px rgba(96,165,250,.4);
+    }
   </style>
 </head>
 <body>
@@ -142,11 +188,54 @@
         
         <!-- Voting section (shown during ACTIVE state) -->
         <div id="overlayVotingSection">
-          <div class="row" style="margin-bottom:12px;">
-            <button id="overlayBtnVoteYes" class="primary">👍 Yes</button>
-            <button id="overlayBtnVoteNo" class="accent">👎 No</button>
+          <!-- Yes/No voting (shown for YES_NO polls) -->
+          <div id="yesNoVoting" style="display: none;">
+            <div class="row" style="margin-bottom:12px;">
+              <button id="overlayBtnVoteYes" class="primary">👍 Yes</button>
+              <button id="overlayBtnVoteNo" class="accent">👎 No</button>
+            </div>
           </div>
-          <div id="overlayVoteStatus" class="muted small"></div>
+          
+          <!-- Gradients voting (shown for GRADIENTS polls) -->
+          <div id="gradientsVoting" style="display: none;">
+            <button id="overlayBtnVoteOpt1" class="gradient-btn gradient-btn-green" style="margin: 6px 0;">
+              <strong>1 Whole-hearted Endorsement</strong>
+              <div class="gradient-desc">"I really like it"</div>
+            </button>
+            <button id="overlayBtnVoteOpt2" class="gradient-btn gradient-btn-green" style="margin: 6px 0;">
+              <strong>2 Agreement with a Minor Point of Contention</strong>
+              <div class="gradient-desc">"Not perfect, but it's good enough"</div>
+            </button>
+            <button id="overlayBtnVoteOpt3" class="gradient-btn gradient-btn-green" style="margin: 6px 0;">
+              <strong>3 Support with Reservations</strong>
+              <div class="gradient-desc">"I can live with it"</div>
+            </button>
+            <button id="overlayBtnVoteOpt4" class="gradient-btn gradient-btn-blue" style="margin: 6px 0;">
+              <strong>4 Abstain</strong>
+              <div class="gradient-desc">"This issue does not affect me"</div>
+            </button>
+            <button id="overlayBtnVoteOpt5" class="gradient-btn gradient-btn-red" style="margin: 6px 0;">
+              <strong>5 More Discussion Needed</strong>
+              <div class="gradient-desc">"I don't understand the issue well enough yet."</div>
+            </button>
+            <button id="overlayBtnVoteOpt6" class="gradient-btn gradient-btn-red" style="margin: 6px 0;">
+              <strong>6 Don't Like But Will Support</strong>
+              <div class="gradient-desc">"It's not great but I don't want to hold up the group."</div>
+            </button>
+            <button id="overlayBtnVoteOpt7" class="gradient-btn gradient-btn-red" style="margin: 6px 0;">
+              <strong>7 Serious Disagreement</strong>
+              <div class="gradient-desc">"I am not on board with this - don't count on me."</div>
+            </button>
+            <button id="overlayBtnVoteOpt8" class="gradient-btn gradient-btn-red" style="margin: 6px 0;">
+              <strong>8 Veto</strong>
+              <div class="gradient-desc">"I block this proposal"</div>
+            </button>
+            <div style="margin-top: 12px; font-size: 0.7rem; color: rgba(255,255,255,0.5); font-style: italic;">
+              Reference: Kaner, S. (2014). Facilitator's Guide to Participatory Decision-Making. Third edition, Jossey-Bass: San Francisco, California, United States of America.
+            </div>
+          </div>
+          
+          <div id="overlayVoteStatus" class="muted small" style="margin-top: 12px;"></div>
         </div>
         
         <!-- Results section (shown during ENDED state) -->
@@ -236,8 +325,23 @@
     const elOverlayResultsSection = $('#overlayResultsSection');
     const elOverlayResultsData = $('#overlayResultsData');
     
+    // Gradients voting sections
+    const elYesNoVoting = $('#yesNoVoting');
+    const elGradientsVoting = $('#gradientsVoting');
+    
+    // Gradients voting buttons
+    const elOverlayBtnOpt1 = $('#overlayBtnVoteOpt1');
+    const elOverlayBtnOpt2 = $('#overlayBtnVoteOpt2');
+    const elOverlayBtnOpt3 = $('#overlayBtnVoteOpt3');
+    const elOverlayBtnOpt4 = $('#overlayBtnVoteOpt4');
+    const elOverlayBtnOpt5 = $('#overlayBtnVoteOpt5');
+    const elOverlayBtnOpt6 = $('#overlayBtnVoteOpt6');
+    const elOverlayBtnOpt7 = $('#overlayBtnVoteOpt7');
+    const elOverlayBtnOpt8 = $('#overlayBtnVoteOpt8');
+    
     // Track current vote
-    let currentVote = null; // 'YES', 'NO', or null
+    let currentVote = null; // 'YES', 'NO', 'OPT_1', ... 'OPT_8', or null
+    let currentPollType = null; // Track the current poll type
 
     function openOverlay() {
       // prevent background scroll
@@ -381,20 +485,32 @@
         $('#btnWithdraw').disabled = false;
         // Reset vote tracking
         currentVote = null;
+        currentPollType = null;
         return;
       }
 
       // If poll is ACTIVE, open overlay and disable background controls
       if (pollState.status === 'ACTIVE') {
         elPollEmpty.style.display = 'none';
+        currentPollType = pollState.pollType;
+        
         // Show overlay with voting section
         elOverlayQuestion.textContent = DOMPurify.sanitize(pollState.question);
         elOverlayVotingSection.style.display = 'block';
         elOverlayResultsSection.style.display = 'none';
         
+        // Show appropriate voting UI based on poll type
+        if (pollState.pollType === 'GRADIENTS') {
+          elYesNoVoting.style.display = 'none';
+          elGradientsVoting.style.display = 'block';
+        } else {
+          elYesNoVoting.style.display = 'block';
+          elGradientsVoting.style.display = 'none';
+        }
+        
         // Update vote status message based on current vote
         if (currentVote) {
-          elOverlayVoteStatus.textContent = `✓ You voted: ${currentVote === 'YES' ? 'Yes' : 'No'}`;
+          elOverlayVoteStatus.textContent = `✓ You voted: ${getVoteLabel(currentVote, pollState.pollType)}`;
           elOverlayVoteStatus.className = 'ok small';
         } else {
           elOverlayVoteStatus.textContent = 'Cast your vote (you can change it):';
@@ -419,12 +535,19 @@
         elOverlayVotingSection.style.display = 'none';
         elOverlayResultsSection.style.display = 'block';
         
-        // Format results same as previous poll box
+        // Format results based on poll type
         let resultsHTML = '<div style="margin-top: 8px;">';
-        for (const [option, count] of Object.entries(pollState.results)) {
-          const percentage = pollState.totalVotes > 0 ? Math.round((count / pollState.totalVotes) * 100) : 0;
-          resultsHTML += `<div style="margin: 4px 0;"><strong>${option}:</strong> ${count} (${percentage}%)</div>`;
+        
+        if (pollState.pollType === 'GRADIENTS') {
+          resultsHTML += renderGradientsResults(pollState.results, pollState.totalVotes);
+        } else {
+          // Yes/No results
+          for (const [option, count] of Object.entries(pollState.results)) {
+            const percentage = pollState.totalVotes > 0 ? Math.round((count / pollState.totalVotes) * 100) : 0;
+            resultsHTML += `<div style="margin: 4px 0;"><strong>${option}:</strong> ${count} (${percentage}%)</div>`;
+          }
         }
+        
         resultsHTML += `<div style="margin-top: 8px;" class="muted small">Total votes: ${pollState.totalVotes}</div>`;
         resultsHTML += '</div>';
         elOverlayResultsData.innerHTML = resultsHTML;
@@ -448,15 +571,25 @@
         
         // Reset vote tracking for next poll
         currentVote = null;
+        currentPollType = null;
 
         const results = pollState.lastResults;
         elPollResultsQuestionParticipant.textContent = DOMPurify.sanitize(results.question);
 
         let resultsHTML = '<div style="margin-top: 8px;">';
-        for (const [option, count] of Object.entries(results.results)) {
-          const percentage = results.totalVotes > 0 ? Math.round((count / results.totalVotes) * 100) : 0;
-          resultsHTML += `<div style="margin: 4px 0;"><strong>${option}:</strong> ${count} (${percentage}%)</div>`;
+        
+        // We don't have pollType in lastResults, so we check the keys
+        const hasGradientsKeys = Object.keys(results.results).some(k => k.startsWith('OPT_'));
+        
+        if (hasGradientsKeys) {
+          resultsHTML += renderGradientsResults(results.results, results.totalVotes);
+        } else {
+          for (const [option, count] of Object.entries(results.results)) {
+            const percentage = results.totalVotes > 0 ? Math.round((count / results.totalVotes) * 100) : 0;
+            resultsHTML += `<div style="margin: 4px 0;"><strong>${option}:</strong> ${count} (${percentage}%)</div>`;
+          }
         }
+        
         resultsHTML += `<div style="margin-top: 8px;" class="muted small">Total votes: ${results.totalVotes}</div>`;
         resultsHTML += '</div>';
         elPollResultsDataParticipant.innerHTML = resultsHTML;
@@ -464,16 +597,106 @@
       }
     }
     
-    function updateVoteButtonStyles() {
-      // Remove selected class from both buttons
-      elOverlayBtnYes.classList.remove('vote-selected');
-      elOverlayBtnNo.classList.remove('vote-selected');
+    function getVoteLabel(vote, pollType) {
+      if (pollType === 'GRADIENTS') {
+        const labels = {
+          'OPT_1': '1 - Whole-hearted Endorsement',
+          'OPT_2': '2 - Agreement with Minor Point',
+          'OPT_3': '3 - Support with Reservations',
+          'OPT_4': '4 - Abstain',
+          'OPT_5': '5 - More Discussion Needed',
+          'OPT_6': '6 - Don\'t Like But Will Support',
+          'OPT_7': '7 - Serious Disagreement',
+          'OPT_8': '8 - Veto'
+        };
+        return labels[vote] || vote;
+      }
+      return vote === 'YES' ? 'Yes' : 'No';
+    }
+    
+    function renderGradientsResults(results, totalVotes) {
+      const gradientOptions = [
+        { key: 'OPT_1', num: '1', label: 'Whole-hearted Endorsement' },
+        { key: 'OPT_2', num: '2', label: 'Agreement with Minor Point' },
+        { key: 'OPT_3', num: '3', label: 'Support with Reservations' },
+        { key: 'OPT_4', num: '4', label: 'Abstain' },
+        { key: 'OPT_5', num: '5', label: 'More Discussion Needed' },
+        { key: 'OPT_6', num: '6', label: 'Don\'t Like But Will Support' },
+        { key: 'OPT_7', num: '7', label: 'Serious Disagreement' },
+        { key: 'OPT_8', num: '8', label: 'Veto' }
+      ];
       
-      // Add selected class to the button that was voted for
-      if (currentVote === 'YES') {
-        elOverlayBtnYes.classList.add('vote-selected');
-      } else if (currentVote === 'NO') {
-        elOverlayBtnNo.classList.add('vote-selected');
+      // Find max vote count for scaling bars
+      const maxVotes = Math.max(...Object.values(results), 1);
+      
+      let html = '<div style="margin: 16px 0;">';
+      html += '<div style="display: flex; align-items: flex-end; justify-content: space-between; height: 120px; margin-bottom: 8px;">';
+      
+      // Create bars for each option
+      gradientOptions.forEach(opt => {
+        const count = results[opt.key] || 0;
+        const heightPercent = maxVotes > 0 ? (count / maxVotes) * 100 : 0;
+        
+        html += `<div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end;">`;
+        html += `<div style="background: rgba(96,165,250,0.6); width: 80%; height: ${heightPercent}%; min-height: ${count > 0 ? '4px' : '0'}; border-radius: 4px 4px 0 0;"></div>`;
+        html += `</div>`;
+      });
+      
+      html += '</div>';
+      
+      // Number line with labels and counts
+      html += '<div style="display: flex; justify-content: space-between; border-top: 2px solid rgba(255,255,255,0.3); padding-top: 8px;">';
+      
+      gradientOptions.forEach(opt => {
+        const count = results[opt.key] || 0;
+        html += `<div style="flex: 1; text-align: center;">`;
+        html += `<div style="font-weight: bold; font-size: 0.9rem;">${opt.num}</div>`;
+        html += `<div style="font-size: 0.75rem; margin: 2px 0;">${opt.label}</div>`;
+        html += `<div style="font-weight: bold; color: rgba(96,165,250,1);">${count}</div>`;
+        html += `</div>`;
+      });
+      
+      html += '</div>';
+      html += '<div style="margin-top: 12px; font-size: 0.7rem; color: rgba(255,255,255,0.5); font-style: italic;">Reference: Kaner, S. (2014). Facilitator\'s Guide to Participatory Decision-Making. Third edition, Jossey-Bass: San Francisco, California, United States of America.</div>';
+      html += '</div>';
+      
+      return html;
+    }
+    
+    function updateVoteButtonStyles() {
+      if (currentPollType === 'GRADIENTS') {
+        // Remove selected class from all gradient buttons
+        [elOverlayBtnOpt1, elOverlayBtnOpt2, elOverlayBtnOpt3, elOverlayBtnOpt4,
+         elOverlayBtnOpt5, elOverlayBtnOpt6, elOverlayBtnOpt7, elOverlayBtnOpt8].forEach(btn => {
+          btn.classList.remove('vote-selected');
+        });
+        
+        // Add selected class to the button that was voted for
+        const optionMap = {
+          'OPT_1': elOverlayBtnOpt1,
+          'OPT_2': elOverlayBtnOpt2,
+          'OPT_3': elOverlayBtnOpt3,
+          'OPT_4': elOverlayBtnOpt4,
+          'OPT_5': elOverlayBtnOpt5,
+          'OPT_6': elOverlayBtnOpt6,
+          'OPT_7': elOverlayBtnOpt7,
+          'OPT_8': elOverlayBtnOpt8
+        };
+        
+        if (currentVote && optionMap[currentVote]) {
+          optionMap[currentVote].classList.add('vote-selected');
+        }
+      } else {
+        // Remove selected class from both Yes/No buttons
+        elOverlayBtnYes.classList.remove('vote-selected');
+        elOverlayBtnNo.classList.remove('vote-selected');
+        
+        // Add selected class to the button that was voted for
+        if (currentVote === 'YES') {
+          elOverlayBtnYes.classList.add('vote-selected');
+        } else if (currentVote === 'NO') {
+          elOverlayBtnNo.classList.add('vote-selected');
+        }
       }
     }
 
@@ -621,6 +844,26 @@
       elOverlayVoteStatus.className = 'ok small';
       updateVoteButtonStyles();
     };
+    
+    // Gradients vote handlers
+    function createGradientsVoteHandler(optionKey, optionLabel) {
+      return () => {
+        currentVote = optionKey;
+        client?.send(`/app/room/${roomCode}/poll/vote`, {}, JSON.stringify({vote: optionKey}));
+        elOverlayVoteStatus.textContent = `✓ You voted: ${optionLabel}`;
+        elOverlayVoteStatus.className = 'ok small';
+        updateVoteButtonStyles();
+      };
+    }
+    
+    elOverlayBtnOpt1.onclick = createGradientsVoteHandler('OPT_1', '1 - Whole-hearted Endorsement');
+    elOverlayBtnOpt2.onclick = createGradientsVoteHandler('OPT_2', '2 - Agreement with Minor Point');
+    elOverlayBtnOpt3.onclick = createGradientsVoteHandler('OPT_3', '3 - Support with Reservations');
+    elOverlayBtnOpt4.onclick = createGradientsVoteHandler('OPT_4', '4 - Abstain');
+    elOverlayBtnOpt5.onclick = createGradientsVoteHandler('OPT_5', '5 - More Discussion Needed');
+    elOverlayBtnOpt6.onclick = createGradientsVoteHandler('OPT_6', '6 - Don\'t Like But Will Support');
+    elOverlayBtnOpt7.onclick = createGradientsVoteHandler('OPT_7', '7 - Serious Disagreement');
+    elOverlayBtnOpt8.onclick = createGradientsVoteHandler('OPT_8', '8 - Veto');
 
     // --- Start ---
     connect();

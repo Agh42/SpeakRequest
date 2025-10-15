@@ -103,7 +103,7 @@ public class MeetingApp {
         @Size(max = 200, message = "Question must not exceed 200 characters")
         String question,
         @NotBlank(message = "Poll type is required")
-        String pollType // "YES_NO" for now, extensible for future types
+        String pollType // "YES_NO" or "GRADIENTS" for Gradients of Agreement
     ) {}
     
     public record CastVote(
@@ -344,6 +344,16 @@ public class MeetingApp {
                 if ("YES_NO".equals(pollType)) {
                     this.pollResults.put("YES", 0);
                     this.pollResults.put("NO", 0);
+                } else if ("GRADIENTS".equals(pollType)) {
+                    // Initialize 8 options for Gradients of Agreement
+                    this.pollResults.put("OPT_1", 0);
+                    this.pollResults.put("OPT_2", 0);
+                    this.pollResults.put("OPT_3", 0);
+                    this.pollResults.put("OPT_4", 0);
+                    this.pollResults.put("OPT_5", 0);
+                    this.pollResults.put("OPT_6", 0);
+                    this.pollResults.put("OPT_7", 0);
+                    this.pollResults.put("OPT_8", 0);
                 }
             } finally {
                 lock.unlock();
