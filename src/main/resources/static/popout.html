@@ -67,17 +67,28 @@
     Go to <span id="joinUrl" style="font-weight: bold;"></span> and enter the room code to join
   </div>
 
-  <div class="card">
-    <div class="muted small">Current Speaker</div>
-    <div id="currentSpeaker" class="big">--</div>
-    <div id="currentRole" class="muted medium">--</div>
-    <div class="muted small">Speaker Time</div>
-    <div id="speakerTimer" class="timer ok">00:00</div>
+  <!-- Poll in Progress Card (shown during ACTIVE poll) -->
+  <div class="card" id="pollInProgressCard" style="display: none;">
+    <div class="muted small">Poll in Progress</div>
+    <div id="pollInProgressQuestion" class="big" style="font-size: 1.8rem; margin: 15px 0;">--</div>
+    <div class="muted small">Votes Received</div>
+    <div id="pollInProgressCount" class="timer ok" style="font-size: 2.8rem;">0</div>
   </div>
 
-  <div class="card">
-    <div class="muted small">Queue (<span id="queueCount">0</span> waiting)</div>
-    <div id="queueList" class="queue-list">--</div>
+  <!-- Normal Speaker/Queue Cards (hidden during ACTIVE poll) -->
+  <div id="normalDisplay">
+    <div class="card">
+      <div class="muted small">Current Speaker</div>
+      <div id="currentSpeaker" class="big">--</div>
+      <div id="currentRole" class="muted medium">--</div>
+      <div class="muted small">Speaker Time</div>
+      <div id="speakerTimer" class="timer ok">00:00</div>
+    </div>
+
+    <div class="card">
+      <div class="muted small">Queue (<span id="queueCount">0</span> waiting)</div>
+      <div id="queueList" class="queue-list">--</div>
+    </div>
   </div>
 
   <!-- Poll Results Card -->
@@ -146,6 +157,10 @@
     const elPollResultsCard = document.getElementById('pollResultsCard');
     const elPollResultsQuestion = document.getElementById('pollResultsQuestion');
     const elPollResultsData = document.getElementById('pollResultsData');
+    const elPollInProgressCard = document.getElementById('pollInProgressCard');
+    const elPollInProgressQuestion = document.getElementById('pollInProgressQuestion');
+    const elPollInProgressCount = document.getElementById('pollInProgressCount');
+    const elNormalDisplay = document.getElementById('normalDisplay');
 
     // --- State ---
     let client = null;
@@ -179,6 +194,41 @@
     }
 
     function updateDisplay(state) {
+      // Check if poll is active - show "Poll in Progress"
+      if (state.pollState && state.pollState.status === 'ACTIVE') {
+        elPollInProgressCard.style.display = 'block';
+        elNormalDisplay.style.display = 'none';
+        elPollResultsCard.style.display = 'none';
+        
+        elPollInProgressQuestion.textContent = DOMPurify.sanitize(state.pollState.question);
+        elPollInProgressCount.textContent = state.pollState.totalVotes || 0;
+        return;
+      }
+      
+      // Check if poll is ended - show only results
+      if (state.pollState && state.pollState.status === 'ENDED') {
+        elPollInProgressCard.style.display = 'none';
+        elNormalDisplay.style.display = 'none';
+        elPollResultsCard.style.display = 'block';
+        
+        elPollResultsQuestion.textContent = DOMPurify.sanitize(state.pollState.question);
+        
+        let resultsHTML = '<div style="margin-top: 8px;">';
+        for (const [option, count] of Object.entries(state.pollState.results)) {
+          const percentage = state.pollState.totalVotes > 0 ? Math.round((count / state.pollState.totalVotes) * 100) : 0;
+          resultsHTML += `<div style="margin: 4px 0; font-size: 1.2rem;"><strong>${option}:</strong> ${count} (${percentage}%)</div>`;
+        }
+        resultsHTML += `<div style="margin-top: 8px;" class="muted small">Total votes: ${state.pollState.totalVotes}</div>`;
+        resultsHTML += '</div>';
+        elPollResultsData.innerHTML = resultsHTML;
+        return;
+      }
+      
+      // Default: Show normal display (speaker/queue)
+      elPollInProgressCard.style.display = 'none';
+      elPollResultsCard.style.display = 'none';
+      elNormalDisplay.style.display = 'block';
+      
       // Current speaker
       if (state.current) {
         const c = state.current;
@@ -200,28 +250,11 @@
         elQueueList.innerHTML = '<div>--</div>';
       }
 
-      // Poll results
-      updatePollResults(state);
-      
-      updateTimer(state);
-    }
-    
-    function updatePollResults(state) {
-      if (!state.pollState) {
-        elPollResultsCard.style.display = 'none';
-        return;
-      }
-      
-      const poll = state.pollState;
-      
-      // Show results if poll has ended or if we have last results
-      if (poll.status === 'ENDED' || poll.lastResults) {
+      // Show last poll results if available (for CLOSED state)
+      if (state.pollState && state.pollState.lastResults) {
         elPollResultsCard.style.display = 'block';
         
-        const results = poll.status === 'ENDED' ? 
-          { question: poll.question, results: poll.results, totalVotes: poll.totalVotes } :
-          poll.lastResults;
-        
+        const results = state.pollState.lastResults;
         elPollResultsQuestion.textContent = DOMPurify.sanitize(results.question);
         
         let resultsHTML = '<div style="margin-top: 8px;">';
@@ -232,9 +265,9 @@
         resultsHTML += `<div style="margin-top: 8px;" class="muted small">Total votes: ${results.totalVotes}</div>`;
         resultsHTML += '</div>';
         elPollResultsData.innerHTML = resultsHTML;
-      } else {
-        elPollResultsCard.style.display = 'none';
       }
+      
+      updateTimer(state);
     }
 
     function updateTimer(state) {

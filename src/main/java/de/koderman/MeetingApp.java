@@ -114,7 +114,7 @@ public class MeetingApp {
     public record PollState(
         String question,
         String pollType,
-        String status, // "ACTIVE", "ENDED", null
+        String status, // "ACTIVE", "ENDED", "CLOSED", null
         Map<String, Integer> results, // vote option -> count
         Integer totalVotes,
         PollResults lastResults // Results of the last ended poll
@@ -139,7 +139,7 @@ public class MeetingApp {
         // Polling state
         private String pollQuestion = null;
         private String pollType = null;
-        private String pollStatus = null; // "ACTIVE", "ENDED", null
+        private String pollStatus = null; // "ACTIVE", "ENDED", "CLOSED", null
         private final Map<String, Integer> pollResults = new HashMap<>();
         private final Map<String, String> sessionVotes = new HashMap<>(); // Track each session's vote (allows vote changes)
         private PollResults lastPollResults = null;
@@ -160,7 +160,8 @@ public class MeetingApp {
             lock.lock();
             try {
                 PollState pollState = null;
-                if (pollQuestion != null) {
+                if (pollQuestion != null && ("ACTIVE".equals(pollStatus) || "ENDED".equals(pollStatus))) {
+                    // Poll is active or ended (showing results in overlay)
                     int totalVotes = pollResults.values().stream().mapToInt(Integer::intValue).sum();
                     pollState = new PollState(
                         pollQuestion,
@@ -170,6 +171,9 @@ public class MeetingApp {
                         totalVotes,
                         lastPollResults
                     );
+                } else if ("CLOSED".equals(pollStatus) && lastPollResults != null) {
+                    // Poll is closed, show only last results
+                    pollState = new PollState(null, null, "CLOSED", Map.of(), 0, lastPollResults);
                 } else if (lastPollResults != null) {
                     // No active poll, but we have last results
                     pollState = new PollState(null, null, null, Map.of(), 0, lastPollResults);
@@ -387,8 +391,24 @@ public class MeetingApp {
                         totalVotes
                     );
                     
-                    // Mark poll as ended
+                    // Mark poll as ended (results shown in overlay to participants)
                     pollStatus = "ENDED";
+                }
+            } finally {
+                lock.unlock();
+            }
+        }
+        
+        public void closePoll() {
+            lock.lock();
+            try {
+                if ("ENDED".equals(pollStatus)) {
+                    // Clear active poll state, keep lastPollResults
+                    pollQuestion = null;
+                    pollType = null;
+                    pollStatus = "CLOSED";
+                    pollResults.clear();
+                    sessionVotes.clear();
                 }
             } finally {
                 lock.unlock();
@@ -679,6 +699,21 @@ public class MeetingApp {
                         // Only chair can end a poll
                         if (room.isChairSession(sessionId)) {
                             room.endPoll();
+                            broadcast(normalizedRoomCode);
+                        }
+                    });
+        }
+        
+        @MessageMapping("/room/{roomCode}/poll/close")
+        public void closePoll(@DestinationVariable String roomCode, StompHeaderAccessor headerAccessor) {
+            String normalizedRoomCode = normalizeRoomCode(roomCode);
+            String sessionId = headerAccessor.getSessionId();
+            
+            roomRepository.getByCode(normalizedRoomCode)
+                    .ifPresent(room -> {
+                        // Only chair can close a poll
+                        if (room.isChairSession(sessionId)) {
+                            room.closePoll();
                             broadcast(normalizedRoomCode);
                         }
                     });

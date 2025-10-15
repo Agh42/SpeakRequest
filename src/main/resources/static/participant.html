@@ -7,6 +7,43 @@
   <link rel="stylesheet" href="styles.css"/>
   <script src="stomp.min.js"></script>
   <script src="purify.min.js"></script>
+  <style>
+    /* Poll overlay styles (mobile-friendly) */
+    .poll-overlay {
+      position: fixed;
+      inset: 0;
+      display: none; /* shown via JS */
+      align-items: center;
+      justify-content: center;
+      background: rgba(15,23,42,0.95); /* Dark background matching main theme */
+      z-index: 9999;
+    }
+
+    .poll-overlay .panel {
+      width: 100%;
+      max-width: 720px;
+      height: calc(var(--vh, 1vh) * 100);
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0));
+      border: 1px solid rgba(255,255,255,.12);
+      color: #e5e7eb; /* Light text for dark background */
+      box-sizing: border-box;
+      padding: calc(env(safe-area-inset-top, 16px) + 16px) 16px calc(env(safe-area-inset-bottom, 16px) + 16px);
+      overflow: auto;
+      border-radius: 14px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    }
+
+    /* Ensure buttons stretch nicely inside the overlay */
+    .poll-overlay .row { display:flex; gap:8px; }
+    .poll-overlay .row button { flex:1; }
+    
+    /* Selected vote button styling */
+    .poll-overlay button.vote-selected {
+      background: linear-gradient(180deg, rgba(96,165,250,.25), rgba(96,165,250,.15));
+      border: 2px solid rgba(96,165,250,.8);
+      box-shadow: 0 0 12px rgba(96,165,250,.4);
+    }
+  </style>
 </head>
 <body>
   <div class="wrap">
@@ -76,24 +113,19 @@
           </div>
           <div id="copyStatus" class="muted small"></div>
         </div>
-        <div id="assumeChairStatus" class="muted small"></div>
+        
       </section>
 
-      <!-- Poll Section -->
-      <section class="card" id="pollSection" style="display: none;">
-        <!-- Active poll voting -->
-        <div id="pollVoting" style="display: none;">
-          <h2>Active Poll</h2>
-          <div id="pollQuestionDisplay" style="font-weight: bold; margin: 12px 0; font-size: 1.1rem;"></div>
-          <div class="row">
-            <button id="btnVoteYes" class="primary" style="flex: 1;">👍 Yes</button>
-            <button id="btnVoteNo" class="accent" style="flex: 1;">👎 No</button>
+      <!-- Poll Section (always visible for participants) -->
+      <section class="card" id="pollSection">
+        <!-- Empty/default poll view shown when no active or previous poll exists -->
+          <div id="pollEmpty">
+            <h2>Poll View</h2>
+            <div id="pollEmptyMsg" style="font-weight: bold; margin: 12px 0; font-size: 1.1rem;">Poll View - no active poll</div>
           </div>
-          <div id="voteStatus" class="muted small"></div>
-        </div>
         
-        <!-- Poll results -->
-        <div id="pollResultsParticipant" style="display: none;">
+          <!-- Poll results (shown in participant view when no active poll) -->
+          <div id="pollResultsParticipant" style="display: none;">
           <h2>Last Poll Results</h2>
           <div id="pollResultsQuestionParticipant" style="font-weight: bold; margin: 8px 0;"></div>
           <div id="pollResultsDataParticipant" style="margin: 8px 0;"></div>
@@ -101,6 +133,30 @@
       </section>
     </main>
   </div>
+
+    <!-- Poll Overlay: shown only while poll is ACTIVE -->
+    <div id="pollOverlay" class="poll-overlay" role="dialog" aria-modal="true" aria-hidden="true">
+      <div class="panel" id="pollOverlayPanel">
+        <h2 id="overlayHeading">Active Poll</h2>
+        <div id="overlayPollQuestionDisplay" style="font-weight: bold; margin: 12px 0; font-size: 1.1rem;"></div>
+        
+        <!-- Voting section (shown during ACTIVE state) -->
+        <div id="overlayVotingSection">
+          <div class="row" style="margin-bottom:12px;">
+            <button id="overlayBtnVoteYes" class="primary">👍 Yes</button>
+            <button id="overlayBtnVoteNo" class="accent">👎 No</button>
+          </div>
+          <div id="overlayVoteStatus" class="muted small"></div>
+        </div>
+        
+        <!-- Results section (shown during ENDED state) -->
+        <div id="overlayResultsSection" style="display: none;">
+          <div style="font-weight: bold; margin: 12px 0;">Poll Results</div>
+          <div id="overlayResultsData" style="margin: 8px 0;"></div>
+          <div class="muted small" style="margin-top: 16px;">Waiting for chair to continue discussion...</div>
+        </div>
+      </div>
+    </div>
 
   <script>
     // Extract room code from URL query parameter
@@ -143,13 +199,14 @@
     const elAssumeChairStatus = $('#assumeChairStatus');
     
     // Poll elements
-    const elPollSection = $('#pollSection');
-    const elPollVoting = $('#pollVoting');
-    const elPollResultsParticipant = $('#pollResultsParticipant');
-    const elPollQuestionDisplay = $('#pollQuestionDisplay');
-    const elPollResultsQuestionParticipant = $('#pollResultsQuestionParticipant');
-    const elPollResultsDataParticipant = $('#pollResultsDataParticipant');
-    const elVoteStatus = $('#voteStatus');
+  const elPollSection = $('#pollSection');
+  const elPollEmpty = $('#pollEmpty');
+  const elPollVoting = $('#pollVoting');
+  const elPollResultsParticipant = $('#pollResultsParticipant');
+  const elPollQuestionDisplay = $('#pollQuestionDisplay');
+  const elPollResultsQuestionParticipant = $('#pollResultsQuestionParticipant');
+  const elPollResultsDataParticipant = $('#pollResultsDataParticipant');
+  const elVoteStatus = $('#voteStatus');
 
     // --- State ---
     let client = null;
@@ -159,6 +216,49 @@
     let currentState = null; // Add this to store the full state
     let pendingChairRequestId = null; // Track our pending chair request
     let hasVoted = false; // Track if user has voted in current poll
+
+    // --- viewport workaround for mobile (--vh) ---
+    function setVh() {
+      document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+    }
+    setVh();
+    window.addEventListener('resize', setVh);
+    window.addEventListener('orientationchange', setVh);
+
+    // --- Overlay helpers ---
+    const elPollOverlay = $('#pollOverlay');
+    const elPollOverlayPanel = $('#pollOverlayPanel');
+    const elOverlayQuestion = $('#overlayPollQuestionDisplay');
+    const elOverlayVoteStatus = $('#overlayVoteStatus');
+    const elOverlayBtnYes = $('#overlayBtnVoteYes');
+    const elOverlayBtnNo = $('#overlayBtnVoteNo');
+    const elOverlayVotingSection = $('#overlayVotingSection');
+    const elOverlayResultsSection = $('#overlayResultsSection');
+    const elOverlayResultsData = $('#overlayResultsData');
+    
+    // Track current vote
+    let currentVote = null; // 'YES', 'NO', or null
+
+    function openOverlay() {
+      // prevent background scroll
+      document.documentElement.style.overflow = 'hidden';
+      elPollOverlay.style.display = 'flex';
+      elPollOverlay.setAttribute('aria-hidden', 'false');
+      // focus management
+      setTimeout(() => {
+        const first = elPollOverlay.querySelector('button, [tabindex], input');
+        if (first) first.focus();
+      }, 50);
+      // hide non-poll interactive controls from screen readers
+      document.querySelector('main.grid').setAttribute('aria-hidden', 'true');
+    }
+
+    function closeOverlay() {
+      document.documentElement.style.overflow = '';
+      elPollOverlay.style.display = 'none';
+      elPollOverlay.setAttribute('aria-hidden', 'true');
+      document.querySelector('main.grid').removeAttribute('aria-hidden');
+    }
 
     // --- WebSocket ---
     function connect() {
@@ -267,49 +367,91 @@
     function updatePollUIParticipant(state) {
       const pollState = state.pollState;
       
-      // Hide/show poll section
+      // Show poll section always (participants should always see poll box)
+      // Manage views: empty (default), overlay (active), results (ended)
+      elPollEmpty.style.display = 'block';
+      elPollResultsParticipant.style.display = 'none';
+      closeOverlay();
+
       if (!pollState || (!pollState.status && !pollState.lastResults)) {
-        elPollSection.style.display = 'none';
-        // Show normal controls
+        // No active poll and no last results -> show empty message
+        elPollEmpty.style.display = 'block';
+        // Ensure normal controls enabled
         $('#btnRequest').disabled = false;
         $('#btnWithdraw').disabled = false;
+        // Reset vote tracking
+        currentVote = null;
         return;
       }
-      
-      elPollSection.style.display = 'block';
-      
-      // Hide all poll sub-sections first
-      elPollVoting.style.display = 'none';
-      elPollResultsParticipant.style.display = 'none';
-      
+
+      // If poll is ACTIVE, open overlay and disable background controls
       if (pollState.status === 'ACTIVE') {
-        // Active poll - show voting interface
-        elPollVoting.style.display = 'block';
-        elPollQuestionDisplay.textContent = DOMPurify.sanitize(pollState.question);
+        elPollEmpty.style.display = 'none';
+        // Show overlay with voting section
+        elOverlayQuestion.textContent = DOMPurify.sanitize(pollState.question);
+        elOverlayVotingSection.style.display = 'block';
+        elOverlayResultsSection.style.display = 'none';
         
-        // Hide other controls during polling
+        // Update vote status message based on current vote
+        if (currentVote) {
+          elOverlayVoteStatus.textContent = `✓ You voted: ${currentVote === 'YES' ? 'Yes' : 'No'}`;
+          elOverlayVoteStatus.className = 'ok small';
+        } else {
+          elOverlayVoteStatus.textContent = 'Cast your vote (you can change it):';
+          elOverlayVoteStatus.className = 'muted small';
+        }
+        
+        // Update button styling based on selection
+        updateVoteButtonStyles();
+        
+        // Disable background controls
         $('#btnRequest').disabled = true;
         $('#btnWithdraw').disabled = true;
+        openOverlay();
+        return;
+      }
+
+      // If poll is ENDED, show results in overlay
+      if (pollState.status === 'ENDED') {
+        elPollEmpty.style.display = 'none';
+        // Show overlay with results section
+        elOverlayQuestion.textContent = DOMPurify.sanitize(pollState.question);
+        elOverlayVotingSection.style.display = 'none';
+        elOverlayResultsSection.style.display = 'block';
         
-        // Buttons remain enabled to allow vote changes
-        $('#btnVoteYes').disabled = false;
-        $('#btnVoteNo').disabled = false;
-        elVoteStatus.textContent = 'Cast your vote (you can change it):';
-        elVoteStatus.className = 'muted small';
-      } else if (pollState.status === 'ENDED' || pollState.lastResults) {
-        // Poll ended - show results
+        // Format results same as previous poll box
+        let resultsHTML = '<div style="margin-top: 8px;">';
+        for (const [option, count] of Object.entries(pollState.results)) {
+          const percentage = pollState.totalVotes > 0 ? Math.round((count / pollState.totalVotes) * 100) : 0;
+          resultsHTML += `<div style="margin: 4px 0;"><strong>${option}:</strong> ${count} (${percentage}%)</div>`;
+        }
+        resultsHTML += `<div style="margin-top: 8px;" class="muted small">Total votes: ${pollState.totalVotes}</div>`;
+        resultsHTML += '</div>';
+        elOverlayResultsData.innerHTML = resultsHTML;
+        
+        // Keep background controls disabled
+        $('#btnRequest').disabled = true;
+        $('#btnWithdraw').disabled = true;
+        openOverlay();
+        return;
+      }
+
+      // If poll is CLOSED or we have lastResults, show in participant view box and close overlay
+      if (pollState.status === 'CLOSED' || pollState.lastResults) {
+        elPollEmpty.style.display = 'none';
         elPollResultsParticipant.style.display = 'block';
+        closeOverlay();
         
         // Re-enable controls
         $('#btnRequest').disabled = false;
         $('#btnWithdraw').disabled = false;
         
-        const results = pollState.status === 'ENDED' ? 
-          { question: pollState.question, results: pollState.results, totalVotes: pollState.totalVotes } :
-          pollState.lastResults;
-        
+        // Reset vote tracking for next poll
+        currentVote = null;
+
+        const results = pollState.lastResults;
         elPollResultsQuestionParticipant.textContent = DOMPurify.sanitize(results.question);
-        
+
         let resultsHTML = '<div style="margin-top: 8px;">';
         for (const [option, count] of Object.entries(results.results)) {
           const percentage = results.totalVotes > 0 ? Math.round((count / results.totalVotes) * 100) : 0;
@@ -318,6 +460,20 @@
         resultsHTML += `<div style="margin-top: 8px;" class="muted small">Total votes: ${results.totalVotes}</div>`;
         resultsHTML += '</div>';
         elPollResultsDataParticipant.innerHTML = resultsHTML;
+        return;
+      }
+    }
+    
+    function updateVoteButtonStyles() {
+      // Remove selected class from both buttons
+      elOverlayBtnYes.classList.remove('vote-selected');
+      elOverlayBtnNo.classList.remove('vote-selected');
+      
+      // Add selected class to the button that was voted for
+      if (currentVote === 'YES') {
+        elOverlayBtnYes.classList.add('vote-selected');
+      } else if (currentVote === 'NO') {
+        elOverlayBtnNo.classList.add('vote-selected');
       }
     }
 
@@ -449,17 +605,21 @@
       localStorage.setItem('speakRequestName', elName.value);
     };
 
-    // Poll vote handlers
-    $('#btnVoteYes').onclick = () => {
+    // Overlay poll vote handlers
+    elOverlayBtnYes.onclick = () => {
+      currentVote = 'YES';
       client?.send(`/app/room/${roomCode}/poll/vote`, {}, JSON.stringify({vote: 'YES'}));
-      elVoteStatus.textContent = '✓ Vote sent to server';
-      elVoteStatus.className = 'ok small';
+      elOverlayVoteStatus.textContent = '✓ You voted: Yes';
+      elOverlayVoteStatus.className = 'ok small';
+      updateVoteButtonStyles();
     };
-    
-    $('#btnVoteNo').onclick = () => {
+
+    elOverlayBtnNo.onclick = () => {
+      currentVote = 'NO';
       client?.send(`/app/room/${roomCode}/poll/vote`, {}, JSON.stringify({vote: 'NO'}));
-      elVoteStatus.textContent = '✓ Vote sent to server';
-      elVoteStatus.className = 'ok small';
+      elOverlayVoteStatus.textContent = '✓ You voted: No';
+      elOverlayVoteStatus.className = 'ok small';
+      updateVoteButtonStyles();
     };
 
     // --- Start ---

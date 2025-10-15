@@ -290,19 +290,9 @@
         resultsHTML += `<div style="margin-top: 8px;" class="muted small">Total votes: ${poll.totalVotes}</div>`;
         resultsHTML += '</div>';
         elPollResultsData.innerHTML = resultsHTML;
-      } else if (poll.lastResults) {
-        // No active poll but show last results
-        elPollResults.style.display = 'block';
-        elPollResultsQuestion.textContent = DOMPurify.sanitize(poll.lastResults.question);
-        
-        let resultsHTML = '<div style="margin-top: 8px;">';
-        for (const [option, count] of Object.entries(poll.lastResults.results)) {
-          const percentage = poll.lastResults.totalVotes > 0 ? Math.round((count / poll.lastResults.totalVotes) * 100) : 0;
-          resultsHTML += `<div style="margin: 4px 0;"><strong>${option}:</strong> ${count} (${percentage}%)</div>`;
-        }
-        resultsHTML += `<div style="margin-top: 8px;" class="muted small">Total votes: ${poll.lastResults.totalVotes}</div>`;
-        resultsHTML += '</div>';
-        elPollResultsData.innerHTML = resultsHTML;
+      } else if (poll.status === 'CLOSED' || poll.lastResults) {
+        // Poll closed or showing last results - return to "no polls" view
+        elPollNone.style.display = 'block';
       } else {
         // No polls yet - show message
         elPollNone.style.display = 'block';
@@ -467,9 +457,9 @@
     };
     
     $('#btnContinueDiscussion').onclick = () => {
-      // Just return to the "no polls" view which shows the message
-      elPollResults.style.display = 'none';
-      elPollNone.style.display = 'block';
+      // Send close message to move poll to "previous poll" box and return participants to normal view
+      client?.send(`/app/room/${roomCode}/poll/close`, {}, '{}');
+      // UI will update automatically when state broadcast is received
     };
     
     $('#btnStartFirstPoll').onclick = () => {
