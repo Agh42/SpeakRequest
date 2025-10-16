@@ -183,6 +183,13 @@
           currentState = state;
           updateDisplay(state);
         });
+        
+        // Subscribe to room destroyed event
+        client.subscribe(`/topic/room/${roomCode}/destroyed`, msg => {
+          const data = JSON.parse(msg.body);
+          alert(data.message + '\n\nThis window will close.');
+          window.close();
+        });
 
         // Join to get initial state
         client.send(`/app/room/${roomCode}/join`, {}, JSON.stringify({name:'Display', role:'Observer'}));
@@ -219,7 +226,13 @@
         } else {
           // YES/NO poll - simple text display
           resultsHTML = '<div style="margin-top: 8px;">';
-          for (const [option, count] of Object.entries(state.pollState.results)) {
+          // Sort entries to ensure numeric order (OPT_1 to OPT_8)
+          const sortedEntries = Object.entries(state.pollState.results).sort((a, b) => {
+            const numA = parseInt(a[0].replace('OPT_', '')) || 0;
+            const numB = parseInt(b[0].replace('OPT_', '')) || 0;
+            return numA - numB;
+          });
+          for (const [option, count] of sortedEntries) {
             const percentage = state.pollState.totalVotes > 0 ? Math.round((count / state.pollState.totalVotes) * 100) : 0;
             const label = getVoteLabel(option, state.pollState.pollType);
             resultsHTML += `<div style="margin: 4px 0; font-size: 1.2rem;"><strong>${label}:</strong> ${count} (${percentage}%)</div>`;
@@ -270,7 +283,13 @@
         } else {
           // YES/NO poll - simple text display
           resultsHTML = '<div style="margin-top: 8px;">';
-          for (const [option, count] of Object.entries(results.results)) {
+          // Sort entries to ensure numeric order (OPT_1 to OPT_8)
+          const sortedEntries = Object.entries(results.results).sort((a, b) => {
+            const numA = parseInt(a[0].replace('OPT_', '')) || 0;
+            const numB = parseInt(b[0].replace('OPT_', '')) || 0;
+            return numA - numB;
+          });
+          for (const [option, count] of sortedEntries) {
             const percentage = results.totalVotes > 0 ? Math.round((count / results.totalVotes) * 100) : 0;
             const label = getVoteLabel(option, results.pollType);
             resultsHTML += `<div style="margin: 4px 0; font-size: 1.2rem;"><strong>${label}:</strong> ${count} (${percentage}%)</div>`;

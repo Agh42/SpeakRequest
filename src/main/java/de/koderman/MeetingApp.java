@@ -111,6 +111,10 @@ public class MeetingApp {
         String vote // "YES" or "NO"
     ) {}
     
+    public record DestroyRoom() {}
+    
+    public record RoomDestroyed(String message, String landingUrl) {}
+    
     public record PollState(
         String question,
         String pollType,
@@ -478,6 +482,23 @@ public class MeetingApp {
         public void untrackSession(String sessionId) {
             sessionToRoomCode.remove(sessionId);
         }
+        
+        public void destroyRoom(String roomCode) {
+            // Remove room from registry
+            Room room = roomsByCode.remove(roomCode);
+            
+            // Remove all session tracking for this room
+            if (room != null) {
+                sessionToRoomCode.entrySet().removeIf(entry -> roomCode.equals(entry.getValue()));
+            }
+        }
+        
+        public List<String> getSessionsForRoom(String roomCode) {
+            return sessionToRoomCode.entrySet().stream()
+                    .filter(entry -> roomCode.equals(entry.getValue()))
+                    .map(Map.Entry::getKey)
+                    .toList();
+        }
     }
 
     // ---------------- In-memory meeting state ----------------
@@ -740,6 +761,37 @@ public class MeetingApp {
                         if (room.isChairSession(sessionId)) {
                             room.cancelPoll();
                             broadcast(normalizedRoomCode);
+                        }
+                    });
+        }
+        
+        @MessageMapping("/room/{roomCode}/destroy")
+        public void destroyRoom(@DestinationVariable String roomCode, StompHeaderAccessor headerAccessor) {
+            String normalizedRoomCode = normalizeRoomCode(roomCode);
+            String sessionId = headerAccessor.getSessionId();
+            
+            roomRepository.getByCode(normalizedRoomCode)
+                    .ifPresent(room -> {
+                        // Only chair can destroy the room
+                        if (room.isChairSession(sessionId)) {
+                            // Create destruction message
+                            String landingUrl = "/landing.html";
+                            RoomDestroyed destroyedMsg = new RoomDestroyed(
+                                "The room has been closed by the chair.",
+                                landingUrl
+                            );
+                            
+                            // Broadcast to all participants and popout windows
+                            broker.convertAndSend("/topic/room/" + normalizedRoomCode + "/destroyed", destroyedMsg);
+                            
+                            // Get all sessions in this room for cleanup
+                            List<String> sessions = roomRepository.getSessionsForRoom(normalizedRoomCode);
+                            
+                            // Remove the room and all references
+                            roomRepository.destroyRoom(normalizedRoomCode);
+                            
+                            // Untrack all sessions
+                            sessions.forEach(roomRepository::untrackSession);
                         }
                     });
         }

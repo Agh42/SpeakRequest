@@ -46,6 +46,7 @@
         </div>
         <div class="row">
           <button id="btnPopout" class="accent">📺 Open Popout Window</button>
+          <button id="btnDestroyRoom" class="ghost" style="background-color: #dc2626; color: white;">🗑️ Destroy Room</button>
         </div>
         <div class="row">
           <label class="muted">Per-speaker limit (sec)</label>
@@ -219,6 +220,13 @@
         client.subscribe(`/topic/room/${roomCode}/state`, msg => {
           const state = JSON.parse(msg.body);
           updateUI(state);
+        });
+        
+        // Subscribe to room destroyed event
+        client.subscribe(`/topic/room/${roomCode}/destroyed`, msg => {
+          const data = JSON.parse(msg.body);
+          alert(data.message + '\n\nYou will be redirected to the landing page.');
+          window.location.href = data.landingUrl;
         });
 
         // Join to get initial state
@@ -460,6 +468,23 @@
     $('#btnPopout').onclick = () => {
       const url = `/popout.html?room=${roomCode}`;
       window.open(url, 'popout', 'width=325,height=870,resizable=yes');
+    };
+    
+    $('#btnDestroyRoom').onclick = () => {
+      const confirmed = confirm(
+        '⚠️ WARNING ⚠️\n\n' +
+        'Are you sure you want to destroy this room?\n\n' +
+        'This will:\n' +
+        '• End the current discussion\n' +
+        '• Disconnect all participants\n' +
+        '• Close all popout windows\n' +
+        '• Delete the room permanently\n\n' +
+        'This action cannot be undone!'
+      );
+      
+      if (confirmed) {
+        client?.send(`/app/room/${roomCode}/destroy`, {}, '{}');
+      }
     };
 
     // Copy room code
