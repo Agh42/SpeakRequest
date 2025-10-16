@@ -629,7 +629,7 @@
       // Find max vote count for scaling bars
       const maxVotes = Math.max(...Object.values(results), 1);
       
-      let html = '<div style="margin: 16px 0;">';
+      let html = '<div style="margin: 16px 0; font-size: 0.75rem;">';
       html += '<div style="display: flex; align-items: flex-end; justify-content: space-between; height: 120px; margin-bottom: 8px;">';
       
       // Create bars for each option
@@ -637,27 +637,31 @@
         const count = results[opt.key] || 0;
         const heightPercent = maxVotes > 0 ? (count / maxVotes) * 100 : 0;
         
-        html += `<div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end;">`;
+        html += `<div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; position: relative;">`;
+        // Count above bar
+        if (count > 0) {
+          html += `<div style="font-weight: bold; font-size: 0.7rem; color: rgba(96,165,250,1); margin-bottom: 2px;">${count}</div>`;
+        }
+        // Bar
         html += `<div style="background: rgba(96,165,250,0.6); width: 80%; height: ${heightPercent}%; min-height: ${count > 0 ? '4px' : '0'}; border-radius: 4px 4px 0 0;"></div>`;
         html += `</div>`;
       });
       
       html += '</div>';
       
-      // Number line with labels and counts
+      // Number line with wrapped labels
       html += '<div style="display: flex; justify-content: space-between; border-top: 2px solid rgba(255,255,255,0.3); padding-top: 8px;">';
       
       gradientOptions.forEach(opt => {
-        const count = results[opt.key] || 0;
-        html += `<div style="flex: 1; text-align: center;">`;
-        html += `<div style="font-weight: bold; font-size: 0.9rem;">${opt.num}</div>`;
-        html += `<div style="font-size: 0.75rem; margin: 2px 0;">${opt.label}</div>`;
-        html += `<div style="font-weight: bold; color: rgba(96,165,250,1);">${count}</div>`;
+        html += `<div style="flex: 1; display: flex; flex-direction: column; align-items: center; min-height: 100px; padding: 0 2px;">`;
+        html += `<div style="font-weight: bold; font-size: 0.85rem; margin-bottom: 6px;">${opt.num}</div>`;
+        // Wrapped label
+        html += `<div style="font-size: 0.5rem; text-align: center; line-height: 1.2; word-wrap: break-word; overflow-wrap: break-word; hyphens: auto; max-width: 100%;">${opt.label}</div>`;
         html += `</div>`;
       });
       
       html += '</div>';
-      html += '<div style="margin-top: 12px; font-size: 0.7rem; color: rgba(255,255,255,0.5); font-style: italic;">Reference: Kaner, S. (2014). Facilitator\'s Guide to Participatory Decision-Making. Third edition, Jossey-Bass: San Francisco, California, United States of America.</div>';
+      html += '<div style="margin-top: 8px; font-size: 0.45rem; color: rgba(255,255,255,0.5); font-style: italic;">Reference: Kaner, S. (2014). Facilitator\'s Guide to Participatory Decision-Making. Third edition, Jossey-Bass: San Francisco, California, United States of America.</div>';
       html += '</div>';
       
       return html;
