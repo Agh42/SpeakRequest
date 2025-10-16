@@ -1,0 +1,6 @@
+server:
+  forward-headers-strategy: framework
+  tomcat:
+    remote-ip-header: x-forwarded-for
+    protocol-header: x-forwarded-proto
+    use-relative-redirects: true

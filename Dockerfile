@@ -21,5 +21,8 @@ WORKDIR /app
 # Copy only the jar from builder
 COPY --from=builder /home/gradle/project/build/libs/*.jar app.jar
 
+# Copy external application.yaml configuration
+COPY application.yaml ./application.yaml
+
 EXPOSE 8080
 ENTRYPOINT ["java","-jar","app.jar"]
