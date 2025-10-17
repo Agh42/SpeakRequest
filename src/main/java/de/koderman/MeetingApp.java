@@ -531,12 +531,17 @@ public class MeetingApp {
         }
         
         public void destroyRoom(String roomCode) {
-            // Remove room from registry
-            Room room = roomsByCode.remove(roomCode);
-            
-            // Remove all session tracking for this room
-            if (room != null) {
-                sessionToRoomCode.entrySet().removeIf(entry -> roomCode.equals(entry.getValue()));
+            synchronized (roomCreationLock) {
+                // Remove room from registry
+                Room room = roomsByCode.remove(roomCode);
+                
+                // Remove from timestamp map
+                if (room != null) {
+                    roomsByTimestamp.remove(room.getMeetingStartSec());
+                    
+                    // Remove all session tracking for this room
+                    sessionToRoomCode.entrySet().removeIf(entry -> roomCode.equals(entry.getValue()));
+                }
             }
         }
         
