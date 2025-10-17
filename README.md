@@ -2,13 +2,17 @@
 
 **A modern meeting manager for live and hybrid meetings**
 
-SpeakRequest is a meeting manager designed for live and hybrid meetings. It helps moderators facilitate meetings by managing speak requests from participants, transparently showing who has the right to speak and for how long they've been talking. Each participant's place in the queue is visible at any moment.
+SpeakRequest is a meeting manager designed for live and hybrid meetings. 
 
-The popout view can be placed by the facilitator on a projector or shared on-screen via web conferencing software such as Microsoft Teams, Zoom, or similar platforms. It also allows quick and hassle-free conduction of live polls with different poll types supported. Local participants can vote by scanning the QR code shown on the projector screen. Remote participants can easily join by entering the simple four-letter room code.
+It helps moderators facilitate meetings by managing speak requests from participants, transparently showing who has the right to speak and for how long they've been talking. Each participant's place in the queue is visible at any moment.
 
-## 🚀 Live Demo
+The popout view can be placed by the facilitator on a projector or shared on-screen via web conferencing software such as Microsoft Teams, Zoom, or similar platforms. 
 
-Try it live at: **[https://speek.now](https://speek.now)**
+It also allows quick and hassle-free conduction of live polls with different poll types supported. Local participants can vote by scanning the QR code shown on the projector screen. Remote participants can easily join by entering the simple four-letter room code.
+
+## 🚀 Live Instance
+
+Use it now at: **[https://speek.now](https://speek.now)**
 
 ## 📦 Quick Start with Docker
 
@@ -24,7 +28,7 @@ Then open your browser to `http://localhost:8080`
 
 - **Speak Request Queue**: Manage speaking turns with a transparent queue system
 - **Speech Timer**: Track how long each participant has been speaking
-- **Live Polls**: Conduct quick polls with various poll types
+- **Live Polls**: Conduct realtime polls with various poll types
 - **QR Code Access**: Local participants can join via QR code
 - **Easy Room Codes**: Simple four-letter codes for hassle-free joining
 - **Hybrid Meeting Support**: Works seamlessly for both in-person and remote participants
@@ -87,10 +91,9 @@ This project is licensed under the GNU Affero General Public License v3.0 (AGPL-
 
 ## 🔗 Links
 
-- **Live Demo**: [https://speek.now](https://speek.now)
+- **Live Instance**: [https://speek.now](https://speek.now)
 - **Docker Hub**: [agh42/speakrequest](https://hub.docker.com/r/agh42/speakrequest)
 - **GitHub**: [Agh42/SpeakRequest](https://github.com/Agh42/SpeakRequest)
 
----
 
-Made with ❤️ for better meetings
+
