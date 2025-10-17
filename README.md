@@ -36,7 +36,7 @@ Then open your browser to `http://localhost:8080`
 ### Prerequisites
 
 - Java 21 or higher
-- Gradle 8.9 or higher (or use the included Gradle wrapper)
+- Gradle 8.9 (or use the included Gradle wrapper)
 
 ### Build Steps
 
@@ -58,7 +58,7 @@ Then open your browser to `http://localhost:8080`
 
    Or run the built JAR directly:
    ```bash
-   java -jar build/libs/speakrequest-0.0.1-SNAPSHOT.jar
+   java -jar build/libs/SpeakRequest-0.0.1-SNAPSHOT.jar
    ```
 
 The application will start on `http://localhost:8080`
