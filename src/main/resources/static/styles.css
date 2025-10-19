@@ -180,3 +180,26 @@ button{cursor:pointer;font-size:16px}
   }
 }
 
+/* Footer styles */
+footer {
+  margin-top: 32px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,.12);
+  text-align: center;
+}
+
+footer .footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+footer a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+footer a:hover {
+  color: var(--text);
+}
