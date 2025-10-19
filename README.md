@@ -20,9 +20,9 @@ A popout view can be placed by the facilitator on a projector or shared on-scree
 
 It also allows quick and hassle-free conduction of live polls with different poll types supported. Local participants can vote by scanning the QR code shown on the projector screen. Remote participants can easily join by entering the simple four-letter room code.
 
-## 🚀 Access Live Instance
+## 🚀 Access Live Instance now at: **[https://speek.now](https://speek.now)**
 
-### Use it now at: **[https://speek.now](https://speek.now)**
+You may start using SpeakRequest immediately by creating a room on the live instance hosted at [https://speek.now](https://speek.now). No registration or login is required.
 
 ## 📦 Run it yourself
 
@@ -44,6 +44,47 @@ Then open your browser to `http://localhost:8080` or your server's IP address/do
 - **Hybrid Meeting Support**: Works seamlessly for both in-person and remote participants
 - **Projector/Screen Share Ready**: Popout view optimized for projection and screen sharing
 - **Real-time Updates**: WebSocket-based live updates for all participants
+
+## 🖼️ Screenshots
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="docs/images/chair.png"><img src="docs/images/chair.png" alt="Chair view" width="450"/></a><br/>
+      <sub>Chair view allows the facilitator to moderate the meeting.</sub>
+    </td>
+    <td align="center">
+      <a href="docs/images/popout.png"><img src="docs/images/popout.png" alt="Popout view" width="180"/></a><br/>
+      <sub>Popout view for projector or screen-sharing. QR code to join.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="docs/images/participant.png"><img src="docs/images/participant.png" alt="Participant view" width="450"/></a><br/>
+      <sub>Participant view gives positive feedback that the request to speak has been noticed.</sub>
+    </td>
+    <td align="center">
+      <a href="docs/images/yes-no-poll.png"><img src="docs/images/yes-no-poll.png" alt="Yes/No poll" width="280"/></a><br/>
+      <sub>A simple Yes/No poll.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="docs/images/yesno-poll-result.png"><img src="docs/images/yesno-poll-result.png" alt="Poll result" width="380"/></a><br/>
+      <sub>Result display of a yes/no poll.</sub>
+    </td>
+    <td align="center">
+      <a href="docs/images/agreement-poll.png"><img src="docs/images/agreement-poll.png" alt="Smartphone view" width="280"/></a><br/>
+      <sub>Smartphone view of an agreement poll.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2">
+      <a href="docs/images/popout-GoA-poll-result.png"><img src="docs/images/popout-GoA-poll-result.png" alt="Agreement result" width="560"/></a><br/>
+      <sub>Result page of an agreement poll.</sub>
+    </td>
+  </tr>
+</table>
 
 ## 🛠️ Building from Source
 
