@@ -100,20 +100,6 @@
             </div>
             
             <div style="margin-bottom: 10px;">
-              <label for="configMeetingGoal" class="muted small" style="display: block; margin-bottom: 4px;">Meeting Goal</label>
-              <select id="configMeetingGoal" style="width: 100%; padding: 6px;">
-                <option value="">-- Select Meeting Goal --</option>
-                <option value="SHARE_INFORMATION">Share Information</option>
-                <option value="ADVANCE_THINKING">Advance the Thinking</option>
-                <option value="OBTAIN_INPUT">Obtain Input</option>
-                <option value="MAKE_DECISIONS">Make Decisions</option>
-                <option value="IMPROVE_COMMUNICATION">Improve Communication</option>
-                <option value="BUILD_CAPACITY">Build Capacity</option>
-                <option value="BUILD_COMMUNITY">Build Community</option>
-              </select>
-            </div>
-            
-            <div style="margin-bottom: 10px;">
               <label for="configParticipationFormat" class="muted small" style="display: block; margin-bottom: 4px;">Participation Format</label>
               <select id="configParticipationFormat" style="width: 100%; padding: 6px;">
                 <option value="">-- Select Participation Format --</option>
@@ -129,6 +115,20 @@
                 <option value="TRADESHOW">Tradeshow</option>
                 <option value="SCRAMBLER">Scrambler</option>
                 <option value="ROLEPLAYS">Roleplays</option>
+              </select>
+            </div>
+            
+            <div style="margin-bottom: 10px;">
+              <label for="configMeetingGoal" class="muted small" style="display: block; margin-bottom: 4px;">Meeting Goal</label>
+              <select id="configMeetingGoal" style="width: 100%; padding: 6px;">
+                <option value="">-- Select Meeting Goal --</option>
+                <option value="SHARE_INFORMATION">Share Information</option>
+                <option value="ADVANCE_THINKING">Advance the Thinking</option>
+                <option value="OBTAIN_INPUT">Obtain Input</option>
+                <option value="MAKE_DECISIONS">Make Decisions</option>
+                <option value="IMPROVE_COMMUNICATION">Improve Communication</option>
+                <option value="BUILD_CAPACITY">Build Capacity</option>
+                <option value="BUILD_COMMUNITY">Build Community</option>
               </select>
             </div>
             
@@ -170,10 +170,6 @@
                 <option value="IDENTIFY_CORE_VALUES">Identify core values</option>
                 <option value="EDIT_STATEMENT">Edit and/or wordsmith a statement</option>
               </select>
-            </div>
-            
-            <div class="row" style="margin-top: 12px;">
-              <button id="btnSaveConfig" class="primary">💾 Save Configuration</button>
             </div>
             
             <!-- Description Display Area -->
@@ -747,6 +743,26 @@
       }
     };
     
+    function updateConditionalFields() {
+      const meetingGoal = elConfigMeetingGoal.value;
+      
+      // Enable/disable Decision Rule based on Meeting Goal
+      if (meetingGoal === 'MAKE_DECISIONS') {
+        elConfigDecisionRule.disabled = false;
+      } else {
+        elConfigDecisionRule.disabled = true;
+        elConfigDecisionRule.value = '';
+      }
+      
+      // Enable/disable Deliverable based on Meeting Goal
+      if (meetingGoal === 'ADVANCE_THINKING') {
+        elConfigDeliverable.disabled = false;
+      } else {
+        elConfigDeliverable.disabled = true;
+        elConfigDeliverable.value = '';
+      }
+    }
+    
     function updateDescriptionDisplay() {
       const meetingGoal = elConfigMeetingGoal.value;
       const participationFormat = elConfigParticipationFormat.value;
@@ -756,16 +772,16 @@
       let html = '';
       let hasAnySelection = false;
       
-      if (meetingGoal) {
-        hasAnySelection = true;
-        const optionText = elConfigMeetingGoal.options[elConfigMeetingGoal.selectedIndex].text;
-        html += `<div style="margin-bottom: 8px;"><strong>Meeting Goal:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7);">${descriptions.meetingGoal[meetingGoal]}</span></div>`;
-      }
-      
       if (participationFormat) {
         hasAnySelection = true;
         const optionText = elConfigParticipationFormat.options[elConfigParticipationFormat.selectedIndex].text;
         html += `<div style="margin-bottom: 8px;"><strong>Participation Format:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7);">${descriptions.participationFormat[participationFormat]}</span></div>`;
+      }
+      
+      if (meetingGoal) {
+        hasAnySelection = true;
+        const optionText = elConfigMeetingGoal.options[elConfigMeetingGoal.selectedIndex].text;
+        html += `<div style="margin-bottom: 8px;"><strong>Meeting Goal:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7);">${descriptions.meetingGoal[meetingGoal]}</span></div>`;
       }
       
       if (decisionRule) {
@@ -788,14 +804,7 @@
       }
     }
     
-    // Update descriptions when selections change
-    elConfigMeetingGoal.addEventListener('change', updateDescriptionDisplay);
-    elConfigParticipationFormat.addEventListener('change', updateDescriptionDisplay);
-    elConfigDecisionRule.addEventListener('change', updateDescriptionDisplay);
-    elConfigDeliverable.addEventListener('change', updateDescriptionDisplay);
-    
-    // Save configuration
-    $('#btnSaveConfig').onclick = () => {
+    function saveConfiguration() {
       const config = {
         topic: elConfigTopic.value.trim() || null,
         meetingGoal: elConfigMeetingGoal.value || null,
@@ -805,7 +814,29 @@
       };
       
       client?.send(`/app/room/${roomCode}/updateConfig`, {}, JSON.stringify(config));
-    };
+    }
+    
+    // Update descriptions when selections change and auto-save
+    elConfigTopic.addEventListener('blur', () => {
+      saveConfiguration();
+    });
+    elConfigMeetingGoal.addEventListener('change', () => {
+      updateConditionalFields();
+      updateDescriptionDisplay();
+      saveConfiguration();
+    });
+    elConfigParticipationFormat.addEventListener('change', () => {
+      updateDescriptionDisplay();
+      saveConfiguration();
+    });
+    elConfigDecisionRule.addEventListener('change', () => {
+      updateDescriptionDisplay();
+      saveConfiguration();
+    });
+    elConfigDeliverable.addEventListener('change', () => {
+      updateDescriptionDisplay();
+      saveConfiguration();
+    });
     
     // Update UI with room configuration from state
     function updateRoomConfigUI(state) {
@@ -818,6 +849,9 @@
         elConfigParticipationFormat.value = config.participationFormat || '';
         elConfigDecisionRule.value = config.decisionRule || '';
         elConfigDeliverable.value = config.deliverable || '';
+        
+        // Update conditional fields
+        updateConditionalFields();
         
         // Update descriptions
         updateDescriptionDisplay();
