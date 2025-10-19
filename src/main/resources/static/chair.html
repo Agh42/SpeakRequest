@@ -93,12 +93,12 @@
             <div class="muted small" style="margin-bottom: 12px; font-weight: bold;">Meeting Configuration</div>
             
             <div style="margin-bottom: 10px;">
-              <label class="muted small" style="display: block; margin-bottom: 4px;">Topic</label>
+              <label for="configTopic" class="muted small" style="display: block; margin-bottom: 4px;">Topic</label>
               <input id="configTopic" type="text" placeholder="Enter meeting topic" style="width: 100%; padding: 6px;" maxlength="200"/>
             </div>
             
             <div style="margin-bottom: 10px;">
-              <label class="muted small" style="display: block; margin-bottom: 4px;">Meeting Goal</label>
+              <label for="configMeetingGoal" class="muted small" style="display: block; margin-bottom: 4px;">Meeting Goal</label>
               <select id="configMeetingGoal" style="width: 100%; padding: 6px;">
                 <option value="">-- Select Meeting Goal --</option>
                 <option value="SHARE_INFORMATION">Share Information</option>
@@ -112,7 +112,7 @@
             </div>
             
             <div style="margin-bottom: 10px;">
-              <label class="muted small" style="display: block; margin-bottom: 4px;">Participation Format</label>
+              <label for="configParticipationFormat" class="muted small" style="display: block; margin-bottom: 4px;">Participation Format</label>
               <select id="configParticipationFormat" style="width: 100%; padding: 6px;">
                 <option value="">-- Select Participation Format --</option>
                 <option value="STRUCTURED_GO_AROUNDS">Structured Go-Arounds</option>
@@ -131,7 +131,7 @@
             </div>
             
             <div style="margin-bottom: 10px;">
-              <label class="muted small" style="display: block; margin-bottom: 4px;">Decision Rule</label>
+              <label for="configDecisionRule" class="muted small" style="display: block; margin-bottom: 4px;">Decision Rule</label>
               <select id="configDecisionRule" style="width: 100%; padding: 6px;">
                 <option value="">-- Select Decision Rule --</option>
                 <option value="UNANIMITY">Unanimity</option>
@@ -148,7 +148,7 @@
             </div>
             
             <div style="margin-bottom: 10px;">
-              <label class="muted small" style="display: block; margin-bottom: 4px;">Deliverable</label>
+              <label for="configDeliverable" class="muted small" style="display: block; margin-bottom: 4px;">Deliverable</label>
               <select id="configDeliverable" style="width: 100%; padding: 6px;">
                 <option value="">-- Select Deliverable --</option>
                 <option value="DEFINE_PROBLEM">Define a problem</option>
@@ -726,22 +726,22 @@
         'FLIP_A_COIN': 'A neutral random choice is used to decide between equally acceptable or deadlocked options.'
       },
       deliverable: {
-        'DEFINE_PROBLEM': 'Define a problem',
-        'CREATE_MILESTONE_MAP': 'Create a milestone map',
-        'ANALYZE_PROBLEM': 'Analyze a problem',
-        'CREATE_WORK_BREAKDOWN': 'Create a work breakdown structure',
-        'IDENTIFY_ROOT_CAUSES': 'Identify root causes',
-        'CONDUCT_RESOURCE_ANALYSIS': 'Conduct a resource analysis',
-        'IDENTIFY_PATTERNS': 'Identify underlying patterns',
-        'CONDUCT_RISK_ASSESSMENT': 'Conduct a risk assessment',
-        'SORT_IDEAS_INTO_THEMES': 'Sort a list of ideas into themes',
-        'DEFINE_SELECTION_CRITERIA': 'Define selection criteria',
-        'REARRANGE_BY_PRIORITY': 'Rearrange a list of items by priority',
-        'EVALUATE_OPTIONS': 'Evaluate options',
-        'DRAW_FLOWCHART': 'Draw a flowchart',
-        'IDENTIFY_SUCCESS_FACTORS': 'Identify critical success factors',
-        'IDENTIFY_CORE_VALUES': 'Identify core values',
-        'EDIT_STATEMENT': 'Edit and/or wordsmith a statement'
+        'DEFINE_PROBLEM': 'Clearly articulate the issue or challenge that needs to be addressed',
+        'CREATE_MILESTONE_MAP': 'Identify key checkpoints and timeline for project phases',
+        'ANALYZE_PROBLEM': 'Examine causes, effects, and context of the issue in depth',
+        'CREATE_WORK_BREAKDOWN': 'Break down the project into manageable tasks and subtasks',
+        'IDENTIFY_ROOT_CAUSES': 'Determine the fundamental reasons behind the problem',
+        'CONDUCT_RESOURCE_ANALYSIS': 'Assess available resources including time, budget, and personnel',
+        'IDENTIFY_PATTERNS': 'Recognize recurring themes or trends in the data or situation',
+        'CONDUCT_RISK_ASSESSMENT': 'Evaluate potential risks and their impact on the project',
+        'SORT_IDEAS_INTO_THEMES': 'Organize and categorize ideas into coherent groups',
+        'DEFINE_SELECTION_CRITERIA': 'Establish the standards for evaluating and choosing options',
+        'REARRANGE_BY_PRIORITY': 'Order items based on importance, urgency, or value',
+        'EVALUATE_OPTIONS': 'Assess and compare different alternatives against criteria',
+        'DRAW_FLOWCHART': 'Create a visual diagram showing process steps and decision points',
+        'IDENTIFY_SUCCESS_FACTORS': 'Determine the key elements necessary for success',
+        'IDENTIFY_CORE_VALUES': 'Define the fundamental principles guiding decisions and actions',
+        'EDIT_STATEMENT': 'Refine and improve the clarity and impact of written text'
       }
     };
     
