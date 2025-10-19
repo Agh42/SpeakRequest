@@ -89,6 +89,99 @@
             <button id="btnShareLink" class="ghost">🔗 Copy Participant Link</button>
           </div>
           <div id="copyStatus" class="muted small"></div>
+          
+          <!-- Room Configuration -->
+          <div style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 16px;">
+            <div class="muted small" style="margin-bottom: 12px; font-weight: bold;">Meeting Configuration</div>
+            
+            <div style="margin-bottom: 10px;">
+              <label for="configTopic" class="muted small" style="display: block; margin-bottom: 4px;">Topic</label>
+              <input id="configTopic" type="text" placeholder="Enter meeting topic" style="width: 100%; padding: 6px;" maxlength="200"/>
+            </div>
+            
+            <div style="margin-bottom: 10px;">
+              <label for="configMeetingGoal" class="muted small" style="display: block; margin-bottom: 4px;">Meeting Goal</label>
+              <select id="configMeetingGoal" style="width: 100%; padding: 6px;">
+                <option value="">-- Select Meeting Goal --</option>
+                <option value="SHARE_INFORMATION">Share Information</option>
+                <option value="ADVANCE_THINKING">Advance the Thinking</option>
+                <option value="OBTAIN_INPUT">Obtain Input</option>
+                <option value="MAKE_DECISIONS">Make Decisions</option>
+                <option value="IMPROVE_COMMUNICATION">Improve Communication</option>
+                <option value="BUILD_CAPACITY">Build Capacity</option>
+                <option value="BUILD_COMMUNITY">Build Community</option>
+              </select>
+            </div>
+            
+            <div style="margin-bottom: 10px;">
+              <label for="configParticipationFormat" class="muted small" style="display: block; margin-bottom: 4px;">Participation Format</label>
+              <select id="configParticipationFormat" style="width: 100%; padding: 6px;">
+                <option value="">-- Select Participation Format --</option>
+                <option value="STRUCTURED_GO_AROUNDS">Structured Go-Arounds</option>
+                <option value="PRESENTATIONS_AND_REPORTS">Presentations and Reports</option>
+                <option value="SMALL_GROUPS">Small Groups</option>
+                <option value="LISTING_IDEAS">Listing Ideas</option>
+                <option value="JIGSAW">Jigsaw</option>
+                <option value="INDIVIDUAL_WRITING">Individual Writing</option>
+                <option value="MULTI_TASKING">Multi-Tasking</option>
+                <option value="OPEN_DISCUSSION">Open Discussion</option>
+                <option value="FISHBOWLS">Fishbowls</option>
+                <option value="TRADESHOW">Tradeshow</option>
+                <option value="SCRAMBLER">Scrambler</option>
+                <option value="ROLEPLAYS">Roleplays</option>
+              </select>
+            </div>
+            
+            <div style="margin-bottom: 10px;">
+              <label for="configDecisionRule" class="muted small" style="display: block; margin-bottom: 4px;">Decision Rule</label>
+              <select id="configDecisionRule" style="width: 100%; padding: 6px;">
+                <option value="">-- Select Decision Rule --</option>
+                <option value="UNANIMITY">Unanimity</option>
+                <option value="GRADIENTS_OF_AGREEMENT">Gradients of Agreement</option>
+                <option value="DOT_VOTING">Dot Voting</option>
+                <option value="SUPERMAJORITY">Supermajority</option>
+                <option value="MAJORITY">Majority</option>
+                <option value="PLURALITY">Plurality</option>
+                <option value="CONSENT">Consent</option>
+                <option value="PERSON_IN_CHARGE">Person in Charge</option>
+                <option value="COMMISSION">Commission</option>
+                <option value="FLIP_A_COIN">Flip a Coin</option>
+              </select>
+            </div>
+            
+            <div style="margin-bottom: 10px;">
+              <label for="configDeliverable" class="muted small" style="display: block; margin-bottom: 4px;">Deliverable</label>
+              <select id="configDeliverable" style="width: 100%; padding: 6px;">
+                <option value="">-- Select Deliverable --</option>
+                <option value="DEFINE_PROBLEM">Define a problem</option>
+                <option value="CREATE_MILESTONE_MAP">Create a milestone map</option>
+                <option value="ANALYZE_PROBLEM">Analyze a problem</option>
+                <option value="CREATE_WORK_BREAKDOWN">Create a work breakdown structure</option>
+                <option value="IDENTIFY_ROOT_CAUSES">Identify root causes</option>
+                <option value="CONDUCT_RESOURCE_ANALYSIS">Conduct a resource analysis</option>
+                <option value="IDENTIFY_PATTERNS">Identify underlying patterns</option>
+                <option value="CONDUCT_RISK_ASSESSMENT">Conduct a risk assessment</option>
+                <option value="SORT_IDEAS_INTO_THEMES">Sort a list of ideas into themes</option>
+                <option value="DEFINE_SELECTION_CRITERIA">Define selection criteria</option>
+                <option value="REARRANGE_BY_PRIORITY">Rearrange a list of items by priority</option>
+                <option value="EVALUATE_OPTIONS">Evaluate options</option>
+                <option value="DRAW_FLOWCHART">Draw a flowchart</option>
+                <option value="IDENTIFY_SUCCESS_FACTORS">Identify critical success factors</option>
+                <option value="IDENTIFY_CORE_VALUES">Identify core values</option>
+                <option value="EDIT_STATEMENT">Edit and/or wordsmith a statement</option>
+              </select>
+            </div>
+            
+            <div class="row" style="margin-top: 12px;">
+              <button id="btnSaveConfig" class="primary">💾 Save Configuration</button>
+            </div>
+            
+            <!-- Description Display Area -->
+            <div id="configDescriptions" style="margin-top: 16px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 4px; font-size: 0.85rem; line-height: 1.5; display: none;">
+              <div class="muted small" style="margin-bottom: 8px; font-weight: bold;">Selected Options:</div>
+              <div id="configDescriptionText"></div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -265,6 +358,7 @@
 
       updateTimers(state);
       updatePollUI(state);
+      updateRoomConfigUI(state);
     }
     
     function updatePollUI(state) {
@@ -586,6 +680,149 @@
         $('#btnStartPolling').click();
       }
     });
+
+    // --- Room Configuration ---
+    const elConfigTopic = $('#configTopic');
+    const elConfigMeetingGoal = $('#configMeetingGoal');
+    const elConfigParticipationFormat = $('#configParticipationFormat');
+    const elConfigDecisionRule = $('#configDecisionRule');
+    const elConfigDeliverable = $('#configDeliverable');
+    const elConfigDescriptions = $('#configDescriptions');
+    const elConfigDescriptionText = $('#configDescriptionText');
+    
+    // Descriptions for all enum values
+    const descriptions = {
+      meetingGoal: {
+        'SHARE_INFORMATION': 'Ensure everyone has the same facts, updates, or context.',
+        'ADVANCE_THINKING': 'Develop ideas further through discussion, analysis, and reflection.',
+        'OBTAIN_INPUT': 'Gather perspectives, feedback, or expertise from participants.',
+        'MAKE_DECISIONS': 'Reach agreement or choose a course of action collaboratively.',
+        'IMPROVE_COMMUNICATION': 'Strengthen clarity, understanding, and mutual trust among participants.',
+        'BUILD_CAPACITY': 'Develop participants\' skills, knowledge, or confidence to act effectively.',
+        'BUILD_COMMUNITY': 'Foster relationships, connection, and shared purpose within the group.'
+      },
+      participationFormat: {
+        'STRUCTURED_GO_AROUNDS': 'Everyone contributes in turn, ensuring equal participation and balanced input.',
+        'PRESENTATIONS_AND_REPORTS': 'Individuals or teams share prepared findings or updates with the group.',
+        'SMALL_GROUPS': 'Participants work in subgroups to explore topics or solve problems collaboratively.',
+        'LISTING_IDEAS': 'The group rapidly generates and records ideas without immediate evaluation.',
+        'JIGSAW': 'Each subgroup learns part of a topic and teaches it to others, combining knowledge collaboratively.',
+        'INDIVIDUAL_WRITING': 'Participants reflect or respond in writing before sharing or discussing.',
+        'MULTI_TASKING': 'Participants engage in parallel activities contributing to a shared goal or outcome.',
+        'OPEN_DISCUSSION': 'Participants freely exchange views and reactions in an unstructured conversation.',
+        'FISHBOWLS': 'A small inner group discusses while others observe, then roles switch for reflection and feedback.',
+        'TRADESHOW': 'Participants display and explain their work or ideas at stations others visit in rotation.',
+        'SCRAMBLER': 'Participants move between tasks, stations, or partners to stimulate diverse perspectives.',
+        'ROLEPLAYS': 'Participants act out scenarios to explore perspectives, behaviors, or problem-solving strategies.'
+      },
+      decisionRule: {
+        'UNANIMITY': 'All participants must fully agree before a decision is made.',
+        'GRADIENTS_OF_AGREEMENT': 'Participants express varying levels of support, revealing nuanced consensus rather than a simple yes/no.',
+        'DOT_VOTING': 'Each person allocates a limited number of votes (dots) to indicate preferences or priorities visually.',
+        'SUPERMAJORITY': 'A decision requires a higher-than-simple majority, such as two-thirds or three-quarters agreement.',
+        'MAJORITY': 'The option with more than half of the votes wins.',
+        'PLURALITY': 'The option with the most votes wins, even if it lacks a majority.',
+        'CONSENT': 'A proposal moves forward unless there is a reasoned and paramount objection.',
+        'PERSON_IN_CHARGE': 'A designated leader makes the final decision after input from others.',
+        'COMMISSION': 'A smaller group or committee is empowered to deliberate and decide on behalf of the whole.',
+        'FLIP_A_COIN': 'A neutral random choice is used to decide between equally acceptable or deadlocked options.'
+      },
+      deliverable: {
+        'DEFINE_PROBLEM': 'Clearly articulate the issue or challenge that needs to be addressed',
+        'CREATE_MILESTONE_MAP': 'Identify key checkpoints and timeline for project phases',
+        'ANALYZE_PROBLEM': 'Examine causes, effects, and context of the issue in depth',
+        'CREATE_WORK_BREAKDOWN': 'Break down the project into manageable tasks and subtasks',
+        'IDENTIFY_ROOT_CAUSES': 'Determine the fundamental reasons behind the problem',
+        'CONDUCT_RESOURCE_ANALYSIS': 'Assess available resources including time, budget, and personnel',
+        'IDENTIFY_PATTERNS': 'Recognize recurring themes or trends in the data or situation',
+        'CONDUCT_RISK_ASSESSMENT': 'Evaluate potential risks and their impact on the project',
+        'SORT_IDEAS_INTO_THEMES': 'Organize and categorize ideas into coherent groups',
+        'DEFINE_SELECTION_CRITERIA': 'Establish the standards for evaluating and choosing options',
+        'REARRANGE_BY_PRIORITY': 'Order items based on importance, urgency, or value',
+        'EVALUATE_OPTIONS': 'Assess and compare different alternatives against criteria',
+        'DRAW_FLOWCHART': 'Create a visual diagram showing process steps and decision points',
+        'IDENTIFY_SUCCESS_FACTORS': 'Determine the key elements necessary for success',
+        'IDENTIFY_CORE_VALUES': 'Define the fundamental principles guiding decisions and actions',
+        'EDIT_STATEMENT': 'Refine and improve the clarity and impact of written text'
+      }
+    };
+    
+    function updateDescriptionDisplay() {
+      const meetingGoal = elConfigMeetingGoal.value;
+      const participationFormat = elConfigParticipationFormat.value;
+      const decisionRule = elConfigDecisionRule.value;
+      const deliverable = elConfigDeliverable.value;
+      
+      let html = '';
+      let hasAnySelection = false;
+      
+      if (meetingGoal) {
+        hasAnySelection = true;
+        const optionText = elConfigMeetingGoal.options[elConfigMeetingGoal.selectedIndex].text;
+        html += `<div style="margin-bottom: 8px;"><strong>Meeting Goal:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7);">${descriptions.meetingGoal[meetingGoal]}</span></div>`;
+      }
+      
+      if (participationFormat) {
+        hasAnySelection = true;
+        const optionText = elConfigParticipationFormat.options[elConfigParticipationFormat.selectedIndex].text;
+        html += `<div style="margin-bottom: 8px;"><strong>Participation Format:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7);">${descriptions.participationFormat[participationFormat]}</span></div>`;
+      }
+      
+      if (decisionRule) {
+        hasAnySelection = true;
+        const optionText = elConfigDecisionRule.options[elConfigDecisionRule.selectedIndex].text;
+        html += `<div style="margin-bottom: 8px;"><strong>Decision Rule:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7);">${descriptions.decisionRule[decisionRule]}</span></div>`;
+      }
+      
+      if (deliverable) {
+        hasAnySelection = true;
+        const optionText = elConfigDeliverable.options[elConfigDeliverable.selectedIndex].text;
+        html += `<div style="margin-bottom: 8px;"><strong>Deliverable:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7);">${descriptions.deliverable[deliverable]}</span></div>`;
+      }
+      
+      if (hasAnySelection) {
+        elConfigDescriptionText.innerHTML = html;
+        elConfigDescriptions.style.display = 'block';
+      } else {
+        elConfigDescriptions.style.display = 'none';
+      }
+    }
+    
+    // Update descriptions when selections change
+    elConfigMeetingGoal.addEventListener('change', updateDescriptionDisplay);
+    elConfigParticipationFormat.addEventListener('change', updateDescriptionDisplay);
+    elConfigDecisionRule.addEventListener('change', updateDescriptionDisplay);
+    elConfigDeliverable.addEventListener('change', updateDescriptionDisplay);
+    
+    // Save configuration
+    $('#btnSaveConfig').onclick = () => {
+      const config = {
+        topic: elConfigTopic.value.trim() || null,
+        meetingGoal: elConfigMeetingGoal.value || null,
+        participationFormat: elConfigParticipationFormat.value || null,
+        decisionRule: elConfigDecisionRule.value || null,
+        deliverable: elConfigDeliverable.value || null
+      };
+      
+      client?.send(`/app/room/${roomCode}/updateConfig`, {}, JSON.stringify(config));
+    };
+    
+    // Update UI with room configuration from state
+    function updateRoomConfigUI(state) {
+      if (state.roomConfig) {
+        const config = state.roomConfig;
+        
+        // Update form fields
+        elConfigTopic.value = config.topic || '';
+        elConfigMeetingGoal.value = config.meetingGoal || '';
+        elConfigParticipationFormat.value = config.participationFormat || '';
+        elConfigDecisionRule.value = config.decisionRule || '';
+        elConfigDeliverable.value = config.deliverable || '';
+        
+        // Update descriptions
+        updateDescriptionDisplay();
+      }
+    }
 
     // --- Start ---
     connect();
