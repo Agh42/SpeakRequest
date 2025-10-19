@@ -30,3 +30,4 @@ gradle/
 gradlew
 gradlew.bat
 
+.docker-cache/
