@@ -57,6 +57,108 @@ public class MeetingApp {
         }
     }
 
+    // ---------------- ENUMs ----------------
+    public enum MeetingGoal {
+        SHARE_INFORMATION("Share Information", "Ensure everyone has the same facts, updates, or context."),
+        ADVANCE_THINKING("Advance the Thinking", "Develop ideas further through discussion, analysis, and reflection."),
+        OBTAIN_INPUT("Obtain Input", "Gather perspectives, feedback, or expertise from participants."),
+        MAKE_DECISIONS("Make Decisions", "Reach agreement or choose a course of action collaboratively."),
+        IMPROVE_COMMUNICATION("Improve Communication", "Strengthen clarity, understanding, and mutual trust among participants."),
+        BUILD_CAPACITY("Build Capacity", "Develop participants' skills, knowledge, or confidence to act effectively."),
+        BUILD_COMMUNITY("Build Community", "Foster relationships, connection, and shared purpose within the group.");
+        
+        private final String displayName;
+        private final String description;
+        
+        MeetingGoal(String displayName, String description) {
+            this.displayName = displayName;
+            this.description = description;
+        }
+        
+        public String getDisplayName() { return displayName; }
+        public String getDescription() { return description; }
+    }
+    
+    public enum ParticipationFormat {
+        STRUCTURED_GO_AROUNDS("Structured Go-Arounds", "Everyone contributes in turn, ensuring equal participation and balanced input."),
+        PRESENTATIONS_AND_REPORTS("Presentations and Reports", "Individuals or teams share prepared findings or updates with the group."),
+        SMALL_GROUPS("Small Groups", "Participants work in subgroups to explore topics or solve problems collaboratively."),
+        LISTING_IDEAS("Listing Ideas", "The group rapidly generates and records ideas without immediate evaluation."),
+        JIGSAW("Jigsaw", "Each subgroup learns part of a topic and teaches it to others, combining knowledge collaboratively."),
+        INDIVIDUAL_WRITING("Individual Writing", "Participants reflect or respond in writing before sharing or discussing."),
+        MULTI_TASKING("Multi-Tasking", "Participants engage in parallel activities contributing to a shared goal or outcome."),
+        OPEN_DISCUSSION("Open Discussion", "Participants freely exchange views and reactions in an unstructured conversation."),
+        FISHBOWLS("Fishbowls", "A small inner group discusses while others observe, then roles switch for reflection and feedback."),
+        TRADESHOW("Tradeshow", "Participants display and explain their work or ideas at stations others visit in rotation."),
+        SCRAMBLER("Scrambler", "Participants move between tasks, stations, or partners to stimulate diverse perspectives."),
+        ROLEPLAYS("Roleplays", "Participants act out scenarios to explore perspectives, behaviors, or problem-solving strategies.");
+        
+        private final String displayName;
+        private final String description;
+        
+        ParticipationFormat(String displayName, String description) {
+            this.displayName = displayName;
+            this.description = description;
+        }
+        
+        public String getDisplayName() { return displayName; }
+        public String getDescription() { return description; }
+    }
+    
+    public enum DecisionRule {
+        UNANIMITY("Unanimity", "All participants must fully agree before a decision is made."),
+        GRADIENTS_OF_AGREEMENT("Gradients of Agreement", "Participants express varying levels of support, revealing nuanced consensus rather than a simple yes/no."),
+        DOT_VOTING("Dot Voting", "Each person allocates a limited number of votes (dots) to indicate preferences or priorities visually."),
+        SUPERMAJORITY("Supermajority", "A decision requires a higher-than-simple majority, such as two-thirds or three-quarters agreement."),
+        MAJORITY("Majority", "The option with more than half of the votes wins."),
+        PLURALITY("Plurality", "The option with the most votes wins, even if it lacks a majority."),
+        CONSENT("Consent", "A proposal moves forward unless there is a reasoned and paramount objection."),
+        PERSON_IN_CHARGE("Person in Charge", "A designated leader makes the final decision after input from others."),
+        COMMISSION("Commission", "A smaller group or committee is empowered to deliberate and decide on behalf of the whole."),
+        FLIP_A_COIN("Flip a Coin", "A neutral random choice is used to decide between equally acceptable or deadlocked options.");
+        
+        private final String displayName;
+        private final String description;
+        
+        DecisionRule(String displayName, String description) {
+            this.displayName = displayName;
+            this.description = description;
+        }
+        
+        public String getDisplayName() { return displayName; }
+        public String getDescription() { return description; }
+    }
+    
+    public enum Deliverable {
+        DEFINE_PROBLEM("Define a problem", "Define a problem"),
+        CREATE_MILESTONE_MAP("Create a milestone map", "Create a milestone map"),
+        ANALYZE_PROBLEM("Analyze a problem", "Analyze a problem"),
+        CREATE_WORK_BREAKDOWN("Create a work breakdown structure", "Create a work breakdown structure"),
+        IDENTIFY_ROOT_CAUSES("Identify root causes", "Identify root causes"),
+        CONDUCT_RESOURCE_ANALYSIS("Conduct a resource analysis", "Conduct a resource analysis"),
+        IDENTIFY_PATTERNS("Identify underlying patterns", "Identify underlying patterns"),
+        CONDUCT_RISK_ASSESSMENT("Conduct a risk assessment", "Conduct a risk assessment"),
+        SORT_IDEAS_INTO_THEMES("Sort a list of ideas into themes", "Sort a list of ideas into themes"),
+        DEFINE_SELECTION_CRITERIA("Define selection criteria", "Define selection criteria"),
+        REARRANGE_BY_PRIORITY("Rearrange a list of items by priority", "Rearrange a list of items by priority"),
+        EVALUATE_OPTIONS("Evaluate options", "Evaluate options"),
+        DRAW_FLOWCHART("Draw a flowchart", "Draw a flowchart"),
+        IDENTIFY_SUCCESS_FACTORS("Identify critical success factors", "Identify critical success factors"),
+        IDENTIFY_CORE_VALUES("Identify core values", "Identify core values"),
+        EDIT_STATEMENT("Edit and/or wordsmith a statement", "Edit and/or wordsmith a statement");
+        
+        private final String displayName;
+        private final String description;
+        
+        Deliverable(String displayName, String description) {
+            this.displayName = displayName;
+            this.description = description;
+        }
+        
+        public String getDisplayName() { return displayName; }
+        public String getDescription() { return description; }
+    }
+
     // ---------------- DTOs ----------------
     public record RequestSpeak(
         @NotBlank(message = "Name is required")
@@ -94,8 +196,17 @@ public class MeetingApp {
 
     public record Participant(String id, String name, long requestedAt) {}
     public record Current(Participant entry, long startedAtSec, int elapsedMs, boolean running, int limitSec) {}
-    public record State(List<Participant> queue, Current current, long meetingStartSec, int defaultLimitSec, String roomCode, boolean chairOccupied, PollState pollState) {}
+    public record RoomConfig(String topic, MeetingGoal meetingGoal, ParticipationFormat participationFormat, DecisionRule decisionRule, Deliverable deliverable) {}
+    public record State(List<Participant> queue, Current current, long meetingStartSec, int defaultLimitSec, String roomCode, boolean chairOccupied, PollState pollState, RoomConfig roomConfig) {}
     public record RoomInfo(String roomCode, boolean exists) {}
+    
+    public record UpdateRoomConfig(
+        String topic,
+        String meetingGoal,
+        String participationFormat,
+        String decisionRule,
+        String deliverable
+    ) {}
     
     // Polling-related DTOs
     public record StartPoll(
@@ -140,6 +251,13 @@ public class MeetingApp {
         private final ReentrantLock lock = new ReentrantLock();
         private String chairSessionId = null; // Track chair WebSocket session
         
+        // Room configuration fields
+        private String topic = null;
+        private MeetingGoal meetingGoal = null;
+        private ParticipationFormat participationFormat = null;
+        private DecisionRule decisionRule = null;
+        private Deliverable deliverable = null;
+        
         // Polling state
         private String pollQuestion = null;
         private String pollType = null;
@@ -183,7 +301,9 @@ public class MeetingApp {
                     pollState = new PollState(null, null, null, Map.of(), 0, lastPollResults);
                 }
                 
-                return new State(List.copyOf(queue), current, meetingStartSec, defaultLimitSec, roomCode, chairSessionId != null, pollState);
+                RoomConfig roomConfig = new RoomConfig(topic, meetingGoal, participationFormat, decisionRule, deliverable);
+                
+                return new State(List.copyOf(queue), current, meetingStartSec, defaultLimitSec, roomCode, chairSessionId != null, pollState, roomConfig);
             } finally {
                 lock.unlock();
             }
@@ -447,6 +567,19 @@ public class MeetingApp {
             lock.lock();
             try {
                 return "ACTIVE".equals(pollStatus);
+            } finally {
+                lock.unlock();
+            }
+        }
+        
+        public void updateRoomConfig(String topic, MeetingGoal meetingGoal, ParticipationFormat participationFormat, DecisionRule decisionRule, Deliverable deliverable) {
+            lock.lock();
+            try {
+                this.topic = topic;
+                this.meetingGoal = meetingGoal;
+                this.participationFormat = participationFormat;
+                this.decisionRule = decisionRule;
+                this.deliverable = deliverable;
             } finally {
                 lock.unlock();
             }
@@ -815,6 +948,38 @@ public class MeetingApp {
                             broadcast(normalizedRoomCode);
                         }
                     });
+        }
+        
+        @MessageMapping("/room/{roomCode}/updateConfig")
+        public void updateRoomConfig(@DestinationVariable String roomCode, @Payload UpdateRoomConfig msg, StompHeaderAccessor headerAccessor) {
+            String normalizedRoomCode = normalizeRoomCode(roomCode);
+            String sessionId = headerAccessor.getSessionId();
+            
+            roomRepository.getByCode(normalizedRoomCode)
+                    .ifPresent(room -> {
+                        // Only chair can update room configuration
+                        if (room.isChairSession(sessionId)) {
+                            // Parse enum values (allow null/empty)
+                            MeetingGoal meetingGoal = parseEnum(MeetingGoal.class, msg.meetingGoal());
+                            ParticipationFormat participationFormat = parseEnum(ParticipationFormat.class, msg.participationFormat());
+                            DecisionRule decisionRule = parseEnum(DecisionRule.class, msg.decisionRule());
+                            Deliverable deliverable = parseEnum(Deliverable.class, msg.deliverable());
+                            
+                            room.updateRoomConfig(msg.topic(), meetingGoal, participationFormat, decisionRule, deliverable);
+                            broadcast(normalizedRoomCode);
+                        }
+                    });
+        }
+        
+        private <E extends Enum<E>> E parseEnum(Class<E> enumClass, String value) {
+            if (value == null || value.isEmpty()) {
+                return null;
+            }
+            try {
+                return Enum.valueOf(enumClass, value);
+            } catch (IllegalArgumentException e) {
+                return null;
+            }
         }
         
         @MessageMapping("/room/{roomCode}/destroy")
