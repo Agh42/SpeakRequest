@@ -21,9 +21,17 @@
     </header>
 
     <main class="grid">
-      <!-- Participant Controls (for on-behalf requests) -->
+      <!-- Manage speakers -->
       <section class="card">
-        <h2>Request to Speak (On Behalf)</h2>
+        <h2>Manage speakers</h2>
+        <div class="row">
+          <button id="btnNext" class="accent">🎙️ Next speaker</button>
+          <button id="btnPause" class="ghost">⏸ Pause</button>
+          <button id="btnStart" class="primary">▶ Start</button>
+          <button id="btnReset" class="ghost">↺ Reset</button>
+        </div>
+        
+        <h3 style="font-size: 1.1rem; margin-top: 16px; margin-bottom: 8px;">Request to speak on behalf</h3>
         <div class="row">
           <input id="participantName" placeholder="Participant initials or name" maxlength="30"/>
         </div>
@@ -38,12 +46,6 @@
       <!-- Chair controls -->
       <section class="card">
         <h2>Meeting Controls</h2>
-        <div class="row">
-          <button id="btnNext" class="accent">🎙️ Next speaker</button>
-          <button id="btnPause" class="ghost">⏸ Pause</button>
-          <button id="btnStart" class="primary">▶ Start</button>
-          <button id="btnReset" class="ghost">↺ Reset</button>
-        </div>
         <div class="row">
           <button id="btnPopout" class="accent">📺 Open Popout Window</button>
           <button id="btnDestroyRoom" class="ghost" style="background-color: #dc2626; color: white;">🗑️ Destroy Room</button>
