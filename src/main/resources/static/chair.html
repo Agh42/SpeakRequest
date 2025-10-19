@@ -817,8 +817,7 @@
     }
     
     // Update descriptions when selections change and auto-save
-    elConfigTopic.addEventListener('change', () => {
-      updateDescriptionDisplay();
+    elConfigTopic.addEventListener('blur', () => {
       saveConfiguration();
     });
     elConfigMeetingGoal.addEventListener('change', () => {
@@ -836,11 +835,6 @@
     });
     elConfigDeliverable.addEventListener('change', () => {
       updateDescriptionDisplay();
-      saveConfiguration();
-    });
-    
-    // Also trigger on topic input blur
-    elConfigTopic.addEventListener('blur', () => {
       saveConfiguration();
     });
     
