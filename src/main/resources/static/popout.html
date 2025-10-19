@@ -11,11 +11,36 @@
       --border: rgba(255,255,255,.12);
     }
     *{box-sizing:border-box}
-    html,body{height:100%}
+    html,body{height:100%; overflow:hidden;}
     body{
       margin:0; background:#0f172a;
       color:var(--text); font:16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", sans-serif;
       padding:20px;
+      display: flex;
+      flex-direction: column;
+    }
+    .content-container {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      /* Reserve space for QR code: 150px QR + 24px padding + 20px bottom margin = 194px */
+      /* Also add some extra margin on the right to avoid QR code */
+      padding-bottom: 20px;
+      margin-bottom: 194px;
+    }
+    .content-container::-webkit-scrollbar {
+      width: 10px;
+    }
+    .content-container::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.05);
+      border-radius: 5px;
+    }
+    .content-container::-webkit-scrollbar-thumb {
+      background: var(--accent);
+      border-radius: 5px;
+    }
+    .content-container::-webkit-scrollbar-thumb:hover {
+      background: #4a90e2;
     }
     .card{
       background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0));
@@ -34,11 +59,30 @@
     .join-instructions{position:fixed;top:40px;left:10px;right:10px;color:var(--muted);font-size:0.75rem;text-align:center;padding-bottom:10px;}
     .content-wrapper{margin-top:60px;}
     .queue-list {
-      max-height: 150px;
-      overflow-y: auto;
       color: var(--text);
       font-size: 1.2rem;
       margin-top: 10px;
+      max-height: 150px; /* Approx 3 rows: each row ~45px (1.2rem text + 5px margin) */
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 5px;
+    }
+    .queue-list::-webkit-scrollbar {
+      width: 8px;
+    }
+    .queue-list::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.05);
+      border-radius: 4px;
+    }
+    .queue-list::-webkit-scrollbar-thumb {
+      background: var(--accent);
+      border-radius: 4px;
+    }
+    .queue-list::-webkit-scrollbar-thumb:hover {
+      background: #4a90e2;
+    }
+    #configDisplayText {
+      padding-right: 8px;
     }
     .qr-float {
       position: fixed;
@@ -63,50 +107,52 @@
   <div class="room-code" id="roomCodeDisplay">Room: ----</div>
   <div class="conn-status" id="conn">Connecting…</div>
 
-  <div class="muted small" style="text-align: center; margin-bottom: 15px; margin-top: 35px; color: var(--accent); font-size: 0.8rem;">
-    Go to <span id="joinUrl" style="font-weight: bold;"></span> and enter the room code to join
-  </div>
-  
-  <div id="meetingTopicDisplay" style="text-align: center; margin-bottom: 20px; color: var(--text); font-size: 1rem; font-weight: 600; display: none;">
-    <div class="muted small" style="margin-bottom: 4px;">Meeting Topic:</div>
-    <div id="meetingTopicText" style="font-size: 1.1rem;"></div>
-  </div>
-
-  <!-- Poll in Progress Card (shown during ACTIVE poll) -->
-  <div class="card" id="pollInProgressCard" style="display: none;">
-    <div class="muted small">Poll in Progress</div>
-    <div id="pollInProgressQuestion" class="big" style="font-size: 1.8rem; margin: 15px 0;">--</div>
-    <div class="muted small">Votes Received</div>
-    <div id="pollInProgressCount" class="timer ok" style="font-size: 2.8rem;">0</div>
-  </div>
-
-  <!-- Normal Speaker/Queue Cards (hidden during ACTIVE poll) -->
-  <div id="normalDisplay">
-    <div class="card">
-      <div class="muted small">Current Speaker</div>
-      <div id="currentSpeaker" class="big">--</div>
-      <div id="currentRole" class="muted medium">--</div>
-      <div class="muted small">Speaker Time</div>
-      <div id="speakerTimer" class="timer ok">00:00</div>
-    </div>
-
-    <div class="card">
-      <div class="muted small">Queue (<span id="queueCount">0</span> waiting)</div>
-      <div id="queueList" class="queue-list">--</div>
+  <div class="content-container">
+    <div class="muted small" style="text-align: center; margin-bottom: 15px; margin-top: 35px; color: var(--accent); font-size: 0.8rem;">
+      Go to <span id="joinUrl" style="font-weight: bold;"></span> and enter the room code to join
     </div>
     
-    <!-- Configuration Display Card -->
-    <div class="card" id="configDisplay" style="display: none;">
-      <div class="muted small" style="margin-bottom: 8px; font-weight: bold;">Selected Options:</div>
-      <div id="configDisplayText" style="font-size: 0.85rem; line-height: 1.5;"></div>
+    <div id="meetingTopicDisplay" style="text-align: center; margin-bottom: 20px; color: var(--text); font-size: 1rem; font-weight: 600; display: none;">
+      <div class="muted small" style="margin-bottom: 4px;">Meeting Topic:</div>
+      <div id="meetingTopicText" style="font-size: 1.1rem;"></div>
     </div>
-  </div>
 
-  <!-- Poll Results Card -->
-  <div class="card" id="pollResultsCard" style="display: none;">
-    <div class="muted small">Last Poll Results</div>
-    <div id="pollResultsQuestion" class="medium" style="margin: 8px 0;">--</div>
-    <div id="pollResultsData" style="margin: 8px 0;">--</div>
+    <!-- Poll in Progress Card (shown during ACTIVE poll) -->
+    <div class="card" id="pollInProgressCard" style="display: none;">
+      <div class="muted small">Poll in Progress</div>
+      <div id="pollInProgressQuestion" class="big" style="font-size: 1.8rem; margin: 15px 0;">--</div>
+      <div class="muted small">Votes Received</div>
+      <div id="pollInProgressCount" class="timer ok" style="font-size: 2.8rem;">0</div>
+    </div>
+
+    <!-- Normal Speaker/Queue Cards (hidden during ACTIVE poll) -->
+    <div id="normalDisplay">
+      <div class="card">
+        <div class="muted small">Current Speaker</div>
+        <div id="currentSpeaker" class="big">--</div>
+        <div id="currentRole" class="muted medium">--</div>
+        <div class="muted small">Speaker Time</div>
+        <div id="speakerTimer" class="timer ok">00:00</div>
+      </div>
+
+      <div class="card">
+        <div class="muted small">Queue (<span id="queueCount">0</span> waiting)</div>
+        <div id="queueList" class="queue-list">--</div>
+      </div>
+      
+      <!-- Configuration Display Card -->
+      <div class="card" id="configDisplay" style="display: none;">
+        <div class="muted small" style="margin-bottom: 8px; font-weight: bold;">Selected Options:</div>
+        <div id="configDisplayText" style="font-size: 0.85rem; line-height: 1.5;"></div>
+      </div>
+    </div>
+
+    <!-- Poll Results Card -->
+    <div class="card" id="pollResultsCard" style="display: none;">
+      <div class="muted small">Last Poll Results</div>
+      <div id="pollResultsQuestion" class="medium" style="margin: 8px 0;">--</div>
+      <div id="pollResultsData" style="margin: 8px 0;">--</div>
+    </div>
   </div>
 
   <div id="qrContainer" class="qr-float"></div>
