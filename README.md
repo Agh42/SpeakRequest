@@ -1,49 +1,33 @@
-# SpeakRequest
+# SpeakRequest - Speech Time and Realtime Polls Manager
 
 **A meeting manager for live and hybrid meetings**
-
-[![Screenshot](/docs/images/landing.png)](https://speek.now)
-
-In any meeting it is important that:
-
-- the meeting goal is transparent to all participants (information sharing, decision making, brainstorming, etc.)
-- how a decision will be made (consensus, majority vote, gradient of agreement, etc.)
-- all participants get equal opportunities to speak
-- it is transparent who is currently speaking
-- it is transparent who is next in line to speak
-
-SpeakRequest is a meeting manager designed for live and hybrid meetings. 
-
-It helps [discussion moderators](https://en.wikipedia.org/wiki/Discussion_moderator) or [facilitators](https://en.wikipedia.org/wiki/Facilitator) in meetings and conferences by managing speak requests from participants, transparently showing who has the right to speak and for how long they've been talking. Each participant's place in the queue is visible at any moment.
-
-A popout view can be placed by the facilitator on a projector or shared on-screen via web conferencing software such as Microsoft Teams, Zoom, or similar platforms. 
-
-It also allows quick and hassle-free conduction of live polls with different poll types supported. Local participants can vote by scanning the QR code shown on the projector screen. Remote participants can easily join by entering the simple four-letter room code.
 
 ## 🚀 Access Live Instance now at: **[https://speek.now](https://speek.now)**
 
 You may start using SpeakRequest immediately by creating a room on the live instance hosted at [https://speek.now](https://speek.now). No registration or login is required.
 
-## 📦 Run it yourself
+[![Screenshot](/docs/images/landing.png)](https://speek.now)
 
-SpeakRequest is published on Docker Hub and can be run anywhere with Docker:
+## SpeakRequest: a meeting manager designed for live and hybrid meetings. 
 
-```bash
-docker run -p 8080:8080 agh42/speakrequest
-```
+It helps [discussion moderators](https://en.wikipedia.org/wiki/Discussion_moderator) or [facilitators](https://en.wikipedia.org/wiki/Facilitator) in meetings and conferences by managing **speak requests** from participants, transparently showing who has the right to speak, for how long they've been talking and who is next in line.
 
-Then open your browser to `http://localhost:8080` or your server's IP address/domain. SpeakRequest will honor the `X-Forwarded-*` headers, so it can be run behind a reverse proxy as well. All generated URLs and QR codes will point to the URL as seen by the client. You should be able to host it under any domain without further configuration.
+This is especially useful in hybrid meetings where some participants are physically present in a meeting room while others join remotely via web conferencing software. SpeakRequest bridges the gap between local and remote participants by providing a unified interface for all.
 
-## ✨ Features
+SpeakRequests main goal is to ensure fair and transparent communication during meetings, making sure that:
 
-- **Speak Request Queue**: Manage speaking turns with a transparent queue system
-- **Speech Timer**: Track how long each participant has been speaking
-- **Live Polls**: Conduct realtime polls with various poll types
-- **QR Code Access**: Local participants can join via QR code
-- **Easy Room Codes**: Simple four-letter codes for hassle-free joining
-- **Hybrid Meeting Support**: Works seamlessly for both in-person and remote participants
-- **Projector/Screen Share Ready**: Popout view optimized for projection and screen sharing
-- **Real-time Updates**: WebSocket-based live updates for all participants
+- the **meeting goal** is transparent to all participants (information sharing, decision making, brainstorming, etc.)
+- the **meeting format** is clear to all participants (open discussion, round-robin, panel discussion, etc.)
+- it is clear if and how a **decision** will be made (consensus, majority vote, gradient of agreement, etc.)
+- all participants get equal opportunities to speak
+- it is transparent who is currently speaking
+- it is transparent who is next in line to speak
+
+
+A **popout view** can be placed by the facilitator on a projector or shared on-screen via web conferencing software such as Microsoft Teams, Zoom, or similar platforms. 
+
+It also allows quick and hassle-free conduction of **realtime polls** with different poll types supported. Local participants can vote by scanning the QR code shown on the projector screen. Remote participants can easily join by entering the simple four-letter room code.
+
 
 ## 🖼️ Screenshots
 
@@ -85,6 +69,28 @@ Then open your browser to `http://localhost:8080` or your server's IP address/do
     </td>
   </tr>
 </table>
+
+## 📦 Run it yourself
+
+SpeakRequest is published on Docker Hub and can be run anywhere with Docker:
+
+```bash
+docker run -p 8080:8080 agh42/speakrequest
+```
+
+Then open your browser to `http://localhost:8080` or your server's IP address/domain. SpeakRequest will honor the `X-Forwarded-*` headers, so it can be run behind a reverse proxy as well. All generated URLs and QR codes will point to the URL as seen by the client. You should be able to host it under any domain without further configuration.
+
+## ✨ Features
+
+- **Speak Request Queue**: Manage speaking turns with a transparent queue system
+- **Speech Timer**: Track how long each participant has been speaking
+- **Live Polls**: Conduct realtime polls with various poll types
+- **QR Code Access**: Local participants can join via QR code
+- **Easy Room Codes**: Simple four-letter codes for hassle-free joining
+- **Hybrid Meeting Support**: Works seamlessly for both in-person and remote participants
+- **Projector/Screen Share Ready**: Popout view optimized for projection and screen sharing
+- **Real-time Updates**: WebSocket-based live updates for all participants
+
 
 ## 🛠️ Building from Source
 
