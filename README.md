@@ -1,20 +1,30 @@
 # SpeakRequest
 
-**A modern meeting manager for live and hybrid meetings**
+**A meeting manager for live and hybrid meetings**
+
+[![Screenshot](/docs/images/landing.png)](https://speek.now)
+
+In any meeting it is important that:
+
+- the meeting goal is transparent to all participants (information sharing, decision making, brainstorming, etc.)
+- how a decision will be made (consensus, majority vote, gradient of agreement, etc.)
+- all participants get equal opportunities to speak
+- it is transparent who is currently speaking
+- it is transparent who is next in line to speak
 
 SpeakRequest is a meeting manager designed for live and hybrid meetings. 
 
-It helps moderators facilitate meetings by managing speak requests from participants, transparently showing who has the right to speak and for how long they've been talking. Each participant's place in the queue is visible at any moment.
+It helps [discussion moderators](https://en.wikipedia.org/wiki/Discussion_moderator) or [facilitators](https://en.wikipedia.org/wiki/Facilitator) in meetings and conferences by managing speak requests from participants, transparently showing who has the right to speak and for how long they've been talking. Each participant's place in the queue is visible at any moment.
 
-The popout view can be placed by the facilitator on a projector or shared on-screen via web conferencing software such as Microsoft Teams, Zoom, or similar platforms. 
+A popout view can be placed by the facilitator on a projector or shared on-screen via web conferencing software such as Microsoft Teams, Zoom, or similar platforms. 
 
 It also allows quick and hassle-free conduction of live polls with different poll types supported. Local participants can vote by scanning the QR code shown on the projector screen. Remote participants can easily join by entering the simple four-letter room code.
 
-## 🚀 Live Instance
+## 🚀 Access Live Instance
 
-Use it now at: **[https://speek.now](https://speek.now)**
+### Use it now at: **[https://speek.now](https://speek.now)**
 
-## 📦 Quick Start with Docker
+## 📦 Run it yourself
 
 SpeakRequest is published on Docker Hub and can be run anywhere with Docker:
 
@@ -22,7 +32,7 @@ SpeakRequest is published on Docker Hub and can be run anywhere with Docker:
 docker run -p 8080:8080 agh42/speakrequest
 ```
 
-Then open your browser to `http://localhost:8080`
+Then open your browser to `http://localhost:8080` or your server's IP address/domain. SpeakRequest will honor the `X-Forwarded-*` headers, so it can be run behind a reverse proxy as well. All generated URLs and QR codes will point to the URL as seen by the client. You should be able to host it under any domain without further configuration.
 
 ## ✨ Features
 
