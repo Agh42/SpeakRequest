@@ -31,7 +31,7 @@
           <button id="btnReset" class="ghost">↺ Reset</button>
         </div>
         
-        <h3 style="font-size: 1.1rem; margin-top: 16px; margin-bottom: 8px;">Request to speak on behalf</h3>
+        <h3 class="subsection-heading">Request to speak on behalf</h3>
         <div class="row">
           <input id="participantName" placeholder="Participant initials or name" maxlength="30"/>
         </div>
@@ -40,7 +40,6 @@
           <button id="btnParticipantWithdraw" class="ghost">Withdraw Request</button>
         </div>
         <div id="participantStatus" class="muted small">Enter participant's names to request/withdraw on their behalf.</div>
-        <div class="muted small">Open popout window to display speaker queue on separate screen / projector.</div>
       </section>
 
       <!-- Chair controls -->
@@ -50,6 +49,7 @@
           <button id="btnPopout" class="accent">📺 Open Popout Window</button>
           <button id="btnDestroyRoom" class="ghost" style="background-color: #dc2626; color: white;">🗑️ Destroy Room</button>
         </div>
+        <div class="muted small">Open popout window to display speaker queue on separate screen / projector.</div>
         <div class="row">
           <label class="muted">Per-speaker limit (sec)</label>
           <input id="limit" type="number" min="10" step="10" value="180" style="width:110px"/>
