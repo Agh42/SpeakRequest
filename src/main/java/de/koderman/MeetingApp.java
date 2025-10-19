@@ -455,11 +455,58 @@ public class MeetingApp {
 
     // ---------------- Room Repository ----------------
     public static class RoomRepository {
+        private static final int MAX_ROOMS = 500000;
         private final ConcurrentHashMap<String, Room> roomsByCode = new ConcurrentHashMap<>();
         private final ConcurrentHashMap<String, String> sessionToRoomCode = new ConcurrentHashMap<>();
+        // TreeMap sorted by creation timestamp for efficient oldest room lookup
+        private final TreeMap<Long, Room> roomsByTimestamp = new TreeMap<>();
+        private final Object roomCreationLock = new Object();
 
         public Room getOrCreate(String roomCode) {
-            return roomsByCode.computeIfAbsent(roomCode, Room::new);
+            // First check if room already exists (fast path, no lock needed)
+            Room existingRoom = roomsByCode.get(roomCode);
+            if (existingRoom != null) {
+                return existingRoom;
+            }
+            
+            // Room doesn't exist, need to create it (synchronized)
+            synchronized (roomCreationLock) {
+                // Double-check after acquiring lock
+                existingRoom = roomsByCode.get(roomCode);
+                if (existingRoom != null) {
+                    return existingRoom;
+                }
+                
+                // Before creating a new room, check if we've reached the limit
+                if (roomsByCode.size() >= MAX_ROOMS) {
+                    removeOldestRoom();
+                }
+                
+                Room newRoom = new Room(roomCode);
+                roomsByCode.put(roomCode, newRoom);
+                roomsByTimestamp.put(newRoom.getMeetingStartSec(), newRoom);
+                return newRoom;
+            }
+        }
+        
+        private void removeOldestRoom() {
+            // Must be called within synchronized block
+            // Get the first (oldest) entry from the TreeMap
+            Map.Entry<Long, Room> oldestEntry = roomsByTimestamp.firstEntry();
+            
+            if (oldestEntry != null) {
+                Room oldestRoom = oldestEntry.getValue();
+                String oldestRoomCode = oldestRoom.getRoomCode();
+                
+                // Remove from both maps
+                roomsByCode.remove(oldestRoomCode);
+                roomsByTimestamp.remove(oldestEntry.getKey());
+                
+                // Clean up session tracking for the removed room
+                sessionToRoomCode.entrySet().removeIf(entry -> 
+                    oldestRoomCode.equals(entry.getValue())
+                );
+            }
         }
 
         public Optional<Room> getByCode(String roomCode) {
@@ -484,12 +531,17 @@ public class MeetingApp {
         }
         
         public void destroyRoom(String roomCode) {
-            // Remove room from registry
-            Room room = roomsByCode.remove(roomCode);
-            
-            // Remove all session tracking for this room
-            if (room != null) {
-                sessionToRoomCode.entrySet().removeIf(entry -> roomCode.equals(entry.getValue()));
+            synchronized (roomCreationLock) {
+                // Remove room from registry
+                Room room = roomsByCode.remove(roomCode);
+                
+                // Remove from timestamp map
+                if (room != null) {
+                    roomsByTimestamp.remove(room.getMeetingStartSec());
+                    
+                    // Remove all session tracking for this room
+                    sessionToRoomCode.entrySet().removeIf(entry -> roomCode.equals(entry.getValue()));
+                }
             }
         }
         
