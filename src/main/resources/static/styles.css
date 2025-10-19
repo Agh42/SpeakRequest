@@ -203,3 +203,9 @@ footer a {
 footer a:hover {
   color: var(--text);
 }
+
+footer a.current-page {
+  color: var(--text);
+  cursor: default;
+  pointer-events: none;
+}
