@@ -207,5 +207,5 @@ footer a:hover {
 footer a.current-page {
   color: var(--text);
   cursor: default;
-  pointer-events: none;
+  text-decoration: underline;
 }
