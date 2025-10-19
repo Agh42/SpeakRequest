@@ -66,6 +66,11 @@
   <div class="muted small" style="text-align: center; margin-bottom: 15px; margin-top: 35px; color: var(--accent); font-size: 0.8rem;">
     Go to <span id="joinUrl" style="font-weight: bold;"></span> and enter the room code to join
   </div>
+  
+  <div id="meetingTopicDisplay" style="text-align: center; margin-bottom: 20px; color: var(--text); font-size: 1rem; font-weight: 600; display: none;">
+    <div class="muted small" style="margin-bottom: 4px;">Meeting Topic:</div>
+    <div id="meetingTopicText" style="font-size: 1.1rem;"></div>
+  </div>
 
   <!-- Poll in Progress Card (shown during ACTIVE poll) -->
   <div class="card" id="pollInProgressCard" style="display: none;">
@@ -88,6 +93,12 @@
     <div class="card">
       <div class="muted small">Queue (<span id="queueCount">0</span> waiting)</div>
       <div id="queueList" class="queue-list">--</div>
+    </div>
+    
+    <!-- Configuration Display Card -->
+    <div class="card" id="configDisplay" style="display: none;">
+      <div class="muted small" style="margin-bottom: 8px; font-weight: bold;">Selected Options:</div>
+      <div id="configDisplayText" style="font-size: 0.85rem; line-height: 1.5;"></div>
     </div>
   </div>
 
@@ -161,10 +172,83 @@
     const elPollInProgressQuestion = document.getElementById('pollInProgressQuestion');
     const elPollInProgressCount = document.getElementById('pollInProgressCount');
     const elNormalDisplay = document.getElementById('normalDisplay');
+    const elMeetingTopicDisplay = document.getElementById('meetingTopicDisplay');
+    const elMeetingTopicText = document.getElementById('meetingTopicText');
+    const elConfigDisplay = document.getElementById('configDisplay');
+    const elConfigDisplayText = document.getElementById('configDisplayText');
 
     // --- State ---
     let client = null;
     let currentState = null;
+    
+    // Descriptions for all enum values
+    const descriptions = {
+      meetingGoal: {
+        'SHARE_INFORMATION': 'Ensure everyone has the same facts, updates, or context.',
+        'ADVANCE_THINKING': 'Develop ideas further through discussion, analysis, and reflection.',
+        'OBTAIN_INPUT': 'Gather perspectives, feedback, or expertise from participants.',
+        'MAKE_DECISIONS': 'Reach agreement or choose a course of action collaboratively.',
+        'IMPROVE_COMMUNICATION': 'Strengthen clarity, understanding, and mutual trust among participants.',
+        'BUILD_CAPACITY': 'Develop participants\' skills, knowledge, or confidence to act effectively.',
+        'BUILD_COMMUNITY': 'Foster relationships, connection, and shared purpose within the group.'
+      },
+      participationFormat: {
+        'STRUCTURED_GO_AROUNDS': 'Everyone contributes in turn, ensuring equal participation and balanced input.',
+        'PRESENTATIONS_AND_REPORTS': 'Individuals or teams share prepared findings or updates with the group.',
+        'SMALL_GROUPS': 'Participants work in subgroups to explore topics or solve problems collaboratively.',
+        'LISTING_IDEAS': 'The group rapidly generates and records ideas without immediate evaluation.',
+        'JIGSAW': 'Each subgroup learns part of a topic and teaches it to others, combining knowledge collaboratively.',
+        'INDIVIDUAL_WRITING': 'Participants reflect or respond in writing before sharing or discussing.',
+        'MULTI_TASKING': 'Participants engage in parallel activities contributing to a shared goal or outcome.',
+        'OPEN_DISCUSSION': 'Participants freely exchange views and reactions in an unstructured conversation.',
+        'FISHBOWLS': 'A small inner group discusses while others observe, then roles switch for reflection and feedback.',
+        'TRADESHOW': 'Participants display and explain their work or ideas at stations others visit in rotation.',
+        'SCRAMBLER': 'Participants move between tasks, stations, or partners to stimulate diverse perspectives.',
+        'ROLEPLAYS': 'Participants act out scenarios to explore perspectives, behaviors, or problem-solving strategies.'
+      },
+      decisionRule: {
+        'UNANIMITY': 'All participants must fully agree before a decision is made.',
+        'GRADIENTS_OF_AGREEMENT': 'Participants express varying levels of support, revealing nuanced consensus rather than a simple yes/no.',
+        'DOT_VOTING': 'Each person allocates a limited number of votes (dots) to indicate preferences or priorities visually.',
+        'SUPERMAJORITY': 'A decision requires a higher-than-simple majority, such as two-thirds or three-quarters agreement.',
+        'MAJORITY': 'The option with more than half of the votes wins.',
+        'PLURALITY': 'The option with the most votes wins, even if it lacks a majority.',
+        'CONSENT': 'A proposal moves forward unless there is a reasoned and paramount objection.',
+        'PERSON_IN_CHARGE': 'A designated leader makes the final decision after input from others.',
+        'COMMISSION': 'A smaller group or committee is empowered to deliberate and decide on behalf of the whole.',
+        'FLIP_A_COIN': 'A neutral random choice is used to decide between equally acceptable or deadlocked options.'
+      },
+      deliverable: {
+        'DEFINE_PROBLEM': 'Clearly articulate the issue or challenge that needs to be addressed',
+        'CREATE_MILESTONE_MAP': 'Identify key checkpoints and timeline for project phases',
+        'ANALYZE_PROBLEM': 'Examine causes, effects, and context of the issue in depth',
+        'CREATE_WORK_BREAKDOWN': 'Break down the project into manageable tasks and subtasks',
+        'IDENTIFY_ROOT_CAUSES': 'Determine the fundamental reasons behind the problem',
+        'CONDUCT_RESOURCE_ANALYSIS': 'Assess available resources including time, budget, and personnel',
+        'IDENTIFY_PATTERNS': 'Recognize recurring themes or trends in the data or situation',
+        'CONDUCT_RISK_ASSESSMENT': 'Evaluate potential risks and their impact on the project',
+        'SORT_IDEAS_INTO_THEMES': 'Organize and categorize ideas into coherent groups',
+        'DEFINE_SELECTION_CRITERIA': 'Establish the standards for evaluating and choosing options',
+        'REARRANGE_BY_PRIORITY': 'Order items based on importance, urgency, or value',
+        'EVALUATE_OPTIONS': 'Assess and compare different alternatives against criteria',
+        'DRAW_FLOWCHART': 'Create a visual diagram showing process steps and decision points',
+        'IDENTIFY_SUCCESS_FACTORS': 'Determine the key elements necessary for success',
+        'IDENTIFY_CORE_VALUES': 'Define the fundamental principles guiding decisions and actions',
+        'EDIT_STATEMENT': 'Refine and improve the clarity and impact of written text'
+      }
+    };
+    
+    // Get option text from select element
+    function getOptionText(selectId, value) {
+      const select = document.getElementById(selectId);
+      if (!select || !value) return null;
+      for (let i = 0; i < select.options.length; i++) {
+        if (select.options[i].value === value) {
+          return select.options[i].text;
+        }
+      }
+      return null;
+    }
 
     // --- WebSocket ---
     function connect() {
@@ -201,6 +285,106 @@
     }
 
     function updateDisplay(state) {
+      // Update meeting topic
+      if (state.roomConfig && state.roomConfig.topic) {
+        elMeetingTopicDisplay.style.display = 'block';
+        elMeetingTopicText.textContent = DOMPurify.sanitize(state.roomConfig.topic);
+      } else {
+        elMeetingTopicDisplay.style.display = 'none';
+      }
+      
+      // Update configuration display
+      if (state.roomConfig) {
+        const config = state.roomConfig;
+        let html = '';
+        let hasAnySelection = false;
+        
+        if (config.participationFormat) {
+          hasAnySelection = true;
+          // Map the enum value to display text
+          const formatMap = {
+            'STRUCTURED_GO_AROUNDS': 'Structured Go-Arounds',
+            'PRESENTATIONS_AND_REPORTS': 'Presentations and Reports',
+            'SMALL_GROUPS': 'Small Groups',
+            'LISTING_IDEAS': 'Listing Ideas',
+            'JIGSAW': 'Jigsaw',
+            'INDIVIDUAL_WRITING': 'Individual Writing',
+            'MULTI_TASKING': 'Multi-Tasking',
+            'OPEN_DISCUSSION': 'Open Discussion',
+            'FISHBOWLS': 'Fishbowls',
+            'TRADESHOW': 'Tradeshow',
+            'SCRAMBLER': 'Scrambler',
+            'ROLEPLAYS': 'Roleplays'
+          };
+          const optionText = formatMap[config.participationFormat] || config.participationFormat;
+          html += `<div style="margin-bottom: 8px;"><strong>Participation Format:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">${descriptions.participationFormat[config.participationFormat]}</span></div>`;
+        }
+        
+        if (config.meetingGoal) {
+          hasAnySelection = true;
+          const goalMap = {
+            'SHARE_INFORMATION': 'Share Information',
+            'ADVANCE_THINKING': 'Advance the Thinking',
+            'OBTAIN_INPUT': 'Obtain Input',
+            'MAKE_DECISIONS': 'Make Decisions',
+            'IMPROVE_COMMUNICATION': 'Improve Communication',
+            'BUILD_CAPACITY': 'Build Capacity',
+            'BUILD_COMMUNITY': 'Build Community'
+          };
+          const optionText = goalMap[config.meetingGoal] || config.meetingGoal;
+          html += `<div style="margin-bottom: 8px;"><strong>Meeting Goal:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">${descriptions.meetingGoal[config.meetingGoal]}</span></div>`;
+        }
+        
+        if (config.decisionRule) {
+          hasAnySelection = true;
+          const ruleMap = {
+            'UNANIMITY': 'Unanimity',
+            'GRADIENTS_OF_AGREEMENT': 'Gradients of Agreement',
+            'DOT_VOTING': 'Dot Voting',
+            'SUPERMAJORITY': 'Supermajority',
+            'MAJORITY': 'Majority',
+            'PLURALITY': 'Plurality',
+            'CONSENT': 'Consent',
+            'PERSON_IN_CHARGE': 'Person in Charge',
+            'COMMISSION': 'Commission',
+            'FLIP_A_COIN': 'Flip a Coin'
+          };
+          const optionText = ruleMap[config.decisionRule] || config.decisionRule;
+          html += `<div style="margin-bottom: 8px;"><strong>Decision Rule:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">${descriptions.decisionRule[config.decisionRule]}</span></div>`;
+        }
+        
+        if (config.deliverable) {
+          hasAnySelection = true;
+          const deliverableMap = {
+            'DEFINE_PROBLEM': 'Define a problem',
+            'CREATE_MILESTONE_MAP': 'Create a milestone map',
+            'ANALYZE_PROBLEM': 'Analyze a problem',
+            'CREATE_WORK_BREAKDOWN': 'Create a work breakdown structure',
+            'IDENTIFY_ROOT_CAUSES': 'Identify root causes',
+            'CONDUCT_RESOURCE_ANALYSIS': 'Conduct a resource analysis',
+            'IDENTIFY_PATTERNS': 'Identify underlying patterns',
+            'CONDUCT_RISK_ASSESSMENT': 'Conduct a risk assessment',
+            'SORT_IDEAS_INTO_THEMES': 'Sort a list of ideas into themes',
+            'DEFINE_SELECTION_CRITERIA': 'Define selection criteria',
+            'REARRANGE_BY_PRIORITY': 'Rearrange a list of items by priority',
+            'EVALUATE_OPTIONS': 'Evaluate options',
+            'DRAW_FLOWCHART': 'Draw a flowchart',
+            'IDENTIFY_SUCCESS_FACTORS': 'Identify critical success factors',
+            'IDENTIFY_CORE_VALUES': 'Identify core values',
+            'EDIT_STATEMENT': 'Edit and/or wordsmith a statement'
+          };
+          const optionText = deliverableMap[config.deliverable] || config.deliverable;
+          html += `<div style="margin-bottom: 8px;"><strong>Deliverable:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">${descriptions.deliverable[config.deliverable]}</span></div>`;
+        }
+        
+        if (hasAnySelection) {
+          elConfigDisplayText.innerHTML = html;
+          elConfigDisplay.style.display = 'block';
+        } else {
+          elConfigDisplay.style.display = 'none';
+        }
+      }
+      
       // Check if poll is active - show "Poll in Progress"
       if (state.pollState && state.pollState.status === 'ACTIVE') {
         elPollInProgressCard.style.display = 'block';
