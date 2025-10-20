@@ -163,14 +163,14 @@ public class MeetingApp {
     public record RequestSpeak(
         @NotBlank(message = "Name is required")
         @Size(max = 30, message = "Name must not exceed 30 characters")
-        @Pattern(regexp = "^[a-zA-Z0-9 '-]+$", message = "Name can only contain letters, numbers, spaces, hyphens, and apostrophes")
+        @Pattern(regexp = "^[a-zA-Z0-9 '.-]+$", message = "Name can only contain letters, numbers, spaces, dots, hyphens, and apostrophes")
         String name
     ) {}
     
     public record Withdraw(
         @NotBlank(message = "Name is required")
         @Size(max = 30, message = "Name must not exceed 30 characters")
-        @Pattern(regexp = "^[a-zA-Z0-9 '-]+$", message = "Name can only contain letters, numbers, spaces, hyphens, and apostrophes")
+        @Pattern(regexp = "^[a-zA-Z0-9 '.-]+$", message = "Name can only contain letters, numbers, spaces, dots, hyphens, and apostrophes")
         String name
     ) {}
     
@@ -180,7 +180,7 @@ public class MeetingApp {
     public record Join(
         @NotBlank(message = "Name is required")
         @Size(max = 30, message = "Name must not exceed 30 characters")
-        @Pattern(regexp = "^[a-zA-Z0-9 '-]+$", message = "Name can only contain letters, numbers, spaces, hyphens, and apostrophes")
+        @Pattern(regexp = "^[a-zA-Z0-9 '.-]+$", message = "Name can only contain letters, numbers, spaces, dots, hyphens, and apostrophes")
         String name
     ) {}
     
@@ -189,7 +189,7 @@ public class MeetingApp {
     public record AssumeChair(
         @NotBlank(message = "Participant name is required")
         @Size(max = 30, message = "Participant name must not exceed 30 characters")
-        @Pattern(regexp = "^[a-zA-Z0-9 '-]+$", message = "Participant name can only contain letters, numbers, spaces, hyphens, and apostrophes")
+        @Pattern(regexp = "^[a-zA-Z0-9 '.-]+$", message = "Participant name can only contain letters, numbers, spaces, dots, hyphens, and apostrophes")
         String participantName,
         String requestId
     ) {}
@@ -201,10 +201,15 @@ public class MeetingApp {
     public record RoomInfo(String roomCode, boolean exists) {}
     
     public record UpdateRoomConfig(
+        @Size(max = 100, message = "Topic must not exceed 100 characters")
         String topic,
+        @Size(max = 100, message = "Meeting goal must not exceed 100 characters")
         String meetingGoal,
+        @Size(max = 100, message = "Participation format must not exceed 100 characters")
         String participationFormat,
+        @Size(max = 100, message = "Decision rule must not exceed 100 characters")
         String decisionRule,
+        @Size(max = 100, message = "Deliverable must not exceed 100 characters")
         String deliverable
     ) {}
     
