@@ -366,83 +366,33 @@
         
         if (config.participationFormat) {
           hasAnySelection = true;
-          // Map the enum value to display text
-          const formatMap = {
-            'STRUCTURED_GO_AROUNDS': 'Structured Go-Arounds',
-            'PRESENTATIONS_AND_REPORTS': 'Presentations and Reports',
-            'SMALL_GROUPS': 'Small Groups',
-            'LISTING_IDEAS': 'Listing Ideas',
-            'JIGSAW': 'Jigsaw',
-            'INDIVIDUAL_WRITING': 'Individual Writing',
-            'MULTI_TASKING': 'Multi-Tasking',
-            'OPEN_DISCUSSION': 'Open Discussion',
-            'FISHBOWLS': 'Fishbowls',
-            'TRADESHOW': 'Tradeshow',
-            'SCRAMBLER': 'Scrambler',
-            'ROLEPLAYS': 'Roleplays'
-          };
-          const optionText = formatMap[config.participationFormat] || config.participationFormat;
-          const desc = descriptions.participationFormat[config.participationFormat]?.description || 'NOT FOUND';
+          const metadata = descriptions.participationFormat[config.participationFormat];
+          const optionText = metadata?.displayName || config.participationFormat;
+          const desc = metadata?.description || 'NOT FOUND';
           html += `<div style="margin-bottom: 8px;"><strong>Participation Format:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">${desc}</span></div>`;
         }
         
         if (config.meetingGoal) {
           hasAnySelection = true;
-          const goalMap = {
-            'SHARE_INFORMATION': 'Share Information',
-            'ADVANCE_THINKING': 'Advance the Thinking',
-            'OBTAIN_INPUT': 'Obtain Input',
-            'MAKE_DECISIONS': 'Make Decisions',
-            'IMPROVE_COMMUNICATION': 'Improve Communication',
-            'BUILD_CAPACITY': 'Build Capacity',
-            'BUILD_COMMUNITY': 'Build Community'
-          };
-          const optionText = goalMap[config.meetingGoal] || config.meetingGoal;
-          const desc = descriptions.meetingGoal[config.meetingGoal]?.description || 'NOT FOUND';
+          const metadata = descriptions.meetingGoal[config.meetingGoal];
+          const optionText = metadata?.displayName || config.meetingGoal;
+          const desc = metadata?.description || 'NOT FOUND';
           html += `<div style="margin-bottom: 8px;"><strong>Meeting Goal:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">${desc}</span></div>`;
         }
         
         if (config.decisionRule) {
           hasAnySelection = true;
-          const ruleMap = {
-            'UNANIMITY': 'Unanimity',
-            'GRADIENTS_OF_AGREEMENT': 'Gradients of Agreement',
-            'DOT_VOTING': 'Dot Voting',
-            'SUPERMAJORITY': 'Supermajority',
-            'MAJORITY': 'Majority',
-            'PLURALITY': 'Plurality',
-            'CONSENT': 'Consent',
-            'PERSON_IN_CHARGE': 'Person in Charge',
-            'COMMISSION': 'Commission',
-            'FLIP_A_COIN': 'Flip a Coin'
-          };
-          const optionText = ruleMap[config.decisionRule] || config.decisionRule;
-          const desc = descriptions.decisionRule[config.decisionRule]?.description || 'NOT FOUND';
+          const metadata = descriptions.decisionRule[config.decisionRule];
+          const optionText = metadata?.displayName || config.decisionRule;
+          const desc = metadata?.description || 'NOT FOUND';
           html += `<div style="margin-bottom: 8px;"><strong>Decision Rule:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">${desc}</span></div>`;
         }
         
         if (config.deliverable) {
           hasAnySelection = true;
-          const deliverableMap = {
-            'DEFINE_PROBLEM': 'Define a problem',
-            'CREATE_MILESTONE_MAP': 'Create a milestone map',
-            'ANALYZE_PROBLEM': 'Analyze a problem',
-            'CREATE_WORK_BREAKDOWN': 'Create a work breakdown structure',
-            'IDENTIFY_ROOT_CAUSES': 'Identify root causes',
-            'CONDUCT_RESOURCE_ANALYSIS': 'Conduct a resource analysis',
-            'IDENTIFY_PATTERNS': 'Identify underlying patterns',
-            'CONDUCT_RISK_ASSESSMENT': 'Conduct a risk assessment',
-            'SORT_IDEAS_INTO_THEMES': 'Sort a list of ideas into themes',
-            'DEFINE_SELECTION_CRITERIA': 'Define selection criteria',
-            'REARRANGE_BY_PRIORITY': 'Rearrange a list of items by priority',
-            'EVALUATE_OPTIONS': 'Evaluate options',
-            'DRAW_FLOWCHART': 'Draw a flowchart',
-            'IDENTIFY_SUCCESS_FACTORS': 'Identify critical success factors',
-            'IDENTIFY_CORE_VALUES': 'Identify core values',
-            'EDIT_STATEMENT': 'Edit and/or wordsmith a statement'
-          };
-          const optionText = deliverableMap[config.deliverable] || config.deliverable;
-          const desc = descriptions.deliverable[config.deliverable]?.description || 'NOT FOUND';
+          const metadata = descriptions.deliverable[config.deliverable];
+          const optionText = metadata?.displayName || config.deliverable;
+          const desc = metadata?.description || 'NOT FOUND';
           html += `<div style="margin-bottom: 8px;"><strong>Advance Thinking: Deliverable:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">${desc}</span></div>`;
         }
         
