@@ -761,6 +761,63 @@ public class MeetingApp {
             return new RoomInfo(normalizedRoomCode, roomRepository.exists(normalizedRoomCode));
         }
 
+        // Metadata endpoints for enum descriptions
+        @GetMapping("/api/metadata/meeting-goals")
+        @ResponseBody
+        public Map<String, Object> getMeetingGoals() {
+            List<Map<String, String>> goals = new ArrayList<>();
+            for (MeetingGoal goal : MeetingGoal.values()) {
+                goals.add(Map.of(
+                    "value", goal.name(),
+                    "displayName", goal.getDisplayName(),
+                    "description", goal.getDescription()
+                ));
+            }
+            return Map.of("version", "1.0", "data", goals);
+        }
+
+        @GetMapping("/api/metadata/participation-formats")
+        @ResponseBody
+        public Map<String, Object> getParticipationFormats() {
+            List<Map<String, String>> formats = new ArrayList<>();
+            for (ParticipationFormat format : ParticipationFormat.values()) {
+                formats.add(Map.of(
+                    "value", format.name(),
+                    "displayName", format.getDisplayName(),
+                    "description", format.getDescription()
+                ));
+            }
+            return Map.of("version", "1.0", "data", formats);
+        }
+
+        @GetMapping("/api/metadata/decision-rules")
+        @ResponseBody
+        public Map<String, Object> getDecisionRules() {
+            List<Map<String, String>> rules = new ArrayList<>();
+            for (DecisionRule rule : DecisionRule.values()) {
+                rules.add(Map.of(
+                    "value", rule.name(),
+                    "displayName", rule.getDisplayName(),
+                    "description", rule.getDescription()
+                ));
+            }
+            return Map.of("version", "1.0", "data", rules);
+        }
+
+        @GetMapping("/api/metadata/deliverables")
+        @ResponseBody
+        public Map<String, Object> getDeliverables() {
+            List<Map<String, String>> deliverables = new ArrayList<>();
+            for (Deliverable deliverable : Deliverable.values()) {
+                deliverables.add(Map.of(
+                    "value", deliverable.name(),
+                    "displayName", deliverable.getDisplayName(),
+                    "description", deliverable.getDescription()
+                ));
+            }
+            return Map.of("version", "1.0", "data", deliverables);
+        }
+
         private String uid() { return Long.toString(System.nanoTime(), 36); }
 
         private void broadcast(String roomCode) {

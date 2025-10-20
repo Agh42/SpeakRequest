@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Metadata Test</title>
+  <script src="metadata-loader.js"></script>
+</head>
+<body>
+  <h1>Metadata Test Page</h1>
+  <div id="status">Loading metadata...</div>
+  <div id="results"></div>
+
+  <script>
+    const statusEl = document.getElementById('status');
+    const resultsEl = document.getElementById('results');
+
+    MetadataLoader.loadAll()
+      .then(metadata => {
+        statusEl.textContent = '✅ Metadata loaded successfully!';
+        statusEl.style.color = 'green';
+        
+        let html = '<h2>Meeting Goals:</h2><ul>';
+        for (const key in metadata.meetingGoal) {
+          const item = metadata.meetingGoal[key];
+          html += `<li><strong>${key}</strong>: ${item.displayName} - ${item.description}</li>`;
+        }
+        html += '</ul>';
+
+        html += '<h2>Participation Formats:</h2><ul>';
+        for (const key in metadata.participationFormat) {
+          const item = metadata.participationFormat[key];
+          html += `<li><strong>${key}</strong>: ${item.displayName} - ${item.description}</li>`;
+        }
+        html += '</ul>';
+
+        html += '<h2>Decision Rules:</h2><ul>';
+        for (const key in metadata.decisionRule) {
+          const item = metadata.decisionRule[key];
+          html += `<li><strong>${key}</strong>: ${item.displayName} - ${item.description}</li>`;
+        }
+        html += '</ul>';
+
+        html += '<h2>Deliverables:</h2><ul>';
+        for (const key in metadata.deliverable) {
+          const item = metadata.deliverable[key];
+          html += `<li><strong>${key}</strong>: ${item.displayName} - ${item.description}</li>`;
+        }
+        html += '</ul>';
+
+        resultsEl.innerHTML = html;
+      })
+      .catch(error => {
+        statusEl.textContent = '❌ Failed to load metadata: ' + error.message;
+        statusEl.style.color = 'red';
+      });
+  </script>
+</body>
+</html>

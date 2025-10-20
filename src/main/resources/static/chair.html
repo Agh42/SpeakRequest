@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="styles.css"/>
   <script src="stomp.min.js"></script>
   <script src="purify.min.js"></script>
+  <script src="metadata-loader.js"></script>
 </head>
 <body>
   <div class="wrap">
@@ -694,61 +695,12 @@
     const elConfigDescriptions = $('#configDescriptions');
     const elConfigDescriptionText = $('#configDescriptionText');
     
-    // Descriptions for all enum values
-    const descriptions = {
-      meetingGoal: {
-        'SHARE_INFORMATION': 'Ensure everyone has the same facts, updates, or context.',
-        'ADVANCE_THINKING': 'Develop ideas further through discussion, analysis, and reflection.',
-        'OBTAIN_INPUT': 'Gather perspectives, feedback, or expertise from participants.',
-        'MAKE_DECISIONS': 'Reach agreement or choose a course of action collaboratively.',
-        'IMPROVE_COMMUNICATION': 'Strengthen clarity, understanding, and mutual trust among participants.',
-        'BUILD_CAPACITY': 'Develop participants\' skills, knowledge, or confidence to act effectively.',
-        'BUILD_COMMUNITY': 'Foster relationships, connection, and shared purpose within the group.'
-      },
-      participationFormat: {
-        'STRUCTURED_GO_AROUNDS': 'Everyone contributes in turn, ensuring equal participation and balanced input.',
-        'PRESENTATIONS_AND_REPORTS': 'Individuals or teams share prepared findings or updates with the group.',
-        'SMALL_GROUPS': 'Participants work in subgroups to explore topics or solve problems collaboratively.',
-        'LISTING_IDEAS': 'The group rapidly generates and records ideas without immediate evaluation.',
-        'JIGSAW': 'Each subgroup learns part of a topic and teaches it to others, combining knowledge collaboratively.',
-        'INDIVIDUAL_WRITING': 'Participants reflect or respond in writing before sharing or discussing.',
-        'MULTI_TASKING': 'Participants engage in parallel activities contributing to a shared goal or outcome.',
-        'OPEN_DISCUSSION': 'Participants freely exchange views and reactions in an unstructured conversation.',
-        'FISHBOWLS': 'A small inner group discusses while others observe, then roles switch for reflection and feedback.',
-        'TRADESHOW': 'Participants display and explain their work or ideas at stations others visit in rotation.',
-        'SCRAMBLER': 'Participants move between tasks, stations, or partners to stimulate diverse perspectives.',
-        'ROLEPLAYS': 'Participants act out scenarios to explore perspectives, behaviors, or problem-solving strategies.'
-      },
-      decisionRule: {
-        'UNANIMITY': 'All participants must fully agree before a decision is made.',
-        'GRADIENTS_OF_AGREEMENT': 'Participants express varying levels of support, revealing nuanced consensus rather than a simple yes/no.',
-        'DOT_VOTING': 'Each person allocates a limited number of votes (dots) to indicate preferences or priorities visually.',
-        'SUPERMAJORITY': 'A decision requires a higher-than-simple majority, such as two-thirds or three-quarters agreement.',
-        'MAJORITY': 'The option with more than half of the votes wins.',
-        'PLURALITY': 'The option with the most votes wins, even if it lacks a majority.',
-        'CONSENT': 'A proposal moves forward unless there is a reasoned and paramount objection.',
-        'PERSON_IN_CHARGE': 'A designated leader makes the final decision after input from others.',
-        'COMMISSION': 'A smaller group or committee is empowered to deliberate and decide on behalf of the whole.',
-        'FLIP_A_COIN': 'A neutral random choice is used to decide between equally acceptable or deadlocked options.'
-      },
-      deliverable: {
-        'DEFINE_PROBLEM': 'Clearly articulate the issue or challenge that needs to be addressed',
-        'CREATE_MILESTONE_MAP': 'Identify key checkpoints and timeline for project phases',
-        'ANALYZE_PROBLEM': 'Examine causes, effects, and context of the issue in depth',
-        'CREATE_WORK_BREAKDOWN': 'Break down the project into manageable tasks and subtasks',
-        'IDENTIFY_ROOT_CAUSES': 'Determine the fundamental reasons behind the problem',
-        'CONDUCT_RESOURCE_ANALYSIS': 'Assess available resources including time, budget, and personnel',
-        'IDENTIFY_PATTERNS': 'Recognize recurring themes or trends in the data or situation',
-        'CONDUCT_RISK_ASSESSMENT': 'Evaluate potential risks and their impact on the project',
-        'SORT_IDEAS_INTO_THEMES': 'Organize and categorize ideas into coherent groups',
-        'DEFINE_SELECTION_CRITERIA': 'Establish the standards for evaluating and choosing options',
-        'REARRANGE_BY_PRIORITY': 'Order items based on importance, urgency, or value',
-        'EVALUATE_OPTIONS': 'Assess and compare different alternatives against criteria',
-        'DRAW_FLOWCHART': 'Create a visual diagram showing process steps and decision points',
-        'IDENTIFY_SUCCESS_FACTORS': 'Determine the key elements necessary for success',
-        'IDENTIFY_CORE_VALUES': 'Define the fundamental principles guiding decisions and actions',
-        'EDIT_STATEMENT': 'Refine and improve the clarity and impact of written text'
-      }
+    // Descriptions loaded from server
+    let descriptions = {
+      meetingGoal: {},
+      participationFormat: {},
+      decisionRule: {},
+      deliverable: {}
     };
     
     function updateConditionalFields() {
@@ -783,25 +735,29 @@
       if (participationFormat) {
         hasAnySelection = true;
         const optionText = elConfigParticipationFormat.options[elConfigParticipationFormat.selectedIndex].text;
-        html += `<div style="margin-bottom: 8px;"><strong>Participation Format:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7);">${descriptions.participationFormat[participationFormat]}</span></div>`;
+        const desc = descriptions.participationFormat[participationFormat]?.description || 'NOT FOUND';
+        html += `<div style="margin-bottom: 8px;"><strong>Participation Format:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7);">${desc}</span></div>`;
       }
       
       if (meetingGoal) {
         hasAnySelection = true;
         const optionText = elConfigMeetingGoal.options[elConfigMeetingGoal.selectedIndex].text;
-        html += `<div style="margin-bottom: 8px;"><strong>Meeting Goal:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7);">${descriptions.meetingGoal[meetingGoal]}</span></div>`;
+        const desc = descriptions.meetingGoal[meetingGoal]?.description || 'NOT FOUND';
+        html += `<div style="margin-bottom: 8px;"><strong>Meeting Goal:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7);">${desc}</span></div>`;
       }
       
       if (decisionRule) {
         hasAnySelection = true;
         const optionText = elConfigDecisionRule.options[elConfigDecisionRule.selectedIndex].text;
-        html += `<div style="margin-bottom: 8px;"><strong>Decision Rule:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7);">${descriptions.decisionRule[decisionRule]}</span></div>`;
+        const desc = descriptions.decisionRule[decisionRule]?.description || 'NOT FOUND';
+        html += `<div style="margin-bottom: 8px;"><strong>Decision Rule:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7);">${desc}</span></div>`;
       }
       
       if (deliverable) {
         hasAnySelection = true;
         const optionText = elConfigDeliverable.options[elConfigDeliverable.selectedIndex].text;
-        html += `<div style="margin-bottom: 8px;"><strong>Advance Thinking - Deliverable:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7);">${descriptions.deliverable[deliverable]}</span></div>`;
+        const desc = descriptions.deliverable[deliverable]?.description || 'NOT FOUND';
+        html += `<div style="margin-bottom: 8px;"><strong>Advance Thinking - Deliverable:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7);">${desc}</span></div>`;
       }
       
       if (hasAnySelection) {
@@ -867,12 +823,25 @@
     }
 
     // --- Start ---
-    connect();
-    timerInterval = setInterval(() => {
-      if (currentState) {
-        updateTimers(currentState);
-      }
-    }, 250);
+    // Load metadata first, then connect
+    MetadataLoader.loadAll().then(metadata => {
+      descriptions = metadata;
+      connect();
+      timerInterval = setInterval(() => {
+        if (currentState) {
+          updateTimers(currentState);
+        }
+      }, 250);
+    }).catch(err => {
+      console.error('Failed to load metadata, continuing anyway:', err);
+      // Connect anyway with fallback values
+      connect();
+      timerInterval = setInterval(() => {
+        if (currentState) {
+          updateTimers(currentState);
+        }
+      }, 250);
+    });
   </script>
 </body>
 </html>
