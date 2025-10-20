@@ -104,6 +104,7 @@
               <label for="configParticipationFormat" class="muted small" style="display: block; margin-bottom: 4px;">Participation Format</label>
               <select id="configParticipationFormat" style="width: 100%; padding: 6px;">
                 <option value="">-- Select Participation Format --</option>
+                <option value="OPEN_DISCUSSION">Open Discussion</option>
                 <option value="STRUCTURED_GO_AROUNDS">Structured Go-Arounds</option>
                 <option value="PRESENTATIONS_AND_REPORTS">Presentations and Reports</option>
                 <option value="SMALL_GROUPS">Small Groups</option>
@@ -111,7 +112,6 @@
                 <option value="JIGSAW">Jigsaw</option>
                 <option value="INDIVIDUAL_WRITING">Individual Writing</option>
                 <option value="MULTI_TASKING">Multi-Tasking</option>
-                <option value="OPEN_DISCUSSION">Open Discussion</option>
                 <option value="FISHBOWLS">Fishbowls</option>
                 <option value="TRADESHOW">Tradeshow</option>
                 <option value="SCRAMBLER">Scrambler</option>
@@ -123,10 +123,10 @@
               <label for="configMeetingGoal" class="muted small" style="display: block; margin-bottom: 4px;">Meeting Goal</label>
               <select id="configMeetingGoal" style="width: 100%; padding: 6px;">
                 <option value="">-- Select Meeting Goal --</option>
-                <option value="SHARE_INFORMATION">Share Information</option>
-                <option value="ADVANCE_THINKING">Advance the Thinking</option>
-                <option value="OBTAIN_INPUT">Obtain Input</option>
                 <option value="MAKE_DECISIONS">Make Decisions</option>
+                <option value="ADVANCE_THINKING">Advance the Thinking</option>
+                <option value="SHARE_INFORMATION">Share Information</option>
+                <option value="OBTAIN_INPUT">Obtain Input</option>
                 <option value="IMPROVE_COMMUNICATION">Improve Communication</option>
                 <option value="BUILD_CAPACITY">Build Capacity</option>
                 <option value="BUILD_COMMUNITY">Build Community</option>
@@ -757,7 +757,7 @@
         hasAnySelection = true;
         const optionText = elConfigDeliverable.options[elConfigDeliverable.selectedIndex].text;
         const desc = descriptions.deliverable[deliverable]?.description || 'NOT FOUND';
-        html += `<div style="margin-bottom: 8px;"><strong>Advance Thinking - Deliverable:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7);">${desc}</span></div>`;
+        html += `<div style="margin-bottom: 8px;"><strong>Advance Thinking: Deliverable:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7);">${desc}</span></div>`;
       }
       
       if (hasAnySelection) {

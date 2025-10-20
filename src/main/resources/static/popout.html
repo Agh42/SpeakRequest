@@ -26,6 +26,7 @@
       /* Reserve space for QR code: 150px QR + 24px padding + 20px bottom margin = 194px */
       /* Also add some extra margin on the right to avoid QR code */
       padding-bottom: 20px;
+      padding-right: 15px;
       margin-bottom: 194px;
     }
     .content-container::-webkit-scrollbar {
@@ -62,7 +63,7 @@
       color: var(--text);
       font-size: 1.2rem;
       margin-top: 10px;
-      max-height: 150px; /* Approx 3 rows: each row ~45px (1.2rem text + 5px margin) */
+      max-height: 100px; /* Approx 3 rows: each row ~45px (1.2rem text + 5px margin) */
       overflow-y: auto;
       overflow-x: hidden;
       padding-right: 5px;
@@ -157,9 +158,14 @@
 
     <!-- Poll Results Card -->
     <div class="card" id="pollResultsCard" style="display: none;">
-      <div class="muted small">Last Poll Results</div>
-      <div id="pollResultsQuestion" class="medium" style="margin: 8px 0;">--</div>
-      <div id="pollResultsData" style="margin: 8px 0;">--</div>
+      <div id="pollResultsHeader" style="display:flex; align-items:center; justify-content:space-between; cursor:pointer;">
+        <div class="muted small" style="margin:0; font-weight: bold;">Last Poll Results</div>
+        <div id="pollResultsToggle" aria-expanded="false" style="font-size:1rem; color:var(--muted); margin-left:12px;">+</div>
+      </div>
+      <div id="pollResultsContent" style="display:none; margin-top:10px;">
+        <div id="pollResultsQuestion" class="medium" style="margin: 8px 0;">--</div>
+        <div id="pollResultsData" style="margin: 8px 0;">--</div>
+      </div>
     </div>
   </div>
 
@@ -232,6 +238,8 @@
     const elConfigContent = document.getElementById('configContent');
     const elConfigToggle = document.getElementById('configToggle');
     const elConfigDisplayText = document.getElementById('configDisplayText');
+    const elPollResultsContent = document.getElementById('pollResultsContent');
+    const elPollResultsToggle = document.getElementById('pollResultsToggle');
 
     // Init: ensure collapsed by default
     if (elConfigContent) {
@@ -242,7 +250,16 @@
       }
     }
 
-    // Toggle handler
+    // Init poll results: ensure collapsed by default
+    if (elPollResultsContent) {
+      elPollResultsContent.style.display = 'none';
+      if (elPollResultsToggle) {
+        elPollResultsToggle.textContent = '+';
+        elPollResultsToggle.setAttribute('aria-expanded', 'false');
+      }
+    }
+
+    // Toggle handler for config
     if (elConfigToggle && elConfigContent) {
       document.getElementById('configHeader').addEventListener('click', () => {
         const isExpanded = elConfigToggle.getAttribute('aria-expanded') === 'true';
@@ -254,6 +271,22 @@
           elConfigContent.style.display = 'block';
           elConfigToggle.textContent = '−';
           elConfigToggle.setAttribute('aria-expanded', 'true');
+        }
+      });
+    }
+
+    // Toggle handler for poll results
+    if (elPollResultsToggle && elPollResultsContent) {
+      document.getElementById('pollResultsHeader').addEventListener('click', () => {
+        const isExpanded = elPollResultsToggle.getAttribute('aria-expanded') === 'true';
+        if (isExpanded) {
+          elPollResultsContent.style.display = 'none';
+          elPollResultsToggle.textContent = '+';
+          elPollResultsToggle.setAttribute('aria-expanded', 'false');
+        } else {
+          elPollResultsContent.style.display = 'block';
+          elPollResultsToggle.textContent = '−';
+          elPollResultsToggle.setAttribute('aria-expanded', 'true');
         }
       });
     }
@@ -410,7 +443,7 @@
           };
           const optionText = deliverableMap[config.deliverable] || config.deliverable;
           const desc = descriptions.deliverable[config.deliverable]?.description || 'NOT FOUND';
-          html += `<div style="margin-bottom: 8px;"><strong>Deliverable:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">${desc}</span></div>`;
+          html += `<div style="margin-bottom: 8px;"><strong>Advance Thinking: Deliverable:</strong> ${optionText}<br/><span style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">${desc}</span></div>`;
         }
         
         if (hasAnySelection) {
@@ -445,6 +478,15 @@
         elPollInProgressCard.style.display = 'none';
         elNormalDisplay.style.display = 'none';
         elPollResultsCard.style.display = 'block';
+        
+        // Populate content (but keep it collapsed by default)
+        if (elPollResultsContent) {
+          elPollResultsContent.style.display = 'none';
+          if (elPollResultsToggle) {
+            elPollResultsToggle.textContent = '+';
+            elPollResultsToggle.setAttribute('aria-expanded', 'false');
+          }
+        }
         
         elPollResultsQuestion.textContent = DOMPurify.sanitize(state.pollState.question);
         
@@ -501,6 +543,15 @@
       // Show last poll results if available (for CLOSED state)
       if (state.pollState && state.pollState.lastResults) {
         elPollResultsCard.style.display = 'block';
+        
+        // Keep it collapsed by default
+        if (elPollResultsContent) {
+          elPollResultsContent.style.display = 'none';
+          if (elPollResultsToggle) {
+            elPollResultsToggle.textContent = '+';
+            elPollResultsToggle.setAttribute('aria-expanded', 'false');
+          }
+        }
         
         const results = state.pollState.lastResults;
         elPollResultsQuestion.textContent = DOMPurify.sanitize(results.question);
