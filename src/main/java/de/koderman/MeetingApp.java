@@ -241,7 +241,8 @@ public class MeetingApp {
         Map<String, Integer> results, // vote option -> count
         Integer totalVotes,
         PollResults lastResults, // Results of the last ended poll
-        List<String> options // For MULTISELECT polls - list of option labels
+        List<String> options, // For MULTISELECT polls - list of option labels
+        Integer votesPerParticipant // For MULTISELECT_MULTIPLE polls - number of votes each participant can cast
     ) {}
     
     public record PollResults(
@@ -274,9 +275,11 @@ public class MeetingApp {
         private String pollType = null;
         private String pollStatus = null; // "ACTIVE", "ENDED", "CLOSED", null
         private final Map<String, Integer> pollResults = new HashMap<>();
-        private final Map<String, String> sessionVotes = new HashMap<>(); // Track each session's vote (allows vote changes)
+        private final Map<String, String> sessionVotes = new HashMap<>(); // Track each session's vote (allows vote changes) - for single selection
+        private final Map<String, Set<String>> sessionMultiVotes = new HashMap<>(); // Track each session's votes (allows vote changes) - for multiple selection
         private PollResults lastPollResults = null;
         private List<String> pollOptions = null; // For MULTISELECT polls - list of option labels
+        private Integer votesPerParticipant = 1; // For MULTISELECT_MULTIPLE polls - number of votes each participant can cast
 
         public Room(String roomCode) {
             this.roomCode = roomCode;
@@ -304,14 +307,15 @@ public class MeetingApp {
                         new HashMap<>(pollResults),
                         totalVotes,
                         lastPollResults,
-                        pollOptions != null ? List.copyOf(pollOptions) : null
+                        pollOptions != null ? List.copyOf(pollOptions) : null,
+                        votesPerParticipant
                     );
                 } else if ("CLOSED".equals(pollStatus) && lastPollResults != null) {
                     // Poll is closed, show only last results
-                    pollState = new PollState(null, null, "CLOSED", Map.of(), 0, lastPollResults, null);
+                    pollState = new PollState(null, null, "CLOSED", Map.of(), 0, lastPollResults, null, null);
                 } else if (lastPollResults != null) {
                     // No active poll, but we have last results
-                    pollState = new PollState(null, null, null, Map.of(), 0, lastPollResults, null);
+                    pollState = new PollState(null, null, null, Map.of(), 0, lastPollResults, null, null);
                 }
                 
                 RoomConfig roomConfig = new RoomConfig(topic, meetingGoal, participationFormat, decisionRule, deliverable);
@@ -468,7 +472,7 @@ public class MeetingApp {
         }
         
         // Polling methods
-        public void startPoll(String question, String pollType, List<String> options) {
+        public void startPoll(String question, String pollType, List<String> options, Integer votesPerParticipant) {
             lock.lock();
             try {
                 this.pollQuestion = question;
@@ -476,7 +480,9 @@ public class MeetingApp {
                 this.pollStatus = "ACTIVE";
                 this.pollResults.clear();
                 this.sessionVotes.clear();
+                this.sessionMultiVotes.clear();
                 this.pollOptions = null;
+                this.votesPerParticipant = votesPerParticipant != null ? votesPerParticipant : 1;
                 
                 // Initialize results based on poll type
                 if ("YES_NO".equals(pollType)) {
@@ -492,8 +498,8 @@ public class MeetingApp {
                     this.pollResults.put("OPT_6", 0);
                     this.pollResults.put("OPT_7", 0);
                     this.pollResults.put("OPT_8", 0);
-                } else if ("MULTISELECT".equals(pollType)) {
-                    // Initialize options for multiselect poll
+                } else if ("MULTISELECT".equals(pollType) || "MULTISELECT_MULTIPLE".equals(pollType)) {
+                    // Initialize options for multiselect poll (both single and multiple selection)
                     if (options != null && !options.isEmpty()) {
                         this.pollOptions = new ArrayList<>(options);
                         for (int i = 0; i < options.size(); i++) {
@@ -519,17 +525,37 @@ public class MeetingApp {
                     return false;
                 }
                 
-                // Check if session has already voted - if so, remove the old vote
-                String previousVote = sessionVotes.get(sessionId);
-                if (previousVote != null) {
-                    // Decrement previous vote
-                    pollResults.put(previousVote, pollResults.get(previousVote) - 1);
+                // Handle multiple selection differently
+                if ("MULTISELECT_MULTIPLE".equals(pollType)) {
+                    Set<String> currentVotes = sessionMultiVotes.computeIfAbsent(sessionId, k -> new HashSet<>());
+                    
+                    // Toggle vote: if already voted for this option, remove it (deselect)
+                    if (currentVotes.contains(vote)) {
+                        currentVotes.remove(vote);
+                        pollResults.put(vote, pollResults.get(vote) - 1);
+                    } else {
+                        // Check if participant has reached max votes
+                        if (currentVotes.size() >= votesPerParticipant) {
+                            return false; // Max votes reached, cannot add more
+                        }
+                        currentVotes.add(vote);
+                        pollResults.put(vote, pollResults.get(vote) + 1);
+                    }
+                    return true;
+                } else {
+                    // Single selection (original behavior)
+                    // Check if session has already voted - if so, remove the old vote
+                    String previousVote = sessionVotes.get(sessionId);
+                    if (previousVote != null) {
+                        // Decrement previous vote
+                        pollResults.put(previousVote, pollResults.get(previousVote) - 1);
+                    }
+                    
+                    // Record new vote
+                    pollResults.put(vote, pollResults.get(vote) + 1);
+                    sessionVotes.put(sessionId, vote);
+                    return true;
                 }
-                
-                // Record new vote
-                pollResults.put(vote, pollResults.get(vote) + 1);
-                sessionVotes.put(sessionId, vote);
-                return true;
             } finally {
                 lock.unlock();
             }
@@ -969,7 +995,7 @@ public class MeetingApp {
                     .ifPresent(room -> {
                         // Only chair can start a poll
                         if (room.isChairSession(sessionId)) {
-                            room.startPoll(msg.question(), msg.pollType(), msg.options());
+                            room.startPoll(msg.question(), msg.pollType(), msg.options(), msg.votesPerParticipant());
                             broadcast(normalizedRoomCode);
                         }
                     });
