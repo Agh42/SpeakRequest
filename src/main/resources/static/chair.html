@@ -217,7 +217,10 @@
           </div>
           
           <div style="margin-top: 12px;">
-            <div class="muted small" style="margin-bottom: 8px;">Poll Options:</div>
+            <div style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+              <span class="muted small">Poll Options:</span>
+              <a id="btnPasteOptions" href="#" class="muted small" style="text-decoration: underline; cursor: pointer;">paste options</a>
+            </div>
             <div id="multiselectOptionsContainer"></div>
             <button id="btnAddOption" class="ghost" style="margin-top: 8px; width: 100%;">+ Add Option</button>
           </div>
@@ -286,6 +289,18 @@
     </footer>
   </div>
 
+  <!-- Paste Options Modal -->
+  <div id="pasteOptionsModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <h3 style="margin-top: 0;">Paste Options</h3>
+      <textarea id="pasteOptionsTextarea" placeholder="enter one option per line" rows="10" style="width: 100%; padding: 10px; font-size: 16px; background: #0b1020; color: var(--text); border: 1px solid var(--border); border-radius: 10px; font-family: inherit; resize: vertical;"></textarea>
+      <div class="row" style="margin-top: 12px;">
+        <button id="btnCreateOptions" class="primary">Create Options</button>
+        <button id="btnCancelPaste" class="ghost">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // Extract room code from URL query parameter
     const urlParams = new URLSearchParams(window.location.search);
@@ -342,6 +357,13 @@
     const elMultiselectPollQuestion = $('#multiselectPollQuestion');
     const elMultiselectOptionsContainer = $('#multiselectOptionsContainer');
     const elMultiselectPollCreationStatus = $('#multiselectPollCreationStatus');
+    
+    // Paste options modal elements
+    const elPasteOptionsModal = $('#pasteOptionsModal');
+    const elPasteOptionsTextarea = $('#pasteOptionsTextarea');
+    const elBtnPasteOptions = $('#btnPasteOptions');
+    const elBtnCancelPaste = $('#btnCancelPaste');
+    const elBtnCreateOptions = $('#btnCreateOptions');
 
     // --- State ---
     let client = null;
@@ -827,6 +849,52 @@
       if (multiselectOptions.length < 100) {
         multiselectOptions.push('');
         renderMultiselectOptions();
+      }
+    };
+    
+    // Paste options modal handlers
+    elBtnPasteOptions.onclick = (e) => {
+      e.preventDefault();
+      elPasteOptionsModal.style.display = 'flex';
+      // Pre-fill with current options, one per line
+      elPasteOptionsTextarea.value = multiselectOptions.join('\n');
+      elPasteOptionsTextarea.focus();
+    };
+    
+    elBtnCancelPaste.onclick = () => {
+      elPasteOptionsModal.style.display = 'none';
+    };
+    
+    elBtnCreateOptions.onclick = () => {
+      const text = elPasteOptionsTextarea.value.trim();
+      
+      if (!text) {
+        elPasteOptionsModal.style.display = 'none';
+        return;
+      }
+      
+      // Parse options - one per line
+      const newOptions = text.split('\n')
+        .map(line => line.trim())
+        .filter(line => line !== ''); // Remove empty lines
+      
+      if (newOptions.length === 0) {
+        elPasteOptionsModal.style.display = 'none';
+        return;
+      }
+      
+      // Replace all existing options with the new list (up to max 100)
+      multiselectOptions = newOptions.slice(0, 100);
+      renderMultiselectOptions();
+      
+      // Hide modal
+      elPasteOptionsModal.style.display = 'none';
+    };
+    
+    // Close modal when clicking outside of it
+    elPasteOptionsModal.onclick = (e) => {
+      if (e.target.id === 'pasteOptionsModal') {
+        elPasteOptionsModal.style.display = 'none';
       }
     };
     
