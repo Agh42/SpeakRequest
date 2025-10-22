@@ -193,6 +193,9 @@
             <button id="btnYesNoPoll" class="accent">📊 Yes/No Poll</button>
             <button id="btnGradientsPoll" class="accent">📊 Gradients of Agreement</button>
           </div>
+          <div class="row" style="margin-top: 8px;">
+            <button id="btnMultiselectPoll" class="accent">📊 Multiselect Poll</button>
+          </div>
         </div>
         
         <!-- Poll creation screen -->
@@ -205,6 +208,42 @@
             <button id="btnCancelPoll" class="ghost">✖ Cancel</button>
           </div>
           <div id="pollCreationStatus" class="muted small"></div>
+        </div>
+        
+        <!-- Multiselect poll creation screen -->
+        <div id="multiselectPollCreation" style="display: none;">
+          <div class="row">
+            <input id="multiselectPollQuestion" placeholder="Enter poll question (max 100 chars)" maxlength="100" style="flex: 1;"/>
+          </div>
+          
+          <div style="margin-top: 12px;">
+            <div class="muted small" style="margin-bottom: 8px;">Poll Options:</div>
+            <div id="multiselectOptionsContainer"></div>
+            <button id="btnAddOption" class="ghost" style="margin-top: 8px; width: 100%;">+ Add Option</button>
+          </div>
+          
+          <!-- Voting configuration (UI only - backend uses defaults) -->
+          <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2);">
+            <div class="muted small" style="margin-bottom: 8px;">Voting Configuration (currently single-select only):</div>
+            <div class="row">
+              <label class="muted small" style="flex: 0 0 auto; margin-right: 8px;">Votes per participant:</label>
+              <select id="multiselectVotesPerParticipant" style="flex: 1;" disabled>
+                <option value="1" selected>1 (Single Select)</option>
+              </select>
+            </div>
+            <div class="row" style="margin-top: 8px;">
+              <label class="muted small" style="flex: 0 0 auto; margin-right: 8px;">Votes per option:</label>
+              <select id="multiselectVotesPerOption" style="flex: 1;" disabled>
+                <option value="1" selected>1</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="row" style="margin-top: 12px;">
+            <button id="btnStartMultiselectPolling" class="primary">▶️ Start Poll</button>
+            <button id="btnCancelMultiselectPoll" class="ghost">✖ Cancel</button>
+          </div>
+          <div id="multiselectPollCreationStatus" class="muted small"></div>
         </div>
         
         <!-- Active poll screen -->
@@ -297,6 +336,12 @@
     const elPollResultsQuestion = $('#pollResultsQuestion');
     const elPollResultsData = $('#pollResultsData');
     const elPollCreationStatus = $('#pollCreationStatus');
+    
+    // Multiselect poll controls
+    const elMultiselectPollCreation = $('#multiselectPollCreation');
+    const elMultiselectPollQuestion = $('#multiselectPollQuestion');
+    const elMultiselectOptionsContainer = $('#multiselectOptionsContainer');
+    const elMultiselectPollCreationStatus = $('#multiselectPollCreationStatus');
 
     // --- State ---
     let client = null;
@@ -304,6 +349,7 @@
     let timerInterval = null;
     let currentState = null; // Add this to store the full state
     let selectedPollType = null; // Track which poll type is being created
+    let multiselectOptions = []; // Track multiselect poll options
 
     // --- WebSocket ---
     function connect() {
@@ -370,6 +416,7 @@
       // Hide all poll screens first
       elPollSelection.style.display = 'none';
       elPollCreation.style.display = 'none';
+      elMultiselectPollCreation.style.display = 'none';
       elPollActive.style.display = 'none';
       elPollResults.style.display = 'none';
       elPollNone.style.display = 'none';
@@ -398,6 +445,9 @@
         if (poll.pollType === 'GRADIENTS') {
           // Display Gradients of Agreement results as horizontal number line
           resultsHTML += renderGradientsResults(poll.results, poll.totalVotes);
+        } else if (poll.pollType === 'MULTISELECT') {
+          // Display Multiselect results as horizontal bar chart
+          resultsHTML += renderMultiselectResults(poll.results, poll.totalVotes, poll.options);
         } else {
           // Display Yes/No results as before
           for (const [option, count] of Object.entries(poll.results)) {
@@ -466,6 +516,39 @@
       
       html += '</div>';
       html += '<div style="margin-top: 8px; font-size: 0.45rem; color: rgba(255,255,255,0.5); font-style: italic;">Reference: Kaner, S. (2014). Facilitator\'s Guide to Participatory Decision-Making. Third edition, Jossey-Bass: San Francisco, California, United States of America.</div>';
+      html += '</div>';
+      
+      return html;
+    }
+    
+    function renderMultiselectResults(results, totalVotes, options) {
+      // Find max vote count for scaling bars
+      const maxVotes = Math.max(...Object.values(results), 1);
+      
+      let html = '<div style="margin: 16px 0;">';
+      
+      // Create horizontal bars for each option
+      options.forEach((optionLabel, index) => {
+        const optionKey = `OPT_${index}`;
+        const count = results[optionKey] || 0;
+        const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+        const widthPercent = maxVotes > 0 ? (count / maxVotes) * 100 : 0;
+        
+        html += `<div style="margin: 12px 0;">`;
+        // Option label
+        html += `<div style="font-weight: bold; margin-bottom: 4px; font-size: 0.95rem;">${DOMPurify.sanitize(optionLabel)}</div>`;
+        // Bar container
+        html += `<div style="display: flex; align-items: center; gap: 8px;">`;
+        // Bar
+        html += `<div style="flex: 1; background: rgba(255,255,255,0.1); border-radius: 4px; height: 24px; position: relative; overflow: hidden;">`;
+        html += `<div style="background: rgba(96,165,250,0.6); width: ${widthPercent}%; height: 100%; border-radius: 4px; transition: width 0.3s ease;"></div>`;
+        html += `</div>`;
+        // Count and percentage
+        html += `<div style="min-width: 80px; text-align: right; font-weight: bold; font-size: 0.9rem;">${count} (${percentage}%)</div>`;
+        html += `</div>`;
+        html += `</div>`;
+      });
+      
       html += '</div>';
       
       return html;
@@ -683,6 +766,111 @@
     elPollQuestion.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
         $('#btnStartPolling').click();
+      }
+    });
+    
+    // Multiselect poll event handlers
+    $('#btnMultiselectPoll').onclick = () => {
+      selectedPollType = 'MULTISELECT';
+      elPollSelection.style.display = 'none';
+      elMultiselectPollCreation.style.display = 'block';
+      elMultiselectPollQuestion.value = '';
+      
+      // Initialize with 2 default options
+      multiselectOptions = ['', ''];
+      renderMultiselectOptions();
+      
+      // Focus on question input
+      elMultiselectPollQuestion.focus();
+    };
+    
+    function renderMultiselectOptions() {
+      elMultiselectOptionsContainer.innerHTML = '';
+      
+      multiselectOptions.forEach((option, index) => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'row';
+        optionDiv.style.marginBottom = '8px';
+        
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = `Option ${index + 1}`;
+        input.maxLength = 100;
+        input.value = option;
+        input.style.flex = '1';
+        input.addEventListener('input', (e) => {
+          multiselectOptions[index] = e.target.value;
+        });
+        
+        const removeBtn = document.createElement('button');
+        removeBtn.textContent = '✖ Remove';
+        removeBtn.className = 'ghost';
+        removeBtn.style.marginLeft = '8px';
+        removeBtn.disabled = multiselectOptions.length <= 2; // Minimum 2 options
+        removeBtn.onclick = () => {
+          if (multiselectOptions.length > 2) {
+            multiselectOptions.splice(index, 1);
+            renderMultiselectOptions();
+          }
+        };
+        
+        optionDiv.appendChild(input);
+        optionDiv.appendChild(removeBtn);
+        elMultiselectOptionsContainer.appendChild(optionDiv);
+      });
+      
+      // Update add button state
+      $('#btnAddOption').disabled = multiselectOptions.length >= 100;
+    }
+    
+    $('#btnAddOption').onclick = () => {
+      if (multiselectOptions.length < 100) {
+        multiselectOptions.push('');
+        renderMultiselectOptions();
+      }
+    };
+    
+    $('#btnCancelMultiselectPoll').onclick = () => {
+      elMultiselectPollCreation.style.display = 'none';
+      elPollSelection.style.display = 'block';
+      selectedPollType = null;
+      multiselectOptions = [];
+    };
+    
+    $('#btnStartMultiselectPolling').onclick = () => {
+      const question = elMultiselectPollQuestion.value.trim();
+      if (!question) {
+        elMultiselectPollCreationStatus.textContent = 'Please enter a question';
+        elMultiselectPollCreationStatus.className = 'warn small';
+        return;
+      }
+      
+      // Filter out empty options and validate minimum 2
+      const validOptions = multiselectOptions.filter(opt => opt.trim() !== '');
+      if (validOptions.length < 2) {
+        elMultiselectPollCreationStatus.textContent = 'Please enter at least 2 options';
+        elMultiselectPollCreationStatus.className = 'warn small';
+        return;
+      }
+      
+      client?.send(`/app/room/${roomCode}/poll/start`, {}, JSON.stringify({
+        question: question,
+        pollType: 'MULTISELECT',
+        options: validOptions,
+        votesPerParticipant: 1,
+        votesPerOption: 1
+      }));
+      
+      elMultiselectPollCreationStatus.textContent = 'Poll started!';
+      elMultiselectPollCreationStatus.className = 'muted small';
+      selectedPollType = null;
+      multiselectOptions = [];
+    };
+    
+    // Enter key handler for multiselect poll question input
+    elMultiselectPollQuestion.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        $('#btnStartMultiselectPolling').click();
       }
     });
 

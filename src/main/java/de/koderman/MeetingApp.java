@@ -219,7 +219,10 @@ public class MeetingApp {
         @Size(max = 200, message = "Question must not exceed 200 characters")
         String question,
         @NotBlank(message = "Poll type is required")
-        String pollType // "YES_NO" or "GRADIENTS" for Gradients of Agreement
+        String pollType, // "YES_NO", "GRADIENTS", or "MULTISELECT"
+        List<String> options, // For MULTISELECT polls - list of option strings
+        Integer votesPerParticipant, // For MULTISELECT polls - currently hardcoded to 1
+        Integer votesPerOption // For MULTISELECT polls - currently hardcoded to 1
     ) {}
     
     public record CastVote(
@@ -237,13 +240,16 @@ public class MeetingApp {
         String status, // "ACTIVE", "ENDED", "CLOSED", null
         Map<String, Integer> results, // vote option -> count
         Integer totalVotes,
-        PollResults lastResults // Results of the last ended poll
+        PollResults lastResults, // Results of the last ended poll
+        List<String> options // For MULTISELECT polls - list of option labels
     ) {}
     
     public record PollResults(
         String question,
+        String pollType,
         Map<String, Integer> results,
-        Integer totalVotes
+        Integer totalVotes,
+        List<String> options // For MULTISELECT polls - list of option labels
     ) {}
 
     // ---------------- Room Management ----------------
@@ -270,6 +276,7 @@ public class MeetingApp {
         private final Map<String, Integer> pollResults = new HashMap<>();
         private final Map<String, String> sessionVotes = new HashMap<>(); // Track each session's vote (allows vote changes)
         private PollResults lastPollResults = null;
+        private List<String> pollOptions = null; // For MULTISELECT polls - list of option labels
 
         public Room(String roomCode) {
             this.roomCode = roomCode;
@@ -296,14 +303,15 @@ public class MeetingApp {
                         pollStatus,
                         new HashMap<>(pollResults),
                         totalVotes,
-                        lastPollResults
+                        lastPollResults,
+                        pollOptions != null ? List.copyOf(pollOptions) : null
                     );
                 } else if ("CLOSED".equals(pollStatus) && lastPollResults != null) {
                     // Poll is closed, show only last results
-                    pollState = new PollState(null, null, "CLOSED", Map.of(), 0, lastPollResults);
+                    pollState = new PollState(null, null, "CLOSED", Map.of(), 0, lastPollResults, null);
                 } else if (lastPollResults != null) {
                     // No active poll, but we have last results
-                    pollState = new PollState(null, null, null, Map.of(), 0, lastPollResults);
+                    pollState = new PollState(null, null, null, Map.of(), 0, lastPollResults, null);
                 }
                 
                 RoomConfig roomConfig = new RoomConfig(topic, meetingGoal, participationFormat, decisionRule, deliverable);
@@ -460,7 +468,7 @@ public class MeetingApp {
         }
         
         // Polling methods
-        public void startPoll(String question, String pollType) {
+        public void startPoll(String question, String pollType, List<String> options) {
             lock.lock();
             try {
                 this.pollQuestion = question;
@@ -468,6 +476,7 @@ public class MeetingApp {
                 this.pollStatus = "ACTIVE";
                 this.pollResults.clear();
                 this.sessionVotes.clear();
+                this.pollOptions = null;
                 
                 // Initialize results based on poll type
                 if ("YES_NO".equals(pollType)) {
@@ -483,6 +492,14 @@ public class MeetingApp {
                     this.pollResults.put("OPT_6", 0);
                     this.pollResults.put("OPT_7", 0);
                     this.pollResults.put("OPT_8", 0);
+                } else if ("MULTISELECT".equals(pollType)) {
+                    // Initialize options for multiselect poll
+                    if (options != null && !options.isEmpty()) {
+                        this.pollOptions = new ArrayList<>(options);
+                        for (int i = 0; i < options.size(); i++) {
+                            this.pollResults.put("OPT_" + i, 0);
+                        }
+                    }
                 }
             } finally {
                 lock.unlock();
@@ -526,8 +543,10 @@ public class MeetingApp {
                     int totalVotes = pollResults.values().stream().mapToInt(Integer::intValue).sum();
                     lastPollResults = new PollResults(
                         pollQuestion,
+                        pollType,
                         new HashMap<>(pollResults),
-                        totalVotes
+                        totalVotes,
+                        pollOptions != null ? List.copyOf(pollOptions) : null
                     );
                     
                     // Mark poll as ended (results shown in overlay to participants)
@@ -548,6 +567,7 @@ public class MeetingApp {
                     pollStatus = "CLOSED";
                     pollResults.clear();
                     sessionVotes.clear();
+                    pollOptions = null;
                 }
             } finally {
                 lock.unlock();
@@ -563,6 +583,7 @@ public class MeetingApp {
                 pollStatus = null;
                 pollResults.clear();
                 sessionVotes.clear();
+                pollOptions = null;
             } finally {
                 lock.unlock();
             }
@@ -948,7 +969,7 @@ public class MeetingApp {
                     .ifPresent(room -> {
                         // Only chair can start a poll
                         if (room.isChairSession(sessionId)) {
-                            room.startPoll(msg.question(), msg.pollType());
+                            room.startPoll(msg.question(), msg.pollType(), msg.options());
                             broadcast(normalizedRoomCode);
                         }
                     });

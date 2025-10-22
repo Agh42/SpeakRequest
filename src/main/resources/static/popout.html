@@ -443,6 +443,8 @@
         let resultsHTML = '';
         if (state.pollState.pollType === 'GRADIENTS') {
           resultsHTML = renderGradientsResults(state.pollState.results, state.pollState.totalVotes);
+        } else if (state.pollState.pollType === 'MULTISELECT') {
+          resultsHTML = renderMultiselectResults(state.pollState.results, state.pollState.totalVotes, state.pollState.options);
         } else {
           // YES/NO poll - simple text display
           resultsHTML = '<div style="margin-top: 8px;">';
@@ -509,6 +511,8 @@
         let resultsHTML = '';
         if (results.pollType === 'GRADIENTS') {
           resultsHTML = renderGradientsResults(results.results, results.totalVotes);
+        } else if (results.pollType === 'MULTISELECT') {
+          resultsHTML = renderMultiselectResults(results.results, results.totalVotes, results.options);
         } else {
           // YES/NO poll - simple text display
           resultsHTML = '<div style="margin-top: 8px;">';
@@ -597,6 +601,41 @@
       
       html += '</div>';
       html += '<div style="margin-top: 8px; font-size: 0.45rem; color: rgba(255,255,255,0.5); font-style: italic;">Reference: Kaner, S. (2014). Facilitator\'s Guide to Participatory Decision-Making. Third edition, Jossey-Bass: San Francisco, California, United States of America.</div>';
+      html += '</div>';
+      
+      return html;
+    }
+    
+    function renderMultiselectResults(results, totalVotes, options) {
+      if (!options || options.length === 0) return '';
+      
+      // Find max vote count for scaling bars
+      const maxVotes = Math.max(...Object.values(results), 1);
+      
+      let html = '<div style="margin: 16px 0;">';
+      
+      // Create horizontal bars for each option
+      options.forEach((optionLabel, index) => {
+        const optionKey = `OPT_${index}`;
+        const count = results[optionKey] || 0;
+        const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+        const widthPercent = maxVotes > 0 ? (count / maxVotes) * 100 : 0;
+        
+        html += `<div style="margin: 12px 0;">`;
+        // Option label
+        html += `<div style="font-weight: bold; margin-bottom: 4px; font-size: 0.95rem;">${DOMPurify.sanitize(optionLabel)}</div>`;
+        // Bar container
+        html += `<div style="display: flex; align-items: center; gap: 8px;">`;
+        // Bar
+        html += `<div style="flex: 1; background: rgba(255,255,255,0.1); border-radius: 4px; height: 24px; position: relative; overflow: hidden;">`;
+        html += `<div style="background: rgba(96,165,250,0.6); width: ${widthPercent}%; height: 100%; border-radius: 4px; transition: width 0.3s ease;"></div>`;
+        html += `</div>`;
+        // Count and percentage
+        html += `<div style="min-width: 80px; text-align: right; font-weight: bold; font-size: 0.9rem;">${count} (${percentage}%)</div>`;
+        html += `</div>`;
+        html += `</div>`;
+      });
+      
       html += '</div>';
       
       return html;
