@@ -856,7 +856,8 @@
     elBtnPasteOptions.onclick = (e) => {
       e.preventDefault();
       elPasteOptionsModal.style.display = 'flex';
-      elPasteOptionsTextarea.value = '';
+      // Pre-fill with current options, one per line
+      elPasteOptionsTextarea.value = multiselectOptions.join('\n');
       elPasteOptionsTextarea.focus();
     };
     
@@ -882,11 +883,8 @@
         return;
       }
       
-      // Add new options to existing ones (up to max 100)
-      const remainingSlots = 100 - multiselectOptions.length;
-      const optionsToAdd = newOptions.slice(0, remainingSlots);
-      
-      multiselectOptions.push(...optionsToAdd);
+      // Replace all existing options with the new list (up to max 100)
+      multiselectOptions = newOptions.slice(0, 100);
       renderMultiselectOptions();
       
       // Hide modal
