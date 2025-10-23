@@ -61,13 +61,44 @@ The application follows a single-file architecture pattern where all components 
 - **Minimal comments**: Code should be self-documenting; avoid excessive comments
 - **Java 21 features**: Utilize pattern matching, records, and modern Java syntax
 
+### Domain-Driven Design (DDD)
+- **DDD-style entities**: `Room` entity encapsulates business logic and state
+- **Repository pattern**: `RoomRepository` manages room lifecycle and persistence
+- **Domain methods over getters/setters**: Use behavior-focused methods that express domain logic
+  - ✅ `room.nextParticipant()` - expresses domain intent
+  - ❌ `room.setCurrent(participant)` - exposes internal implementation
+  - ✅ `room.startTimer()`, `room.pauseTimer()`, `room.resetTimer()` - clear domain operations
+  - ✅ `room.addParticipantToQueue(participant)` - domain-focused behavior
+  - ✅ `room.withdrawParticipant(name)` - business operation
+- **Service layer**: `MeetingController` acts as application service coordinating domain operations
+- **Encapsulation**: Internal state managed within entities, exposed only through domain methods
+
 ### Validation
+
+**Backend Validation:**
 - Use Jakarta Validation annotations on records:
   - `@NotBlank` for required strings
   - `@Size` for length constraints
   - `@Pattern` for format validation
   - Maximum field sizes: names (30 chars), topics (100 chars), questions (200 chars)
 - Name validation pattern: `^[a-zA-Z0-9 '.-]+$`
+
+**Client-Side Validation:**
+- **Always sanitize user input**: Use DOMPurify before displaying or sending text to backend
+- **Input fields to sanitize**: All text inputs entered by users including:
+  - Participant names
+  - Room topics
+  - Poll questions and options
+  - Any user-generated content displayed in the UI
+- **Sanitization pattern**:
+  ```javascript
+  // Before sending to backend
+  const sanitizedName = DOMPurify.sanitize(inputElement.value);
+  
+  // Before displaying in UI
+  element.textContent = DOMPurify.sanitize(userInput);
+  ```
+- **XSS Protection**: DOMPurify prevents cross-site scripting attacks by removing malicious HTML/JavaScript
 
 ### Thread Safety
 - Always use `lock.lock()` and `try-finally` pattern in Room methods
