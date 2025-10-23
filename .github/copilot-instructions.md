@@ -5,12 +5,22 @@
 SpeakRequest is a real-time meeting manager for live and hybrid meetings, built with Spring Boot and WebSocket technology. It helps facilitators manage speak requests, conduct polls, and track speaking time during meetings.
 
 ### Key Technologies
+
+**Backend:**
 - **Java 21** - Primary programming language
 - **Spring Boot 3.3.3** - Application framework
 - **WebSocket/STOMP** - Real-time bidirectional communication
 - **Gradle 8.9** - Build system
 - **Lombok** - Code generation for boilerplate reduction
 - **Jakarta Validation** - Input validation
+
+**Frontend:**
+- **Vanilla HTML5/JavaScript** - No frameworks, pure JavaScript
+- **CSS3** - Custom CSS with CSS variables for theming
+- **STOMP.js** - WebSocket messaging protocol client
+- **QRCode.js** - QR code generation for room joining
+- **DOMPurify** - XSS protection for sanitizing user input
+- **Responsive Design** - Mobile-first approach with CSS media queries
 
 ## Architecture
 
@@ -278,21 +288,61 @@ roomRepository.getByCode(roomCode)
 
 ## Frontend Integration
 
-### Static Resources
-- Location: `src/main/resources/static/`
-- Pages: landing.html, chair.html, participant.html, popout.html
-- Libraries: stomp.min.js, qrcode.min.js, purify.min.js
+### Architecture
+- **No Build Process**: Pure HTML/CSS/JavaScript with no transpilation or bundling
+- **Server-Side Rendering**: Static HTML files served directly by Spring Boot
+- **Real-time Updates**: WebSocket-based state synchronization
+- **Vanilla JavaScript**: No frameworks (React, Vue, Angular) - keeps complexity low
+- **Progressive Enhancement**: Works without JavaScript for basic functionality
 
-### WebSocket Connection
+### Static Resources
+- **Location**: `src/main/resources/static/`
+- **Pages**: 
+  - `landing.html` - Entry point for creating/joining rooms
+  - `chair.html` - Facilitator view with full controls
+  - `participant.html` - Participant view for speaking requests and polls
+  - `popout.html` - Projection/screen-share view showing queue and current speaker
+  - `legal.html` - Legal information and imprint
+- **Libraries**: 
+  - `stomp.min.js` - STOMP protocol over WebSocket
+  - `qrcode.min.js` - QR code generation for easy room joining
+  - `purify.min.js` - DOMPurify for XSS protection
+  - `metadata-loader.js` - Custom script for loading enum metadata from backend
+- **Styles**: 
+  - `styles.css` - Single CSS file with CSS variables for dark theme
+  - Mobile-first responsive design with media queries
+  - No CSS preprocessors (SASS, LESS)
+
+### WebSocket Connection Pattern
 ```javascript
 const socket = new WebSocket('ws://localhost:8080/ws');
 const stompClient = Stomp.over(socket);
 stompClient.connect({}, frame => {
     stompClient.subscribe(`/topic/room/${roomCode}/state`, message => {
         // Handle state update
+        const state = JSON.parse(message.body);
+        updateUI(state);
+    });
+    
+    // Subscribe to room destruction events
+    stompClient.subscribe(`/topic/room/${roomCode}/destroyed`, message => {
+        // Handle room closure
+        window.location.href = '/landing.html';
     });
 });
 ```
+
+### Client-Side State Management
+- **No State Library**: State managed through DOM and local variables
+- **Event-Driven**: UI updates triggered by WebSocket messages
+- **Idempotent Updates**: Full state updates on each message (not deltas)
+- **Input Sanitization**: All user input sanitized with DOMPurify before display
+
+### Styling Conventions
+- **CSS Variables**: Used for theming (colors, spacing)
+- **BEM-like Classes**: Semantic class names (e.g., `.card`, `.pill`, `.accent`)
+- **Mobile-First**: Base styles for mobile, then desktop enhancements
+- **Dark Theme**: Default and only theme, optimized for low-light environments
 
 ## Deployment
 
