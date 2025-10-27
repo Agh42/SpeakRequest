@@ -116,7 +116,6 @@
     
     <div id="meetingTopicDisplay" style="text-align: center; margin-bottom: 20px; color: var(--text); font-size: 1rem; font-weight: 600; display: none;">
       <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom: 4px;">
-        <div class="muted small" style="margin:0;">Topic:</div>
         <div id="meetingTopicText" style="font-size: 1.1rem; font-weight:600;"></div>
       </div>
     </div>
@@ -609,9 +608,6 @@
     function renderMultiselectResults(results, totalVotes, options) {
       if (!options || options.length === 0) return '';
       
-      // Find max vote count for scaling bars
-      const maxVotes = Math.max(...Object.values(results), 1);
-      
       let html = '<div style="margin: 16px 0;">';
       
       // Create horizontal bars for each option
@@ -619,7 +615,7 @@
         const optionKey = `OPT_${index}`;
         const count = results[optionKey] || 0;
         const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
-        const widthPercent = maxVotes > 0 ? (count / maxVotes) * 100 : 0;
+        const widthPercent = totalVotes > 0 ? (count / totalVotes) * 100 : 0;
         
         html += `<div style="margin: 12px 0;">`;
         // Option label

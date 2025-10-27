@@ -160,6 +160,12 @@
           </div>
           <div id="copyStatus" class="muted small"></div>
           
+          <!-- Meeting Topic Display -->
+          <div id="meetingTopicDisplay" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 16px; display: none;">
+            <div class="muted small" style="margin-bottom: 8px; font-weight: bold;">Meeting Topic:</div>
+            <div id="meetingTopicText" style="font-size: 1rem; font-weight: 600; color: var(--text);"></div>
+          </div>
+          
           <!-- Configuration Display -->
           <div id="configDisplayParticipant" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 16px; display: none;">
             <div class="muted small" style="margin-bottom: 12px; font-weight: bold;">Selected Options:</div>
@@ -307,6 +313,10 @@
     const elBtnAssumeChair = $('#btnAssumeChair');
     const elAssumeChairStatus = $('#assumeChairStatus');
     
+    // Meeting topic elements
+    const elMeetingTopicDisplay = $('#meetingTopicDisplay');
+    const elMeetingTopicText = $('#meetingTopicText');
+    
     // Poll elements
   const elPollSection = $('#pollSection');
   const elPollEmpty = $('#pollEmpty');
@@ -451,6 +461,14 @@
     function updateUI(state) {
       meetingStart = state.meetingStartSec;
       currentState = state; // Store the current state
+
+      // Update meeting topic
+      if (state.roomConfig && state.roomConfig.topic) {
+        elMeetingTopicDisplay.style.display = 'block';
+        elMeetingTopicText.textContent = DOMPurify.sanitize(state.roomConfig.topic);
+      } else {
+        elMeetingTopicDisplay.style.display = 'none';
+      }
 
       // Update chair status
       if (state.chairOccupied) {
@@ -657,7 +675,7 @@
         
         // Update vote status message based on current vote
         if (currentVote) {
-          elOverlayVoteStatus.textContent = `✓ You voted: ${getVoteLabel(currentVote, pollState.pollType)}`;
+          elOverlayVoteStatus.textContent = `✓ You voted: ${getVoteLabel(currentVote, pollState.pollType, pollState)}`;
           elOverlayVoteStatus.className = 'ok small';
         } else {
           elOverlayVoteStatus.textContent = 'Cast your vote (you can change it):';
@@ -746,7 +764,7 @@
       }
     }
     
-    function getVoteLabel(vote, pollType) {
+    function getVoteLabel(vote, pollType, pollState = null) {
       if (pollType === 'GRADIENTS') {
         const labels = {
           'OPT_1': '1 - Whole-hearted Endorsement',
@@ -759,6 +777,13 @@
           'OPT_8': '8 - Veto'
         };
         return labels[vote] || vote;
+      } else if (pollType === 'MULTISELECT' && pollState && pollState.options) {
+        // Extract option index from vote key (e.g., 'OPT_0' -> 0)
+        const match = vote.match(/^OPT_(\d+)$/);
+        if (match) {
+          const index = parseInt(match[1]);
+          return pollState.options[index] || vote;
+        }
       }
       return vote === 'YES' ? 'Yes' : 'No';
     }
@@ -827,6 +852,7 @@
         btn.style.margin = '6px 0';
         btn.innerHTML = `<strong>${DOMPurify.sanitize(optionLabel)}</strong>`;
         btn.dataset.optionKey = `OPT_${index}`;
+        btn.dataset.optionLabel = optionLabel;
         
         btn.onclick = () => {
           const optionKey = btn.dataset.optionKey;
@@ -844,9 +870,6 @@
     function renderMultiselectResults(results, totalVotes, options) {
       if (!options || options.length === 0) return '';
       
-      // Find max vote count for scaling bars
-      const maxVotes = Math.max(...Object.values(results), 1);
-      
       let html = '<div style="margin: 16px 0;">';
       
       // Create horizontal bars for each option
@@ -854,7 +877,7 @@
         const optionKey = `OPT_${index}`;
         const count = results[optionKey] || 0;
         const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
-        const widthPercent = maxVotes > 0 ? (count / maxVotes) * 100 : 0;
+        const widthPercent = totalVotes > 0 ? (count / totalVotes) * 100 : 0;
         
         html += `<div style="margin: 12px 0;">`;
         // Option label

@@ -544,9 +544,6 @@
     }
     
     function renderMultiselectResults(results, totalVotes, options) {
-      // Find max vote count for scaling bars
-      const maxVotes = Math.max(...Object.values(results), 1);
-      
       let html = '<div style="margin: 16px 0;">';
       
       // Create horizontal bars for each option
@@ -554,7 +551,7 @@
         const optionKey = `OPT_${index}`;
         const count = results[optionKey] || 0;
         const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
-        const widthPercent = maxVotes > 0 ? (count / maxVotes) * 100 : 0;
+        const widthPercent = totalVotes > 0 ? (count / totalVotes) * 100 : 0;
         
         html += `<div style="margin: 12px 0;">`;
         // Option label
