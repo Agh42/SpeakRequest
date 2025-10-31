@@ -194,7 +194,8 @@
             <button id="btnGradientsPoll" class="accent">📊 Gradients of Agreement</button>
           </div>
           <div class="row" style="margin-top: 8px;">
-            <button id="btnMultiselectPoll" class="accent">📊 Multiselect Poll</button>
+            <button id="btnSingleSelectionPoll" class="accent">📊 Single Selection</button>
+            <button id="btnMultipleSelectionPoll" class="accent">📊 Multiple Selection</button>
           </div>
         </div>
         
@@ -225,19 +226,22 @@
             <button id="btnAddOption" class="ghost" style="margin-top: 8px; width: 100%;">+ Add Option</button>
           </div>
           
-          <!-- Voting configuration (UI only - backend uses defaults) -->
-          <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2);">
-            <div class="muted small" style="margin-bottom: 8px;">Voting Configuration (currently single-select only):</div>
+          <!-- Voting configuration for multiple selection -->
+          <div id="votingConfiguration" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2); display: none;">
+            <div class="muted small" style="margin-bottom: 8px;">Voting Configuration:</div>
             <div class="row">
               <label class="muted small" style="flex: 0 0 auto; margin-right: 8px;">Votes per participant:</label>
-              <select id="multiselectVotesPerParticipant" style="flex: 1;" disabled>
-                <option value="1" selected>1 (Single Select)</option>
-              </select>
-            </div>
-            <div class="row" style="margin-top: 8px;">
-              <label class="muted small" style="flex: 0 0 auto; margin-right: 8px;">Votes per option:</label>
-              <select id="multiselectVotesPerOption" style="flex: 1;" disabled>
-                <option value="1" selected>1</option>
+              <select id="multiselectVotesPerParticipant" style="flex: 1;">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
               </select>
             </div>
           </div>
@@ -372,6 +376,7 @@
     let currentState = null; // Add this to store the full state
     let selectedPollType = null; // Track which poll type is being created
     let multiselectOptions = []; // Track multiselect poll options
+    let isMultipleSelection = false; // Track if this is multiple selection (vs single selection)
 
     // --- WebSocket ---
     function connect() {
@@ -788,12 +793,35 @@
       }
     });
     
-    // Multiselect poll event handlers
-    $('#btnMultiselectPoll').onclick = () => {
+    // Single selection poll event handler
+    $('#btnSingleSelectionPoll').onclick = () => {
       selectedPollType = 'MULTISELECT';
+      isMultipleSelection = false;
       elPollSelection.style.display = 'none';
       elMultiselectPollCreation.style.display = 'block';
       elMultiselectPollQuestion.value = '';
+      
+      // Hide voting configuration for single selection
+      $('#votingConfiguration').style.display = 'none';
+      
+      // Initialize with 2 default options
+      multiselectOptions = ['', ''];
+      renderMultiselectOptions();
+      
+      // Focus on question input
+      elMultiselectPollQuestion.focus();
+    };
+    
+    // Multiple selection poll event handler
+    $('#btnMultipleSelectionPoll').onclick = () => {
+      selectedPollType = 'MULTISELECT_MULTIPLE';
+      isMultipleSelection = true;
+      elPollSelection.style.display = 'none';
+      elMultiselectPollCreation.style.display = 'block';
+      elMultiselectPollQuestion.value = '';
+      
+      // Show voting configuration for multiple selection
+      $('#votingConfiguration').style.display = 'block';
       
       // Initialize with 2 default options
       multiselectOptions = ['', ''];
@@ -819,6 +847,7 @@
         input.style.flex = '1';
         input.addEventListener('input', (e) => {
           multiselectOptions[index] = e.target.value;
+          updateVotesPerParticipantDropdown();
         });
         
         const removeBtn = document.createElement('button');
@@ -840,6 +869,34 @@
       
       // Update add button state
       $('#btnAddOption').disabled = multiselectOptions.length >= 100;
+      
+      // Update votes per participant dropdown
+      updateVotesPerParticipantDropdown();
+    }
+    
+    function updateVotesPerParticipantDropdown() {
+      if (!isMultipleSelection) return;
+      
+      const validOptions = multiselectOptions.filter(opt => opt.trim() !== '').length;
+      const maxVotes = Math.min(validOptions, 100);
+      const dropdown = $('#multiselectVotesPerParticipant');
+      const currentValue = parseInt(dropdown.value, 10) || 1;
+      
+      dropdown.innerHTML = '';
+      for (let i = 1; i <= maxVotes; i++) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = i;
+        if (i === currentValue && i <= maxVotes) {
+          opt.selected = true;
+        }
+        dropdown.appendChild(opt);
+      }
+      
+      // If current value is greater than max, select the max
+      if (currentValue > maxVotes && maxVotes > 0) {
+        dropdown.value = maxVotes;
+      }
     }
     
     $('#btnAddOption').onclick = () => {
@@ -900,6 +957,7 @@
       elPollSelection.style.display = 'block';
       selectedPollType = null;
       multiselectOptions = [];
+      isMultipleSelection = false;
     };
     
     $('#btnStartMultiselectPolling').onclick = () => {
@@ -918,11 +976,22 @@
         return;
       }
       
+      // Get votes per participant value (for multiple selection)
+      let votesPerParticipant = 1;
+      if (isMultipleSelection) {
+        votesPerParticipant = parseInt($('#multiselectVotesPerParticipant').value, 10);
+        
+        // Limit to max number of options
+        if (votesPerParticipant > validOptions.length) {
+          votesPerParticipant = validOptions.length;
+        }
+      }
+      
       client?.send(`/app/room/${roomCode}/poll/start`, {}, JSON.stringify({
         question: question,
-        pollType: 'MULTISELECT',
+        pollType: selectedPollType,
         options: validOptions,
-        votesPerParticipant: 1,
+        votesPerParticipant: votesPerParticipant,
         votesPerOption: 1
       }));
       
@@ -930,6 +999,7 @@
       elMultiselectPollCreationStatus.className = 'muted small';
       selectedPollType = null;
       multiselectOptions = [];
+      isMultipleSelection = false;
     };
     
     // Enter key handler for multiselect poll question input

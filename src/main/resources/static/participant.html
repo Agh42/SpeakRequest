@@ -384,8 +384,10 @@
     const elOverlayBtnOpt8 = $('#overlayBtnVoteOpt8');
     
     // Track current vote
-    let currentVote = null; // 'YES', 'NO', 'OPT_1', ... 'OPT_8', or null
-    let currentPollType = null; // Track the current poll type
+    let currentVote = null; // 'YES', 'NO', 'OPT_1', ... 'OPT_8', or null (for single selection)
+    let selectedVotes = new Set(); // Set of vote keys for multiple selection polls
+    let currentPollType = null; // Track current poll type
+    let maxVotesPerParticipant = 1; // Max votes for multiple selection
 
     function openOverlay() {
       // prevent background scroll
@@ -644,6 +646,8 @@
         // Reset vote tracking
         currentVote = null;
         currentPollType = null;
+        selectedVotes.clear();
+        maxVotesPerParticipant = 1;
         return;
       }
 
@@ -657,12 +661,16 @@
         elOverlayVotingSection.style.display = 'block';
         elOverlayResultsSection.style.display = 'none';
         
+        // Set poll type and voting parameters
+        currentPollType = pollState.pollType;
+        maxVotesPerParticipant = pollState.votesPerParticipant || 1;
+        
         // Show appropriate voting UI based on poll type
         if (pollState.pollType === 'GRADIENTS') {
           elYesNoVoting.style.display = 'none';
           elGradientsVoting.style.display = 'block';
           elMultiselectVoting.style.display = 'none';
-        } else if (pollState.pollType === 'MULTISELECT') {
+        } else if (pollState.pollType === 'MULTISELECT' || pollState.pollType === 'MULTISELECT_MULTIPLE') {
           elYesNoVoting.style.display = 'none';
           elGradientsVoting.style.display = 'none';
           elMultiselectVoting.style.display = 'block';
@@ -674,7 +682,9 @@
         }
         
         // Update vote status message based on current vote
-        if (currentVote) {
+        if (pollState.pollType === 'MULTISELECT_MULTIPLE') {
+          updateMultipleSelectionStatus();
+        } else if (currentVote) {
           elOverlayVoteStatus.textContent = `✓ You voted: ${getVoteLabel(currentVote, pollState.pollType, pollState)}`;
           elOverlayVoteStatus.className = 'ok small';
         } else {
@@ -705,7 +715,7 @@
         
         if (pollState.pollType === 'GRADIENTS') {
           resultsHTML += renderGradientsResults(pollState.results, pollState.totalVotes);
-        } else if (pollState.pollType === 'MULTISELECT') {
+        } else if (pollState.pollType === 'MULTISELECT' || pollState.pollType === 'MULTISELECT_MULTIPLE') {
           resultsHTML += renderMultiselectResults(pollState.results, pollState.totalVotes, pollState.options);
         } else {
           // Yes/No results
@@ -739,6 +749,8 @@
         // Reset vote tracking for next poll
         currentVote = null;
         currentPollType = null;
+        selectedVotes.clear();
+        maxVotesPerParticipant = 1;
 
         const results = pollState.lastResults;
         elPollResultsQuestionParticipant.textContent = DOMPurify.sanitize(results.question);
@@ -746,7 +758,7 @@
         let resultsHTML = '<div style="margin-top: 8px;">';
         
         // Check pollType in lastResults if available, otherwise infer from keys
-        if (results.pollType === 'MULTISELECT' || (results.options && results.options.length > 0)) {
+        if (results.pollType === 'MULTISELECT' || results.pollType === 'MULTISELECT_MULTIPLE' || (results.options && results.options.length > 0)) {
           resultsHTML += renderMultiselectResults(results.results, results.totalVotes, results.options);
         } else if (results.pollType === 'GRADIENTS' || Object.keys(results.results).some(k => k.startsWith('OPT_'))) {
           resultsHTML += renderGradientsResults(results.results, results.totalVotes);
@@ -856,15 +868,55 @@
         
         btn.onclick = () => {
           const optionKey = btn.dataset.optionKey;
-          currentVote = optionKey;
-          client?.send(`/app/room/${roomCode}/poll/vote`, {}, JSON.stringify({vote: optionKey}));
-          elOverlayVoteStatus.textContent = `✓ You voted: ${DOMPurify.sanitize(optionLabel)}`;
-          elOverlayVoteStatus.className = 'ok small';
-          updateVoteButtonStyles();
+          
+          if (currentPollType === 'MULTISELECT_MULTIPLE') {
+            // Handle multiple selection with toggle
+            if (selectedVotes.has(optionKey)) {
+              // Deselect the option
+              selectedVotes.delete(optionKey);
+              client?.send(`/app/room/${roomCode}/poll/vote`, {}, JSON.stringify({vote: optionKey}));
+              updateMultipleSelectionStatus();
+            } else {
+              // Check if max votes reached
+              if (selectedVotes.size >= maxVotesPerParticipant) {
+                elOverlayVoteStatus.textContent = `⚠ Maximum ${maxVotesPerParticipant} vote(s) reached. Deselect an option first.`;
+                elOverlayVoteStatus.className = 'warn small';
+                return;
+              }
+              // Select the option
+              selectedVotes.add(optionKey);
+              client?.send(`/app/room/${roomCode}/poll/vote`, {}, JSON.stringify({vote: optionKey}));
+              updateMultipleSelectionStatus();
+            }
+            updateVoteButtonStyles();
+          } else {
+            // Handle single selection (original behavior)
+            currentVote = optionKey;
+            client?.send(`/app/room/${roomCode}/poll/vote`, {}, JSON.stringify({vote: optionKey}));
+            elOverlayVoteStatus.textContent = `✓ You voted: ${DOMPurify.sanitize(optionLabel)}`;
+            elOverlayVoteStatus.className = 'ok small';
+            updateVoteButtonStyles();
+          }
         };
         
         elMultiselectOptionsDisplay.appendChild(btn);
       });
+      
+      // Update button styles based on current votes
+      updateVoteButtonStyles();
+    }
+    
+    function updateMultipleSelectionStatus() {
+      if (selectedVotes.size === 0) {
+        elOverlayVoteStatus.textContent = `Select up to ${maxVotesPerParticipant} option(s)`;
+        elOverlayVoteStatus.className = 'muted small';
+      } else if (selectedVotes.size === maxVotesPerParticipant) {
+        elOverlayVoteStatus.textContent = `✓ You selected ${selectedVotes.size} of ${maxVotesPerParticipant} option(s) (max reached)`;
+        elOverlayVoteStatus.className = 'ok small';
+      } else {
+        elOverlayVoteStatus.textContent = `✓ You selected ${selectedVotes.size} of ${maxVotesPerParticipant} option(s)`;
+        elOverlayVoteStatus.className = 'ok small';
+      }
     }
     
     function renderMultiselectResults(results, totalVotes, options) {
@@ -901,7 +953,7 @@
     
     function updateVoteButtonStyles() {
       if (currentPollType === 'MULTISELECT') {
-        // Remove selected class from all multiselect buttons
+        // Single selection - Remove selected class from all multiselect buttons
         const buttons = elMultiselectOptionsDisplay.querySelectorAll('button');
         buttons.forEach(btn => btn.classList.remove('vote-selected'));
         
@@ -912,6 +964,18 @@
             selectedBtn.classList.add('vote-selected');
           }
         }
+      } else if (currentPollType === 'MULTISELECT_MULTIPLE') {
+        // Multiple selection - Remove selected class from all multiselect buttons
+        const buttons = elMultiselectOptionsDisplay.querySelectorAll('button');
+        buttons.forEach(btn => btn.classList.remove('vote-selected'));
+        
+        // Add selected class to all buttons that were voted for
+        selectedVotes.forEach(voteKey => {
+          const selectedBtn = elMultiselectOptionsDisplay.querySelector(`button[data-option-key="${voteKey}"]`);
+          if (selectedBtn) {
+            selectedBtn.classList.add('vote-selected');
+          }
+        });
       } else if (currentPollType === 'GRADIENTS') {
         // Remove selected class from all gradient buttons
         [elOverlayBtnOpt1, elOverlayBtnOpt2, elOverlayBtnOpt3, elOverlayBtnOpt4,
