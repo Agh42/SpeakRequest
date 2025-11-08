@@ -442,7 +442,7 @@
         let resultsHTML = '';
         if (state.pollState.pollType === 'GRADIENTS') {
           resultsHTML = renderGradientsResults(state.pollState.results, state.pollState.totalVotes);
-        } else if (state.pollState.pollType === 'MULTISELECT') {
+        } else if (state.pollState.pollType === 'MULTISELECT' || state.pollState.pollType === 'MULTISELECT_MULTIPLE' || (state.pollState.options && state.pollState.options.length > 0)) {
           resultsHTML = renderMultiselectResults(state.pollState.results, state.pollState.totalVotes, state.pollState.options);
         } else {
           // YES/NO poll - simple text display
@@ -510,7 +510,7 @@
         let resultsHTML = '';
         if (results.pollType === 'GRADIENTS') {
           resultsHTML = renderGradientsResults(results.results, results.totalVotes);
-        } else if (results.pollType === 'MULTISELECT') {
+        } else if (results.pollType === 'MULTISELECT' || results.pollType === 'MULTISELECT_MULTIPLE' || (results.options && results.options.length > 0)) {
           resultsHTML = renderMultiselectResults(results.results, results.totalVotes, results.options);
         } else {
           // YES/NO poll - simple text display

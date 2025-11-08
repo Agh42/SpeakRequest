@@ -230,7 +230,7 @@
           <div id="votingConfiguration" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.2); display: none;">
             <div class="muted small" style="margin-bottom: 8px;">Voting Configuration:</div>
             <div class="row">
-              <label class="muted small" style="flex: 0 0 auto; margin-right: 8px;">Votes per participant:</label>
+              <label class="muted small" style="flex: 0 0 auto; margin-right: 8px;">Select up to X options:</label>
               <select id="multiselectVotesPerParticipant" style="flex: 1;">
                 <option value="1">1</option>
                 <option value="2">2</option>
@@ -440,6 +440,15 @@
     }
     
     function updatePollUI(state) {
+      // Check if user is currently configuring a poll - if so, don't update the UI
+      const isConfiguringPoll = elPollCreation.style.display === 'block' || 
+                                elMultiselectPollCreation.style.display === 'block';
+      
+      if (isConfiguringPoll) {
+        // User is in the middle of configuring a poll, don't reset the UI
+        return;
+      }
+      
       // Hide all poll screens first
       elPollSelection.style.display = 'none';
       elPollCreation.style.display = 'none';
@@ -472,7 +481,7 @@
         if (poll.pollType === 'GRADIENTS') {
           // Display Gradients of Agreement results as horizontal number line
           resultsHTML += renderGradientsResults(poll.results, poll.totalVotes);
-        } else if (poll.pollType === 'MULTISELECT') {
+        } else if (poll.pollType === 'MULTISELECT' || poll.pollType === 'MULTISELECT_MULTIPLE' || (poll.options && poll.options.length > 0)) {
           // Display Multiselect results as horizontal bar chart
           resultsHTML += renderMultiselectResults(poll.results, poll.totalVotes, poll.options);
         } else {
@@ -763,6 +772,9 @@
       elPollCreationStatus.textContent = 'Poll started!';
       elPollCreationStatus.className = 'muted small';
       selectedPollType = null;
+      
+      // Hide the poll creation panel so updatePollUI can switch to active poll view
+      elPollCreation.style.display = 'none';
     };
     
     $('#btnEndPoll').onclick = () => {
@@ -880,21 +892,21 @@
       const validOptions = multiselectOptions.filter(opt => opt.trim() !== '').length;
       const maxVotes = Math.min(validOptions, 100);
       const dropdown = $('#multiselectVotesPerParticipant');
-      const currentValue = parseInt(dropdown.value, 10) || 1;
       
       dropdown.innerHTML = '';
       for (let i = 1; i <= maxVotes; i++) {
         const opt = document.createElement('option');
         opt.value = i;
         opt.textContent = i;
-        if (i === currentValue && i <= maxVotes) {
+        // Always select the maximum number of votes by default
+        if (i === maxVotes) {
           opt.selected = true;
         }
         dropdown.appendChild(opt);
       }
       
-      // If current value is greater than max, select the max
-      if (currentValue > maxVotes && maxVotes > 0) {
+      // Ensure the dropdown value is set to maximum votes
+      if (maxVotes > 0) {
         dropdown.value = maxVotes;
       }
     }
@@ -1000,6 +1012,9 @@
       selectedPollType = null;
       multiselectOptions = [];
       isMultipleSelection = false;
+      
+      // Hide the multiselect poll creation panel so updatePollUI can switch to active poll view
+      elMultiselectPollCreation.style.display = 'none';
     };
     
     // Enter key handler for multiselect poll question input
