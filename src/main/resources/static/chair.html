@@ -306,6 +306,10 @@
   </div>
 
   <script>
+    // FIXME prevent another participant from joining with same name as currently waiting one
+
+
+
     // Extract room code from URL query parameter
     const urlParams = new URLSearchParams(window.location.search);
     const roomCode = urlParams.get('room');
@@ -516,16 +520,14 @@
         { key: 'OPT_8', num: '8', label: 'Veto' }
       ];
       
-      // Find max vote count for scaling bars
-      const maxVotes = Math.max(...Object.values(results), 1);
-      
       let html = '<div style="margin: 16px 0; font-size: 0.75rem;">';
       html += '<div style="display: flex; align-items: flex-end; justify-content: space-between; height: 120px; margin-bottom: 8px;">';
       
       // Create bars for each option
       gradientOptions.forEach(opt => {
         const count = results[opt.key] || 0;
-        const heightPercent = maxVotes > 0 ? (count / maxVotes) * 100 : 0;
+        const maxBarHeight = 120; // Match the container height
+        const heightPx = totalVotes > 0 ? Math.max((count / totalVotes) * maxBarHeight, count > 0 ? 4 : 0) : 0;
         
         html += `<div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; position: relative;">`;
         // Count above bar
@@ -533,7 +535,7 @@
           html += `<div style="font-weight: bold; font-size: 0.7rem; color: rgba(96,165,250,1); margin-bottom: 2px;">${count}</div>`;
         }
         // Bar
-        html += `<div style="background: rgba(96,165,250,0.6); width: 80%; height: ${heightPercent}%; min-height: ${count > 0 ? '4px' : '0'}; border-radius: 4px 4px 0 0;"></div>`;
+        html += `<div style="background: rgba(96,165,250,0.6); width: 80%; height: ${heightPx}px; border-radius: 4px 4px 0 0;"></div>`;
         html += `</div>`;
       });
       
