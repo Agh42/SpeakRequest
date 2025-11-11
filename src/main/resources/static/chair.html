@@ -4,10 +4,25 @@
   <meta charset="utf-8"/>
   <title>SPEEK.NOW - Chair View</title>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="description" content="SPEEK.NOW Chair View - Manage speak requests, track speaking time, and conduct realtime polls for your meeting."/>
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website"/>
+  <meta property="og:title" content="SPEEK.NOW - Join Meeting"/>
+  <meta property="og:description" content="Join this meeting on SPEEK.NOW to request speaking time and participate in polls."/>
+  <meta property="og:image" content="https://speek.now/docs/images/chair.png"/>
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="SPEEK.NOW - Join Meeting"/>
+  <meta name="twitter:description" content="Join this meeting on SPEEK.NOW to request speaking time and participate in polls."/>
+  <meta name="twitter:image" content="https://speek.now/docs/images/chair.png"/>
+  
   <link rel="stylesheet" href="styles.css"/>
   <script src="stomp.min.js"></script>
   <script src="purify.min.js"></script>
   <script src="metadata-loader.js"></script>
+  <script src="share.js"></script>
 </head>
 <body>
   <div class="wrap">
@@ -88,6 +103,9 @@
           <div class="row">
             <button id="btnCopyCode" class="ghost">📋 Copy Code</button>
             <button id="btnShareLink" class="ghost">🔗 Copy Participant Link</button>
+          </div>
+          <div class="row">
+            <button id="btnShareParticipantUrl" class="primary" aria-label="Share participation link">🔗 Share Participation Link</button>
           </div>
           <div id="copyStatus" class="muted small"></div>
           
@@ -1182,6 +1200,16 @@
         }
       }, 250);
     });
+
+    // Initialize share button
+    const shareParticipantBtn = $('#btnShareParticipantUrl');
+    if (shareParticipantBtn) {
+      ShareButton.init(shareParticipantBtn, {
+        shareUrl: `${window.location.origin}/room/${roomCode}`,
+        title: 'Join Meeting on SPEEK.NOW',
+        text: `Join the meeting with room code ${roomCode}:`
+      });
+    }
   </script>
 </body>
 </html>
