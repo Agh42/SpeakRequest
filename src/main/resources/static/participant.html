@@ -467,6 +467,13 @@
           alert(data.message + '\n\nClick OK to return to the landing page.');
           window.location.href = data.landingUrl;
         });
+        
+        // Subscribe to room error events
+        client.subscribe(`/topic/room/${roomCode}/error`, msg => {
+          const error = JSON.parse(msg.body);
+          alert(error.error + '\n\nYou will be redirected to the landing page.');
+          window.location.href = error.landingUrl;
+        });
 
         // Join to get initial state
         client.send(`/app/room/${roomCode}/join`, {}, JSON.stringify({name:'Anonymous'}));

@@ -338,6 +338,13 @@
           alert(data.message + '\n\nThis window will close.');
           window.close();
         });
+        
+        // Subscribe to room error events
+        client.subscribe(`/topic/room/${roomCode}/error`, msg => {
+          const error = JSON.parse(msg.body);
+          alert(error.error + '\n\nThis window will close.');
+          window.close();
+        });
 
         // Join to get initial state
         client.send(`/app/room/${roomCode}/join`, {}, JSON.stringify({name:'Display', role:'Observer'}));
