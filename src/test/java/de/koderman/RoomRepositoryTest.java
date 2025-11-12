@@ -20,22 +20,22 @@ class RoomRepositoryTest {
     }
 
     @Test
-    void testGetOrCreate_createsNewRoom() {
-        MeetingApp.Room room = repository.getOrCreate("TEST");
+    void testCreateRoom_createsNewRoom() {
+        MeetingApp.Room room = repository.createRoom("TEST");
         assertNotNull(room);
         assertEquals("TEST", room.getRoomCode());
     }
 
     @Test
-    void testGetOrCreate_returnsExistingRoom() {
-        MeetingApp.Room room1 = repository.getOrCreate("TEST");
-        MeetingApp.Room room2 = repository.getOrCreate("TEST");
+    void testCreateRoom_returnsExistingRoom() {
+        MeetingApp.Room room1 = repository.createRoom("TEST");
+        MeetingApp.Room room2 = repository.createRoom("TEST");
         assertSame(room1, room2, "Should return the same room instance");
     }
 
     @Test
     void testExists_returnsTrueForExistingRoom() {
-        repository.getOrCreate("TEST");
+        repository.createRoom("TEST");
         assertTrue(repository.exists("TEST"));
     }
 
@@ -46,7 +46,7 @@ class RoomRepositoryTest {
 
     @Test
     void testGetByCode_returnsRoom() {
-        MeetingApp.Room room = repository.getOrCreate("TEST");
+        MeetingApp.Room room = repository.createRoom("TEST");
         assertTrue(repository.getByCode("TEST").isPresent());
         assertEquals(room, repository.getByCode("TEST").get());
     }
@@ -58,7 +58,7 @@ class RoomRepositoryTest {
 
     @Test
     void testTrackAndGetBySessionId() {
-        MeetingApp.Room room = repository.getOrCreate("TEST");
+        MeetingApp.Room room = repository.createRoom("TEST");
         repository.trackSession("session123", "TEST");
         
         assertTrue(repository.getBySessionId("session123").isPresent());
@@ -67,7 +67,7 @@ class RoomRepositoryTest {
 
     @Test
     void testUntrackSession() {
-        repository.getOrCreate("TEST");
+        repository.createRoom("TEST");
         repository.trackSession("session123", "TEST");
         repository.untrackSession("session123");
         
@@ -92,7 +92,7 @@ class RoomRepositoryTest {
         // We'll test with a smaller number and verify the logic
         
         // Create a few rooms first
-        MeetingApp.Room room1 = repository.getOrCreate("ROOM001");
+        MeetingApp.Room room1 = repository.createRoom("ROOM001");
         
         // Sleep briefly to ensure different timestamps
         try {
@@ -101,7 +101,7 @@ class RoomRepositoryTest {
             Thread.currentThread().interrupt();
         }
         
-        MeetingApp.Room room2 = repository.getOrCreate("ROOM002");
+        MeetingApp.Room room2 = repository.createRoom("ROOM002");
         
         try {
             Thread.sleep(10);
@@ -109,7 +109,7 @@ class RoomRepositoryTest {
             Thread.currentThread().interrupt();
         }
         
-        MeetingApp.Room room3 = repository.getOrCreate("ROOM003");
+        MeetingApp.Room room3 = repository.createRoom("ROOM003");
         
         // Verify we can get all three rooms
         assertEquals(3, roomsByCode.size());
@@ -125,8 +125,8 @@ class RoomRepositoryTest {
     @Test
     void testRoomLimit_cleansUpSessionTracking() throws Exception {
         // Create some rooms and track sessions
-        repository.getOrCreate("ROOM001");
-        repository.getOrCreate("ROOM002");
+        repository.createRoom("ROOM001");
+        repository.createRoom("ROOM002");
         
         repository.trackSession("session1", "ROOM001");
         repository.trackSession("session2", "ROOM001");
@@ -170,7 +170,7 @@ class RoomRepositoryTest {
             threads[i] = new Thread(() -> {
                 for (int j = 0; j < roomsPerThread; j++) {
                     String roomCode = String.format("T%dR%02d", threadId, j);
-                    repository.getOrCreate(roomCode);
+                    repository.createRoom(roomCode);
                     synchronized (createdRooms) {
                         createdRooms.add(roomCode);
                     }
