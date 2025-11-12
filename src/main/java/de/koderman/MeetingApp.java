@@ -647,17 +647,14 @@ public class MeetingApp {
         private final TreeMap<Long, Room> roomsByTimestamp = new TreeMap<>();
         private final Object roomCreationLock = new Object();
 
-        public Room getOrCreate(String roomCode) {
-            // First check if room already exists (fast path, no lock needed)
-            Room existingRoom = roomsByCode.get(roomCode);
-            if (existingRoom != null) {
-                return existingRoom;
-            }
-            
-            // Room doesn't exist, need to create it (synchronized)
+        public Optional<Room> getByCode(String roomCode) {
+            return Optional.ofNullable(roomsByCode.get(roomCode));
+        }
+        
+        public Room createRoom(String roomCode) {
             synchronized (roomCreationLock) {
-                // Double-check after acquiring lock
-                existingRoom = roomsByCode.get(roomCode);
+                // Check if room already exists
+                Room existingRoom = roomsByCode.get(roomCode);
                 if (existingRoom != null) {
                     return existingRoom;
                 }
@@ -692,10 +689,6 @@ public class MeetingApp {
                     oldestRoomCode.equals(entry.getValue())
                 );
             }
-        }
-
-        public Optional<Room> getByCode(String roomCode) {
-            return Optional.ofNullable(roomsByCode.get(roomCode));
         }
 
         public boolean exists(String roomCode) {
@@ -793,16 +786,11 @@ public class MeetingApp {
             return code;
         }
 
-        private Room getOrCreateRoom(String roomCode) {
-            return roomRepository.getOrCreate(roomCode);
-        }
-
         @PostMapping("/api/rooms")
         @ResponseBody
         public RoomInfo createRoom() {
             String roomCode = createUniqueRoomCode();
-            Room room = new Room(roomCode);
-            roomRepository.getOrCreate(roomCode);
+            roomRepository.createRoom(roomCode);
             return new RoomInfo(roomCode, true);
         }
 
@@ -885,15 +873,18 @@ public class MeetingApp {
             String normalizedRoomCode = normalizeRoomCode(roomCode);
             String sessionId = headerAccessor.getSessionId();
             
-            Room room = roomRepository.getOrCreate(normalizedRoomCode);
-            roomRepository.trackSession(sessionId, normalizedRoomCode);
-            
-            // Check if this is a chair joining (by checking the name)
-            if ("Chair".equals(msg.name())) {
-                room.assumeChairRole(sessionId);
-            }
-            
-            broadcast(normalizedRoomCode);
+            // Only allow joining existing rooms
+            roomRepository.getByCode(normalizedRoomCode)
+                    .ifPresent(room -> {
+                        roomRepository.trackSession(sessionId, normalizedRoomCode);
+                        
+                        // Check if this is a chair joining (by checking the name)
+                        if ("Chair".equals(msg.name())) {
+                            room.assumeChairRole(sessionId);
+                        }
+                        
+                        broadcast(normalizedRoomCode);
+                    });
         }
 
         @MessageMapping("/room/{roomCode}/request")
@@ -901,9 +892,11 @@ public class MeetingApp {
             if (msg == null || msg.name() == null || msg.name().isBlank()) return;
 
             String normalizedRoomCode = normalizeRoomCode(roomCode);
-            Room room = roomRepository.getOrCreate(normalizedRoomCode);
-            room.addParticipantToQueue(new Participant(uid(), msg.name().trim(), Instant.now().getEpochSecond()));
-            broadcast(normalizedRoomCode);
+            roomRepository.getByCode(normalizedRoomCode)
+                    .ifPresent(room -> {
+                        room.addParticipantToQueue(new Participant(uid(), msg.name().trim(), Instant.now().getEpochSecond()));
+                        broadcast(normalizedRoomCode);
+                    });
         }
 
         @MessageMapping("/room/{roomCode}/withdraw")

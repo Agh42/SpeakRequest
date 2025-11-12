@@ -31,7 +31,7 @@ class RoomLimitDemonstrationTest {
             (ConcurrentHashMap<String, String>) sessionToRoomCodeField.get(repository);
         
         // Create oldest room
-        MeetingApp.Room oldestRoom = repository.getOrCreate("OLDEST");
+        MeetingApp.Room oldestRoom = repository.createRoom("OLDEST");
         String oldestRoomCode = oldestRoom.getRoomCode();
         long oldestTimestamp = oldestRoom.getMeetingStartSec();
         repository.trackSession("oldSession1", oldestRoomCode);
@@ -45,7 +45,7 @@ class RoomLimitDemonstrationTest {
         }
         
         // Create newer room
-        MeetingApp.Room newerRoom = repository.getOrCreate("NEWER");
+        MeetingApp.Room newerRoom = repository.createRoom("NEWER");
         String newerRoomCode = newerRoom.getRoomCode();
         long newerTimestamp = newerRoom.getMeetingStartSec();
         repository.trackSession("newSession1", newerRoomCode);
@@ -82,7 +82,7 @@ class RoomLimitDemonstrationTest {
         assertEquals(maxRooms, roomsByCode.size());
         
         // Now create a new room which should trigger eviction
-        MeetingApp.Room brandNewRoom = repository.getOrCreate("BRANDNEW");
+        MeetingApp.Room brandNewRoom = repository.createRoom("BRANDNEW");
         
         // The oldest room should have been evicted
         assertFalse(repository.exists(oldestRoomCode), 
@@ -124,17 +124,17 @@ class RoomLimitDemonstrationTest {
         MeetingApp.RoomRepository repository = new MeetingApp.RoomRepository();
         
         // Create three rooms with distinct timestamps
-        MeetingApp.Room room1 = repository.getOrCreate("ROOM1");
+        MeetingApp.Room room1 = repository.createRoom("ROOM1");
         long timestamp1 = room1.getMeetingStartSec();
         
         Thread.sleep(1100);
         
-        MeetingApp.Room room2 = repository.getOrCreate("ROOM2");
+        MeetingApp.Room room2 = repository.createRoom("ROOM2");
         long timestamp2 = room2.getMeetingStartSec();
         
         Thread.sleep(1100);
         
-        MeetingApp.Room room3 = repository.getOrCreate("ROOM3");
+        MeetingApp.Room room3 = repository.createRoom("ROOM3");
         long timestamp3 = room3.getMeetingStartSec();
         
         // Verify timestamps are in order
