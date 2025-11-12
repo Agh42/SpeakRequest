@@ -32,7 +32,7 @@ class RoomLimitIntegrationTest {
         // by filling the map and then testing the eviction logic
         
         // Create first room (oldest)
-        MeetingApp.Room oldestRoom = repository.getOrCreate("OLDEST");
+        MeetingApp.Room oldestRoom = repository.createRoom("OLDEST");
         String oldestRoomCode = oldestRoom.getRoomCode();
         long oldestTimestamp = oldestRoom.getMeetingStartSec();
         
@@ -47,7 +47,7 @@ class RoomLimitIntegrationTest {
         }
         
         // Create a second room
-        MeetingApp.Room middleRoom = repository.getOrCreate("MIDDLE");
+        MeetingApp.Room middleRoom = repository.createRoom("MIDDLE");
         assertTrue(middleRoom.getMeetingStartSec() >= oldestTimestamp);
         
         // Wait again
@@ -65,7 +65,7 @@ class RoomLimitIntegrationTest {
         // We'll manually add rooms to reach just below the limit, then add one more
         
         // Create rooms until we're at 3 total
-        MeetingApp.Room newerRoom = repository.getOrCreate("NEWER");
+        MeetingApp.Room newerRoom = repository.createRoom("NEWER");
         
         // Verify all three rooms exist
         assertEquals(3, roomsByCode.size());
@@ -105,11 +105,11 @@ class RoomLimitIntegrationTest {
             (ConcurrentHashMap<String, MeetingApp.Room>) roomsByCodeField.get(repository);
         
         // Create rooms and track sessions
-        repository.getOrCreate("ROOM1");
+        repository.createRoom("ROOM1");
         repository.trackSession("session1", "ROOM1");
         repository.trackSession("session2", "ROOM1");
         
-        repository.getOrCreate("ROOM2");
+        repository.createRoom("ROOM2");
         repository.trackSession("session3", "ROOM2");
         
         // Verify initial state
@@ -144,7 +144,7 @@ class RoomLimitIntegrationTest {
         MeetingApp.Room[] rooms = new MeetingApp.Room[roomCodes.length];
         
         for (int i = 0; i < roomCodes.length; i++) {
-            rooms[i] = repository.getOrCreate(roomCodes[i]);
+            rooms[i] = repository.createRoom(roomCodes[i]);
             
             // Small delay to ensure different timestamps
             try {
