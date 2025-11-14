@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Share Button Test</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #0f172a;
+      color: #e5e7eb;
+    }
+    h1 {
+      color: #60a5fa;
+    }
+    .test-section {
+      margin: 30px 0;
+      padding: 20px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid rgba(96,165,250,0.4);
+      background: linear-gradient(180deg, rgba(96,165,250,.25), rgba(96,165,250,.15));
+      color: #e5e7eb;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    button:hover {
+      background: linear-gradient(180deg, rgba(96,165,250,.35), rgba(96,165,250,.25));
+      transform: translateY(-2px);
+    }
+    .log {
+      margin-top: 20px;
+      padding: 10px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 14px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .log-entry {
+      margin: 4px 0;
+      padding: 4px;
+      border-left: 3px solid #60a5fa;
+      padding-left: 8px;
+    }
+  </style>
+  <script src="share.js"></script>
+</head>
+<body>
+  <h1>🔗 Share Button Test Page</h1>
+  
+  <div class="test-section">
+    <h2>Test 1: Basic Share Button</h2>
+    <p>Share URL: <code>https://speek.now/room/TEST</code></p>
+    <button id="testBtn1" aria-label="Share test link">🔗 Share Test Link</button>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 2: Custom Title and Text</h2>
+    <p>Share URL: <code>https://example.com/custom</code></p>
+    <button id="testBtn2" aria-label="Share custom link">🔗 Share Custom Link</button>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 3: Current Page URL</h2>
+    <p>Share URL: <code id="currentUrl"></code></p>
+    <button id="testBtn3" aria-label="Share current page">🔗 Share Current Page</button>
+  </div>
+
+  <div class="test-section">
+    <h2>Event Log</h2>
+    <div id="log" class="log"></div>
+  </div>
+
+  <script>
+    // Helper to log events
+    function log(message) {
+      const logEl = document.getElementById('log');
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logEl.appendChild(entry);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    // Display current URL
+    document.getElementById('currentUrl').textContent = window.location.href;
+
+    // Test 1: Basic share button
+    const btn1 = document.getElementById('testBtn1');
+    ShareButton.init(btn1, {
+      shareUrl: 'https://speek.now/room/TEST',
+      title: 'Join Meeting on SPEEK.NOW',
+      text: 'Join the meeting with room code TEST:'
+    });
+    btn1.addEventListener('click', () => log('Test 1 button clicked'));
+    log('Test 1 initialized');
+
+    // Test 2: Custom title and text
+    const btn2 = document.getElementById('testBtn2');
+    ShareButton.init(btn2, {
+      shareUrl: 'https://example.com/custom',
+      title: 'Custom Share Title',
+      text: 'Check out this awesome content!'
+    });
+    btn2.addEventListener('click', () => log('Test 2 button clicked'));
+    log('Test 2 initialized');
+
+    // Test 3: Current page URL
+    const btn3 = document.getElementById('testBtn3');
+    ShareButton.init(btn3, {
+      shareUrl: window.location.href,
+      title: 'Share Test Page',
+      text: 'Testing the share functionality:'
+    });
+    btn3.addEventListener('click', () => log('Test 3 button clicked'));
+    log('Test 3 initialized');
+
+    // Detect Web Share API support
+    if (navigator.share) {
+      log('✓ Web Share API is supported in this browser');
+    } else {
+      log('✗ Web Share API is NOT supported - will use fallback modal');
+    }
+
+    // Detect Clipboard API support
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      log('✓ Clipboard API is supported');
+    } else {
+      log('✗ Clipboard API is NOT supported - will use prompt fallback');
+    }
+
+    log('All tests initialized successfully');
+  </script>
+</body>
+</html>
