@@ -113,7 +113,7 @@
       <div class="room-code-display">
         <span class="muted small">Room Code:</span>
         <span id="roomCodeDisplay" class="room-code">----</span>
-        <button id="btnShareParticipantUrlHeader" class="accent" style="padding: 6px 12px; border-radius: 8px; font-size: 1.1rem;" aria-label="Share participation link"><i class="fa-solid fa-share-nodes"></i></button>
+        <button id="btnShareParticipantUrlHeader" class="primary" style="padding: 6px 12px; border-radius: 8px; font-size: 1.1rem; margin-right: 8px;" aria-label="Share participation link"><i class="fa-solid fa-share-nodes"></i> Share</button>
       </div>
       <div id="conn" class="pill">Connecting…</div>
       <div class="chair-section">
@@ -503,8 +503,8 @@
         elBtnAssumeChair.style.display = 'none';
       } else {
         elChairStatus.textContent = 'Chair: Vacant';
-        elChairStatus.classList.remove('warn');
-        elChairStatus.classList.add('ok');
+        elChairStatus.classList.remove('ok');
+        elChairStatus.classList.add('warn');
         elBtnAssumeChair.style.display = 'block';
       }
 

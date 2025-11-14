@@ -14,6 +14,7 @@ body{
 .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
 .pill{background:#0c1324;border:1px solid var(--border);padding:.35rem .7rem;border-radius:999px;color:var(--muted)}
 .pill.ok{color:#bbf7d0;border-color:rgba(16,185,129,.6)}
+.pill.warn{color:#fde68a;border-color:rgba(245,158,11,.6)}
 .grid{display:grid;gap:16px;grid-template-columns:1fr 1fr}
 @media (max-width:900px){ .grid{grid-template-columns:1fr} }
 .card{
