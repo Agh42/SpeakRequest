@@ -144,7 +144,7 @@
       </div>
       <div id="conn" class="pill">Connecting…</div>
       <div id="chairStatus" class="pill">Chair: Checking…</div>
-      <button id="btnAssumeChair" class="floating-assume-chair" style="display: none;">👤 Assume Chair</button>
+      <button id="btnAssumeChair" class="floating-assume-chair" style="display: none;"><i class="fa-solid fa-user"></i> Assume Chair</button>
     </header>
 
     <div id="assumeChairStatus" class="muted small assume-chair-status"></div>
@@ -157,7 +157,7 @@
           <input id="name" placeholder="Your initials or name" maxlength="30"/>
         </div>
         <div class="row">
-          <button id="btnRequest" class="primary">✋ Request to Speak</button>
+          <button id="btnRequest" class="primary"><i class="fa-solid fa-hand"></i> Request to Speak</button>
           <button id="btnWithdraw" class="ghost">Withdraw Request</button>
         </div>
         <div id="status" class="muted small">Enter your initials and click Request to Speak.</div>
@@ -196,7 +196,7 @@
             <div id="roomCodeLarge" class="room-code-big">----</div>
           </div>
           <div class="row">
-            <button id="btnCopyCode" class="ghost">📋 Copy Room Code</button>
+            <button id="btnCopyCode" class="ghost"><i class="fa-solid fa-clipboard"></i> Copy Room Code</button>
             <button id="btnShareParticipantUrl" class="primary" aria-label="Share"><i class="fa-solid fa-share-nodes" style="margin-right: 8px;"></i> Share</button>
           </div>
           <div id="copyStatus" class="muted small"></div>
@@ -253,8 +253,8 @@
           <!-- Yes/No voting (shown for YES_NO polls) -->
           <div id="yesNoVoting" style="display: none;">
             <div class="row" style="margin-bottom:12px;">
-              <button id="overlayBtnVoteYes" class="primary">👍 Yes</button>
-              <button id="overlayBtnVoteNo" class="accent">👎 No</button>
+              <button id="overlayBtnVoteYes" class="primary"><i class="fa-solid fa-thumbs-up"></i> Yes</button>
+              <button id="overlayBtnVoteNo" class="accent"><i class="fa-solid fa-thumbs-down"></i> No</button>
             </div>
           </div>
           
@@ -554,10 +554,10 @@
       // Update status based on my position
       if (myName) {
         if (state.current && state.current.entry.name.toLowerCase() === myName.toLowerCase()) {
-          elStatus.textContent = `🎙️ You are currently speaking!`;
+          elStatus.textContent = `You are currently speaking!`;
           elStatus.className = 'ok small';
         } else if (myPosition > 0) {
-          elStatus.textContent = `✋ You are #${myPosition} in the queue`;
+          elStatus.textContent = `You are #${myPosition} in the queue`;
           elStatus.className = 'muted small';
         } else {
           elStatus.textContent = `Joined as ${myName}`;
@@ -925,7 +925,7 @@
             } else {
               // Check if max votes reached
               if (selectedVotes.size >= maxVotesPerParticipant) {
-                elOverlayVoteStatus.textContent = `⚠ Maximum ${maxVotesPerParticipant} vote(s) reached. Deselect an option first.`;
+                elOverlayVoteStatus.textContent = `Maximum ${maxVotesPerParticipant} vote(s) reached. Deselect an option first.`;
                 elOverlayVoteStatus.className = 'warn small';
                 return;
               }
