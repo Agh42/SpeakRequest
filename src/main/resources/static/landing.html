@@ -19,6 +19,7 @@
   <meta name="twitter:description" content="A meeting manager for live and hybrid meetings. Manage speak requests, track speaking time, and conduct realtime polls."/>
   
   <link rel="stylesheet" href="styles.css"/>
+  <link rel="stylesheet" href="fontawesome/all.min.css"/>
 </head>
 <body>
   <div class="wrap">
@@ -30,7 +31,7 @@
     <main class="grid">
       <!-- Create New Room -->
       <section class="card">
-        <h2>🎤 Chair a Meeting</h2>
+        <h2><i class="fa-solid fa-microphone"></i> Chair a Meeting</h2>
         <p class="muted">Create a new meeting room and get chair privileges to manage timers and polls.</p>
         <div class="row">
           <button id="btnCreateRoom" class="primary">Create New Room</button>
@@ -40,7 +41,7 @@
 
       <!-- Join as Participant -->
       <section class="card">
-        <h2>🙋 Join as Participant</h2>
+        <h2><i class="fa-solid fa-hand"></i> Join as Participant</h2>
         <p class="muted">Join an existing meeting room with a 4-character room code to request speaking time.</p>
         <div class="row">
           <input id="roomCode" placeholder="Room Code (e.g., A1B2)" maxlength="4" style="text-transform: uppercase"/>
@@ -51,7 +52,7 @@
 
       <!-- Instructions -->
       <section class="card">
-        <h2>ℹ️ How it Works</h2>
+        <h2><i class="fa-solid fa-circle-info"></i> How it Works</h2>
         <div class="muted">
           <p><strong>Chair:</strong> Create a room to get a unique 4-character code. Share this code with participants. You can manage the speaking queue, timers, and host realtime polls.</p>
           <p><strong>Participant:</strong> Enter the room code to join. You can request to speak, see your position in the queue, and participate in polls.</p>
