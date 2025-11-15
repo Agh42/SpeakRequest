@@ -30,6 +30,7 @@
       <div class="room-code-display">
         <span class="muted small">Room Code:</span>
         <span id="roomCodeDisplay" class="room-code">----</span>
+        <button id="btnShareParticipantUrlHeader" class="primary" style="padding: 6px 12px; border-radius: 8px; font-size: 1.1rem; margin-right: 8px;" aria-label="Share participation link"><i class="fa-solid fa-share-nodes"></i> Share</button>
       </div>
       <div id="conn" class="pill">Connecting…</div>
       <div id="chairStatus" class="pill ok">Chair: Occupied (You)</div>
@@ -1210,6 +1211,16 @@
     const shareParticipantBtn = $('#btnShareParticipantUrl');
     if (shareParticipantBtn) {
       ShareButton.init(shareParticipantBtn, {
+        shareUrl: `${window.location.origin}/room/${roomCode}`,
+        title: 'Join Meeting on SPEEK.NOW',
+        text: `Join the meeting with room code ${roomCode}:`
+      });
+    }
+
+    // Initialize share button in header
+    const shareParticipantBtnHeader = $('#btnShareParticipantUrlHeader');
+    if (shareParticipantBtnHeader) {
+      ShareButton.init(shareParticipantBtnHeader, {
         shareUrl: `${window.location.origin}/room/${roomCode}`,
         title: 'Join Meeting on SPEEK.NOW',
         text: `Join the meeting with room code ${roomCode}:`
