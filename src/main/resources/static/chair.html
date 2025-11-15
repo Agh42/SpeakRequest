@@ -323,7 +323,6 @@
 
   <script>
     // FIXME prevent another participant from joining with same name as currently waiting one
-    // FIXME prevent second chair from joining
     // FIXME weird behaviour when using lower case room codes in URLs with "?room=""
 
 
@@ -339,6 +338,20 @@
     // Display room code
     document.getElementById('roomCodeDisplay').textContent = roomCode;
     document.getElementById('roomCodeLarge').textContent = roomCode;
+
+    // Connect as participant first, then try to assume chair role
+    function connectAndAssumeChair() {
+      connect();
+      
+      // Set a timeout to handle case where room doesn't exist or no response
+      setTimeout(() => {
+        if (elConn.textContent === 'Assuming chair role...') {
+          // No response received, likely room doesn't exist
+          alert('Unable to access chair role. The room may not exist or there may be a connection issue.\n\nYou will be redirected to the landing page.');
+          window.location.href = '/landing.html';
+        }
+      }, 2000); // 2 second timeout
+    }
 
     // --- Utilities ---
     const $ = sel => document.querySelector(sel);
@@ -423,20 +436,64 @@
           window.location.href = data.landingUrl;
         });
         
-        // Subscribe to room error events
+        // Subscribe to room error events (e.g., room not found)
         client.subscribe(`/topic/room/${roomCode}/error`, msg => {
           const error = JSON.parse(msg.body);
-          alert(error.error + '\n\nYou will be redirected to the landing page.');
+          let message = error.error;
+          if (error.action === 'room_not_found') {
+            message = 'Room not found. Please check the room code and try again.';
+          }
+          alert(message + '\n\nYou will be redirected to the landing page.');
           window.location.href = error.landingUrl;
         });
 
-        // Join to get initial state
-        client.send(`/app/room/${roomCode}/join`, {}, JSON.stringify({name:'Chair'}));
-      }, () => {
-        elConn.textContent = 'Disconnected';
+        // Subscribe to chair assumption responses
+        client.subscribe(`/topic/room/${roomCode}/chairAssumed`, msg => {
+          const response = JSON.parse(msg.body);
+          if (response.success && response.requestId && response.requestId.startsWith('chair-access-')) {
+            // Successfully assumed chair role
+            elConn.textContent = 'Connected - Chair Role Assumed';
+            elConn.classList.remove('warn');
+            elConn.classList.add('ok');
+          }
+        });
+
+        // Subscribe to user-specific error events (e.g., chair access denied)
+        client.subscribe(`/user/queue/error`, msg => {
+          const error = JSON.parse(msg.body);
+          
+          // Provide more specific error messages based on the action
+          let message = error.error;
+          if (error.action === 'chair_access_denied') {
+            message = 'Chair access denied: Another person is already acting as chair for this room.\n\nIf you are the original chair, please ask participants to help you resume chair role from the participant view.';
+          }
+          
+          alert(message + '\n\nYou will be redirected to the landing page.');
+          window.location.href = error.landingUrl;
+        });
+
+        // Join as participant first, then try to assume chair role
+        client.send(`/app/room/${roomCode}/join`, {}, JSON.stringify({name:'Chair-Candidate'}));
+        
+        // Try to assume chair role after connecting as participant
+        setTimeout(() => {
+          elConn.textContent = 'Assuming chair role...';
+          client.send(`/app/room/${roomCode}/assumeChair`, {}, JSON.stringify({
+            participantName: 'Chair-Candidate',
+            requestId: 'chair-access-' + Date.now()
+          }));
+        }, 100); // Small delay to ensure connection is established
+      }, (error) => {
+        console.error('WebSocket connection failed:', error);
+        elConn.textContent = 'Connection Failed';
         elConn.classList.remove('ok');
         elConn.classList.add('warn');
-        setTimeout(connect, 2000);
+        
+        // Show user-friendly error message
+        setTimeout(() => {
+          alert('Failed to connect to the meeting room.\n\nPlease check your internet connection and try again.\n\nYou will be redirected to the landing page.');
+          window.location.href = '/landing.html';
+        }, 1000);
       });
     }
 
@@ -1187,10 +1244,10 @@
     }
 
     // --- Start ---
-    // Load metadata first, then connect
+    // Load metadata first, then connect and assume chair
     MetadataLoader.loadAll().then(metadata => {
       descriptions = metadata;
-      connect();
+      connectAndAssumeChair();
       timerInterval = setInterval(() => {
         if (currentState) {
           updateTimers(currentState);
@@ -1199,7 +1256,7 @@
     }).catch(err => {
       console.error('Failed to load metadata, continuing anyway:', err);
       // Connect anyway with fallback values
-      connect();
+      connectAndAssumeChair();
       timerInterval = setInterval(() => {
         if (currentState) {
           updateTimers(currentState);
