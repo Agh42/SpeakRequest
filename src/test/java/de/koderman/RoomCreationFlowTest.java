@@ -5,6 +5,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import static org.junit.jupiter.api.Assertions.*;
+import de.koderman.domain.*;
+import de.koderman.infrastructure.*;
+
 import static org.mockito.Mockito.*;
 
 /**
@@ -13,20 +16,20 @@ import static org.mockito.Mockito.*;
  */
 class RoomCreationFlowTest {
 
-    private MeetingApp.RoomRepository repository;
-    private MeetingApp.MeetingController controller;
+    private RoomRepository repository;
+    private MeetingController controller;
 
     @BeforeEach
     void setUp() {
         // Create a mock SimpMessagingTemplate since we don't need actual messaging
         SimpMessagingTemplate mockBroker = mock(SimpMessagingTemplate.class);
-        controller = new MeetingApp.MeetingController(mockBroker);
+        controller = new MeetingController(mockBroker);
         
         // Access the repository through reflection to test it directly
         try {
-            var field = MeetingApp.MeetingController.class.getDeclaredField("roomRepository");
+            var field = MeetingController.class.getDeclaredField("roomRepository");
             field.setAccessible(true);
-            repository = (MeetingApp.RoomRepository) field.get(controller);
+            repository = (RoomRepository) field.get(controller);
         } catch (Exception e) {
             throw new RuntimeException("Failed to access roomRepository", e);
         }
@@ -35,7 +38,7 @@ class RoomCreationFlowTest {
     @Test
     void testCreateRoomEndpoint_createsRoomWithRandomCode() {
         // Call the /api/rooms endpoint
-        MeetingApp.RoomInfo roomInfo = controller.createRoom();
+        RoomInfo roomInfo = controller.createRoom();
         
         // Verify room was created with a 4-character code
         assertNotNull(roomInfo.roomCode());
@@ -50,9 +53,9 @@ class RoomCreationFlowTest {
     @Test
     void testCreateRoomEndpoint_createsUniqueRoomCodes() {
         // Create multiple rooms
-        MeetingApp.RoomInfo room1 = controller.createRoom();
-        MeetingApp.RoomInfo room2 = controller.createRoom();
-        MeetingApp.RoomInfo room3 = controller.createRoom();
+        RoomInfo room1 = controller.createRoom();
+        RoomInfo room2 = controller.createRoom();
+        RoomInfo room3 = controller.createRoom();
         
         // Verify all room codes are unique
         assertNotEquals(room1.roomCode(), room2.roomCode());
@@ -68,10 +71,10 @@ class RoomCreationFlowTest {
     @Test
     void testCheckRoomEndpoint_returnsTrueForExistingRoom() {
         // Create a room
-        MeetingApp.RoomInfo created = controller.createRoom();
+        RoomInfo created = controller.createRoom();
         
         // Check if room exists
-        MeetingApp.RoomInfo checked = controller.checkRoom(created.roomCode());
+        RoomInfo checked = controller.checkRoom(created.roomCode());
         
         assertTrue(checked.exists());
         assertEquals(created.roomCode(), checked.roomCode());
@@ -80,7 +83,7 @@ class RoomCreationFlowTest {
     @Test
     void testCheckRoomEndpoint_returnsFalseForNonExistentRoom() {
         // Check a room that doesn't exist
-        MeetingApp.RoomInfo checked = controller.checkRoom("FAKE");
+        RoomInfo checked = controller.checkRoom("FAKE");
         
         assertFalse(checked.exists());
         assertEquals("FAKE", checked.roomCode());

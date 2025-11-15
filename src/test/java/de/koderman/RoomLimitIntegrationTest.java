@@ -6,6 +6,9 @@ import java.lang.reflect.Field;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
+import de.koderman.domain.*;
+import de.koderman.infrastructure.*;
+
 
 /**
  * Integration test for room limit functionality.
@@ -15,16 +18,16 @@ class RoomLimitIntegrationTest {
 
     @Test
     void testRoomLimit_removesOldestRoomWhenLimitExceeded() throws Exception {
-        MeetingApp.RoomRepository repository = new MeetingApp.RoomRepository();
+        RoomRepository repository = new RoomRepository();
         
         // Access internal fields for testing
-        Field roomsByCodeField = MeetingApp.RoomRepository.class.getDeclaredField("roomsByCode");
+        Field roomsByCodeField = RoomRepository.class.getDeclaredField("roomsByCode");
         roomsByCodeField.setAccessible(true);
         @SuppressWarnings("unchecked")
-        ConcurrentHashMap<String, MeetingApp.Room> roomsByCode = 
-            (ConcurrentHashMap<String, MeetingApp.Room>) roomsByCodeField.get(repository);
+        ConcurrentHashMap<String, Room> roomsByCode = 
+            (ConcurrentHashMap<String, Room>) roomsByCodeField.get(repository);
         
-        Field maxRoomsField = MeetingApp.RoomRepository.class.getDeclaredField("MAX_ROOMS");
+        Field maxRoomsField = RoomRepository.class.getDeclaredField("MAX_ROOMS");
         maxRoomsField.setAccessible(true);
         int maxRooms = maxRoomsField.getInt(null);
         
@@ -32,7 +35,7 @@ class RoomLimitIntegrationTest {
         // by filling the map and then testing the eviction logic
         
         // Create first room (oldest)
-        MeetingApp.Room oldestRoom = repository.createRoom("OLDEST");
+        Room oldestRoom = repository.createRoom("OLDEST");
         String oldestRoomCode = oldestRoom.getRoomCode();
         long oldestTimestamp = oldestRoom.getMeetingStartSec();
         
@@ -47,7 +50,7 @@ class RoomLimitIntegrationTest {
         }
         
         // Create a second room
-        MeetingApp.Room middleRoom = repository.createRoom("MIDDLE");
+        Room middleRoom = repository.createRoom("MIDDLE");
         assertTrue(middleRoom.getMeetingStartSec() >= oldestTimestamp);
         
         // Wait again
@@ -65,7 +68,7 @@ class RoomLimitIntegrationTest {
         // We'll manually add rooms to reach just below the limit, then add one more
         
         // Create rooms until we're at 3 total
-        MeetingApp.Room newerRoom = repository.createRoom("NEWER");
+        Room newerRoom = repository.createRoom("NEWER");
         
         // Verify all three rooms exist
         assertEquals(3, roomsByCode.size());
@@ -80,7 +83,7 @@ class RoomLimitIntegrationTest {
 
     @Test
     void testRoomLimit_verifyMaxRoomsValue() throws Exception {
-        Field maxRoomsField = MeetingApp.RoomRepository.class.getDeclaredField("MAX_ROOMS");
+        Field maxRoomsField = RoomRepository.class.getDeclaredField("MAX_ROOMS");
         maxRoomsField.setAccessible(true);
         int maxRooms = maxRoomsField.getInt(null);
         
@@ -89,20 +92,20 @@ class RoomLimitIntegrationTest {
 
     @Test
     void testRoomEviction_sessionCleanup() throws Exception {
-        MeetingApp.RoomRepository repository = new MeetingApp.RoomRepository();
+        RoomRepository repository = new RoomRepository();
         
         // Access internal fields
-        Field sessionToRoomCodeField = MeetingApp.RoomRepository.class.getDeclaredField("sessionToRoomCode");
+        Field sessionToRoomCodeField = RoomRepository.class.getDeclaredField("sessionToRoomCode");
         sessionToRoomCodeField.setAccessible(true);
         @SuppressWarnings("unchecked")
         ConcurrentHashMap<String, String> sessionToRoomCode = 
             (ConcurrentHashMap<String, String>) sessionToRoomCodeField.get(repository);
         
-        Field roomsByCodeField = MeetingApp.RoomRepository.class.getDeclaredField("roomsByCode");
+        Field roomsByCodeField = RoomRepository.class.getDeclaredField("roomsByCode");
         roomsByCodeField.setAccessible(true);
         @SuppressWarnings("unchecked")
-        ConcurrentHashMap<String, MeetingApp.Room> roomsByCode = 
-            (ConcurrentHashMap<String, MeetingApp.Room>) roomsByCodeField.get(repository);
+        ConcurrentHashMap<String, Room> roomsByCode = 
+            (ConcurrentHashMap<String, Room>) roomsByCodeField.get(repository);
         
         // Create rooms and track sessions
         repository.createRoom("ROOM1");
@@ -137,11 +140,11 @@ class RoomLimitIntegrationTest {
 
     @Test
     void testRoomCreation_withMultipleSequentialRooms() throws Exception {
-        MeetingApp.RoomRepository repository = new MeetingApp.RoomRepository();
+        RoomRepository repository = new RoomRepository();
         
         // Create multiple rooms sequentially
         String[] roomCodes = {"ROOM01", "ROOM02", "ROOM03", "ROOM04", "ROOM05"};
-        MeetingApp.Room[] rooms = new MeetingApp.Room[roomCodes.length];
+        Room[] rooms = new Room[roomCodes.length];
         
         for (int i = 0; i < roomCodes.length; i++) {
             rooms[i] = repository.createRoom(roomCodes[i]);

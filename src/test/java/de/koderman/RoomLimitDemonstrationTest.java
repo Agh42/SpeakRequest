@@ -6,6 +6,9 @@ import java.lang.reflect.Field;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
+import de.koderman.domain.*;
+import de.koderman.infrastructure.*;
+
 
 /**
  * Manual demonstration test showing room limit eviction behavior.
@@ -15,23 +18,23 @@ class RoomLimitDemonstrationTest {
 
     @Test
     void demonstrateRoomLimitEviction() throws Exception {
-        MeetingApp.RoomRepository repository = new MeetingApp.RoomRepository();
+        RoomRepository repository = new RoomRepository();
         
         // Access internal fields for testing
-        Field roomsByCodeField = MeetingApp.RoomRepository.class.getDeclaredField("roomsByCode");
+        Field roomsByCodeField = RoomRepository.class.getDeclaredField("roomsByCode");
         roomsByCodeField.setAccessible(true);
         @SuppressWarnings("unchecked")
-        ConcurrentHashMap<String, MeetingApp.Room> roomsByCode = 
-            (ConcurrentHashMap<String, MeetingApp.Room>) roomsByCodeField.get(repository);
+        ConcurrentHashMap<String, Room> roomsByCode = 
+            (ConcurrentHashMap<String, Room>) roomsByCodeField.get(repository);
         
-        Field sessionToRoomCodeField = MeetingApp.RoomRepository.class.getDeclaredField("sessionToRoomCode");
+        Field sessionToRoomCodeField = RoomRepository.class.getDeclaredField("sessionToRoomCode");
         sessionToRoomCodeField.setAccessible(true);
         @SuppressWarnings("unchecked")
         ConcurrentHashMap<String, String> sessionToRoomCode = 
             (ConcurrentHashMap<String, String>) sessionToRoomCodeField.get(repository);
         
         // Create oldest room
-        MeetingApp.Room oldestRoom = repository.createRoom("OLDEST");
+        Room oldestRoom = repository.createRoom("OLDEST");
         String oldestRoomCode = oldestRoom.getRoomCode();
         long oldestTimestamp = oldestRoom.getMeetingStartSec();
         repository.trackSession("oldSession1", oldestRoomCode);
@@ -45,7 +48,7 @@ class RoomLimitDemonstrationTest {
         }
         
         // Create newer room
-        MeetingApp.Room newerRoom = repository.createRoom("NEWER");
+        Room newerRoom = repository.createRoom("NEWER");
         String newerRoomCode = newerRoom.getRoomCode();
         long newerTimestamp = newerRoom.getMeetingStartSec();
         repository.trackSession("newSession1", newerRoomCode);
@@ -62,7 +65,7 @@ class RoomLimitDemonstrationTest {
         
         // Now manually fill the repository to just below the MAX_ROOMS limit
         // Then create one more room to trigger eviction
-        Field maxRoomsField = MeetingApp.RoomRepository.class.getDeclaredField("MAX_ROOMS");
+        Field maxRoomsField = RoomRepository.class.getDeclaredField("MAX_ROOMS");
         maxRoomsField.setAccessible(true);
         int maxRooms = maxRoomsField.getInt(null);
         
@@ -75,14 +78,14 @@ class RoomLimitDemonstrationTest {
         
         // Manually fill to capacity (simulate being at max)
         for (int i = 0; i < maxRooms - 2; i++) {
-            roomsByCode.put("FILL" + i, new MeetingApp.Room("FILL" + i));
+            roomsByCode.put("FILL" + i, new Room("FILL" + i));
         }
         
         // Verify we're at capacity
         assertEquals(maxRooms, roomsByCode.size());
         
         // Now create a new room which should trigger eviction
-        MeetingApp.Room brandNewRoom = repository.createRoom("BRANDNEW");
+        Room brandNewRoom = repository.createRoom("BRANDNEW");
         
         // The oldest room should have been evicted
         assertFalse(repository.exists(oldestRoomCode), 
@@ -111,7 +114,7 @@ class RoomLimitDemonstrationTest {
 
     @Test
     void verifyMaxRoomsConfiguration() throws Exception {
-        Field maxRoomsField = MeetingApp.RoomRepository.class.getDeclaredField("MAX_ROOMS");
+        Field maxRoomsField = RoomRepository.class.getDeclaredField("MAX_ROOMS");
         maxRoomsField.setAccessible(true);
         int maxRooms = maxRoomsField.getInt(null);
         
@@ -121,20 +124,20 @@ class RoomLimitDemonstrationTest {
 
     @Test
     void verifyEvictionStrategy() throws Exception {
-        MeetingApp.RoomRepository repository = new MeetingApp.RoomRepository();
+        RoomRepository repository = new RoomRepository();
         
         // Create three rooms with distinct timestamps
-        MeetingApp.Room room1 = repository.createRoom("ROOM1");
+        Room room1 = repository.createRoom("ROOM1");
         long timestamp1 = room1.getMeetingStartSec();
         
         Thread.sleep(1100);
         
-        MeetingApp.Room room2 = repository.createRoom("ROOM2");
+        Room room2 = repository.createRoom("ROOM2");
         long timestamp2 = room2.getMeetingStartSec();
         
         Thread.sleep(1100);
         
-        MeetingApp.Room room3 = repository.createRoom("ROOM3");
+        Room room3 = repository.createRoom("ROOM3");
         long timestamp3 = room3.getMeetingStartSec();
         
         // Verify timestamps are in order

@@ -4,6 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
+import de.koderman.domain.*;
+import de.koderman.infrastructure.*;
+
 
 /**
  * Tests to verify that rooms cannot be created through join or assumeChair actions,
@@ -11,11 +14,11 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class RoomCreationSecurityTest {
 
-    private MeetingApp.RoomRepository repository;
+    private RoomRepository repository;
 
     @BeforeEach
     void setUp() {
-        repository = new MeetingApp.RoomRepository();
+        repository = new RoomRepository();
     }
 
     @Test
@@ -47,7 +50,7 @@ class RoomCreationSecurityTest {
         assertFalse(repository.getByCode(roomCode).isPresent());
         
         // Create room explicitly
-        MeetingApp.Room room = repository.createRoom(roomCode);
+        Room room = repository.createRoom(roomCode);
         assertNotNull(room);
         
         // Now room exists
@@ -70,8 +73,8 @@ class RoomCreationSecurityTest {
     void testMultipleCallsToCreateRoom_returnSameInstance() {
         String roomCode = "MULTI";
         
-        MeetingApp.Room room1 = repository.createRoom(roomCode);
-        MeetingApp.Room room2 = repository.createRoom(roomCode);
+        Room room1 = repository.createRoom(roomCode);
+        Room room2 = repository.createRoom(roomCode);
         
         assertSame(room1, room2, "Multiple createRoom calls should return the same instance");
     }

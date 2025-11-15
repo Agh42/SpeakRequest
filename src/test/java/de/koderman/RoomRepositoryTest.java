@@ -8,28 +8,31 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import de.koderman.domain.Room;
+import de.koderman.domain.RoomRepository;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class RoomRepositoryTest {
 
-    private MeetingApp.RoomRepository repository;
+    private RoomRepository repository;
 
     @BeforeEach
     void setUp() {
-        repository = new MeetingApp.RoomRepository();
+        repository = new RoomRepository();
     }
 
     @Test
     void testCreateRoom_createsNewRoom() {
-        MeetingApp.Room room = repository.createRoom("TEST");
+        Room room = repository.createRoom("TEST");
         assertNotNull(room);
         assertEquals("TEST", room.getRoomCode());
     }
 
     @Test
     void testCreateRoom_returnsExistingRoom() {
-        MeetingApp.Room room1 = repository.createRoom("TEST");
-        MeetingApp.Room room2 = repository.createRoom("TEST");
+        Room room1 = repository.createRoom("TEST");
+        Room room2 = repository.createRoom("TEST");
         assertSame(room1, room2, "Should return the same room instance");
     }
 
@@ -46,7 +49,7 @@ class RoomRepositoryTest {
 
     @Test
     void testGetByCode_returnsRoom() {
-        MeetingApp.Room room = repository.createRoom("TEST");
+        Room room = repository.createRoom("TEST");
         assertTrue(repository.getByCode("TEST").isPresent());
         assertEquals(room, repository.getByCode("TEST").get());
     }
@@ -58,7 +61,7 @@ class RoomRepositoryTest {
 
     @Test
     void testTrackAndGetBySessionId() {
-        MeetingApp.Room room = repository.createRoom("TEST");
+        Room room = repository.createRoom("TEST");
         repository.trackSession("session123", "TEST");
         
         assertTrue(repository.getBySessionId("session123").isPresent());
@@ -77,22 +80,22 @@ class RoomRepositoryTest {
     @Test
     void testRoomLimit_removesOldestRoomWhenLimitReached() throws Exception {
         // Get access to the MAX_ROOMS constant and roomsByCode field
-        Field maxRoomsField = MeetingApp.RoomRepository.class.getDeclaredField("MAX_ROOMS");
+        Field maxRoomsField = RoomRepository.class.getDeclaredField("MAX_ROOMS");
         maxRoomsField.setAccessible(true);
         int maxRooms = maxRoomsField.getInt(null);
         
-        Field roomsByCodeField = MeetingApp.RoomRepository.class.getDeclaredField("roomsByCode");
+        Field roomsByCodeField = RoomRepository.class.getDeclaredField("roomsByCode");
         roomsByCodeField.setAccessible(true);
         @SuppressWarnings("unchecked")
-        ConcurrentHashMap<String, MeetingApp.Room> roomsByCode = 
-            (ConcurrentHashMap<String, MeetingApp.Room>) roomsByCodeField.get(repository);
+        ConcurrentHashMap<String, Room> roomsByCode = 
+            (ConcurrentHashMap<String, Room>) roomsByCodeField.get(repository);
         
         // For this test, we'll manually fill the map close to the limit
         // and verify the behavior without actually creating 500,000 rooms
         // We'll test with a smaller number and verify the logic
         
         // Create a few rooms first
-        MeetingApp.Room room1 = repository.createRoom("ROOM001");
+        Room room1 = repository.createRoom("ROOM001");
         
         // Sleep briefly to ensure different timestamps
         try {
@@ -101,7 +104,7 @@ class RoomRepositoryTest {
             Thread.currentThread().interrupt();
         }
         
-        MeetingApp.Room room2 = repository.createRoom("ROOM002");
+        Room room2 = repository.createRoom("ROOM002");
         
         try {
             Thread.sleep(10);
@@ -109,7 +112,7 @@ class RoomRepositoryTest {
             Thread.currentThread().interrupt();
         }
         
-        MeetingApp.Room room3 = repository.createRoom("ROOM003");
+        Room room3 = repository.createRoom("ROOM003");
         
         // Verify we can get all three rooms
         assertEquals(3, roomsByCode.size());
@@ -138,7 +141,7 @@ class RoomRepositoryTest {
         assertTrue(repository.getBySessionId("session3").isPresent());
         
         // Get access to sessionToRoomCode for verification
-        Field sessionToRoomCodeField = MeetingApp.RoomRepository.class.getDeclaredField("sessionToRoomCode");
+        Field sessionToRoomCodeField = RoomRepository.class.getDeclaredField("sessionToRoomCode");
         sessionToRoomCodeField.setAccessible(true);
         @SuppressWarnings("unchecked")
         ConcurrentHashMap<String, String> sessionToRoomCode = 
@@ -149,7 +152,7 @@ class RoomRepositoryTest {
 
     @Test
     void testMaxRoomsConstant() throws Exception {
-        Field maxRoomsField = MeetingApp.RoomRepository.class.getDeclaredField("MAX_ROOMS");
+        Field maxRoomsField = RoomRepository.class.getDeclaredField("MAX_ROOMS");
         maxRoomsField.setAccessible(true);
         int maxRooms = maxRoomsField.getInt(null);
         
