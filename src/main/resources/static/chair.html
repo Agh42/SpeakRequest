@@ -41,10 +41,10 @@
       <section class="card">
         <h2>Manage speakers</h2>
         <div class="row">
-          <button id="btnNext" class="accent">🎙️ Next speaker</button>
-          <button id="btnPause" class="ghost">⏸ Pause</button>
-          <button id="btnStart" class="primary">▶ Start</button>
-          <button id="btnReset" class="ghost">↺ Reset</button>
+          <button id="btnNext" class="accent"><i class="fa-solid fa-microphone"></i> Next speaker</button>
+          <button id="btnPause" class="ghost"><i class="fa-solid fa-pause"></i> Pause</button>
+          <button id="btnStart" class="primary"><i class="fa-solid fa-play"></i> Start</button>
+          <button id="btnReset" class="ghost"><i class="fa-solid fa-rotate-right"></i> Reset</button>
         </div>
         
         <h3 class="subsection-heading">Request to speak on behalf</h3>
@@ -52,7 +52,7 @@
           <input id="participantName" placeholder="Participant initials or name" maxlength="30"/>
         </div>
         <div class="row">
-          <button id="btnParticipantRequest" class="primary">✋ Request to Speak</button>
+          <button id="btnParticipantRequest" class="primary"><i class="fa-solid fa-hand"></i> Request to Speak</button>
           <button id="btnParticipantWithdraw" class="ghost">Withdraw Request</button>
         </div>
         <div id="participantStatus" class="muted small">Enter participant's names to request/withdraw on their behalf.</div>
@@ -62,8 +62,8 @@
       <section class="card">
         <h2>Meeting Controls</h2>
         <div class="row">
-          <button id="btnPopout" class="accent">📺 Open Popout Window</button>
-          <button id="btnDestroyRoom" class="ghost" style="background-color: #dc2626; color: white;">🗑️ Destroy Room</button>
+          <button id="btnPopout" class="accent"><i class="fa-solid fa-tv"></i> Open Popout Window</button>
+          <button id="btnDestroyRoom" class="ghost" style="background-color: #dc2626; color: white;"><i class="fa-solid fa-trash"></i> Destroy Room</button>
         </div>
         <div class="muted small">Open popout window to display speaker queue on separate screen / projector.</div>
         <div class="row">
@@ -101,8 +101,8 @@
             <div id="roomCodeLarge" class="room-code-big">----</div>
           </div>
           <div class="row">
-            <button id="btnCopyCode" class="ghost">📋 Copy Code</button>
-            <button id="btnShareLink" class="ghost">🔗 Copy Participant Link</button>
+            <button id="btnCopyCode" class="ghost"><i class="fa-solid fa-clipboard"></i> Copy Code</button>
+            <button id="btnShareLink" class="ghost"><i class="fa-solid fa-link"></i> Copy Participant Link</button>
             <button id="btnShareParticipantUrl" class="primary" aria-label="Share participation link"><i class="fa-solid fa-share-nodes" style="margin-right: 8px;"></i> Share</button>
           </div>
           <div id="copyStatus" class="muted small"></div>
@@ -206,12 +206,12 @@
         <div id="pollSelection" style="display: block;">
           <div class="muted small" style="margin-bottom: 8px;">Select a poll type to start polling:</div>
           <div class="row">
-            <button id="btnYesNoPoll" class="accent">📊 Yes/No Poll</button>
-            <button id="btnGradientsPoll" class="accent">📊 Gradients of Agreement</button>
+            <button id="btnYesNoPoll" class="accent"><i class="fa-solid fa-chart-bar"></i> Yes/No Poll</button>
+            <button id="btnGradientsPoll" class="accent"><i class="fa-solid fa-chart-bar"></i> Gradients of Agreement</button>
           </div>
           <div class="row" style="margin-top: 8px;">
-            <button id="btnSingleSelectionPoll" class="accent">📊 Single Selection</button>
-            <button id="btnMultipleSelectionPoll" class="accent">📊 Multiple Selection</button>
+            <button id="btnSingleSelectionPoll" class="accent"><i class="fa-solid fa-chart-bar"></i> Single Selection</button>
+            <button id="btnMultipleSelectionPoll" class="accent"><i class="fa-solid fa-chart-bar"></i> Multiple Selection</button>
           </div>
         </div>
         
@@ -221,8 +221,8 @@
             <input id="pollQuestion" placeholder="Enter poll question" maxlength="200" style="flex: 1;"/>
           </div>
           <div class="row">
-            <button id="btnStartPolling" class="primary">▶️ Start Polling</button>
-            <button id="btnCancelPoll" class="ghost">✖ Cancel</button>
+            <button id="btnStartPolling" class="primary"><i class="fa-solid fa-play"></i> Start Polling</button>
+            <button id="btnCancelPoll" class="ghost"><i class="fa-solid fa-xmark"></i> Cancel</button>
           </div>
           <div id="pollCreationStatus" class="muted small"></div>
         </div>
@@ -263,8 +263,8 @@
           </div>
           
           <div class="row" style="margin-top: 12px;">
-            <button id="btnStartMultiselectPolling" class="primary">▶️ Start Poll</button>
-            <button id="btnCancelMultiselectPoll" class="ghost">✖ Cancel</button>
+            <button id="btnStartMultiselectPolling" class="primary"><i class="fa-solid fa-play"></i> Start Poll</button>
+            <button id="btnCancelMultiselectPoll" class="ghost"><i class="fa-solid fa-xmark"></i> Cancel</button>
           </div>
           <div id="multiselectPollCreationStatus" class="muted small"></div>
         </div>
@@ -275,7 +275,7 @@
           <div id="activePollQuestion" class="big" style="font-size: 1.1rem; margin: 8px 0;"></div>
           <div class="muted small">Votes received: <span id="pollVoteCount" style="font-weight: bold;">0</span></div>
           <div class="row" style="margin-top: 12px;">
-            <button id="btnEndPoll" class="accent">📊 End Poll and Show Results</button>
+            <button id="btnEndPoll" class="accent"><i class="fa-solid fa-chart-bar"></i> End Poll and Show Results</button>
           </div>
         </div>
         
@@ -285,8 +285,8 @@
           <div id="pollResultsQuestion" style="font-weight: bold; margin: 8px 0;"></div>
           <div id="pollResultsData" style="margin: 8px 0;"></div>
           <div class="row" style="margin-top: 12px;">
-            <button id="btnContinueDiscussion" class="primary">💬 Continue Discussion</button>
-            <button id="btnNewPoll" class="accent">📊 Start New Poll</button>
+            <button id="btnContinueDiscussion" class="primary"><i class="fa-solid fa-comments"></i> Continue Discussion</button>
+            <button id="btnNewPoll" class="accent"><i class="fa-solid fa-chart-bar"></i> Start New Poll</button>
           </div>
         </div>
         
@@ -294,7 +294,7 @@
         <div id="pollNone" style="display: none;">
           <div class="muted small">No polls conducted yet</div>
           <div class="row" style="margin-top: 12px;">
-            <button id="btnStartFirstPoll" class="accent">📊 Start Poll</button>
+            <button id="btnStartFirstPoll" class="accent"><i class="fa-solid fa-chart-bar"></i> Start Poll</button>
           </div>
         </div>
       </section>
@@ -652,7 +652,7 @@
         return;
       }
       client?.send(`/app/room/${roomCode}/request`, {}, JSON.stringify({name}));
-      elParticipantStatus.textContent = `✋ Request sent for ${name}`;
+      elParticipantStatus.textContent = `Request sent for ${name}`;
       elParticipantStatus.className = 'muted small';
     };
 
@@ -715,7 +715,7 @@
     
     $('#btnDestroyRoom').onclick = () => {
       const confirmed = confirm(
-        '⚠️ WARNING ⚠️\n\n' +
+        'WARNING\n\n' +
         'Are you sure you want to destroy this room?\n\n' +
         'This will:\n' +
         '• End the current discussion\n' +
@@ -889,7 +889,7 @@
         });
         
         const removeBtn = document.createElement('button');
-        removeBtn.textContent = '✖ Remove';
+        removeBtn.textContent = 'Remove';
         removeBtn.className = 'ghost';
         removeBtn.style.marginLeft = '8px';
         removeBtn.disabled = multiselectOptions.length <= 2; // Minimum 2 options
