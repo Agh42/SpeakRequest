@@ -41,8 +41,15 @@ public class MeetingController {
     
     @MessageExceptionHandler
     public void handleChairAccessException(ChairAccessException ex) {
-        // Silent failure - chair access violations are not communicated to clients
-        // This maintains the existing UX behavior where unauthorized actions fail silently
+        // Send error message only to the specific client that made the illegal access attempt
+        RoomError error = new RoomError(
+            "Unauthorized chair access: " + ex.getMessage(),
+            ex.getRoomCode(),
+            "chair_access_denied",
+            "/landing.html"
+        );
+        // Send to the specific user/session that caused the exception
+        broker.convertAndSendToUser(ex.getSessionId(), "/queue/error", error);
     }
 
     // Route handlers for different views
@@ -189,11 +196,7 @@ public class MeetingController {
         
         // Check if this is a chair joining (by checking the name)
         if ("Chair".equals(msg.name())) {
-            try {
-                room.assumeChairRole(sessionId);
-            } catch (IllegalAccessException ex) {
-                // Chair role already occupied, fail silently
-            }
+            room.assumeChairRole(sessionId);
         }
         
         broadcast(normalizedRoomCode);
@@ -264,19 +267,14 @@ public class MeetingController {
         
         Room room = roomRepository.getByCodeOrThrow(normalizedRoomCode);
         
-        try {
-            // Try to assume chair role - Room entity handles the check
-            room.assumeChairRole(sessionId);
-            roomRepository.trackSession(sessionId, normalizedRoomCode);
-            broadcast(normalizedRoomCode);
-            
-            // Send success response back on the general topic but include request ID
-            broker.convertAndSend("/topic/room/" + normalizedRoomCode + "/chairAssumed", 
-                Map.of("success", true, "requestId", msg.requestId()));
-        } catch (IllegalAccessException ex) {
-            // Chair is already occupied, fail silently - just broadcast state update
-            broadcast(normalizedRoomCode);
-        }
+        // Try to assume chair role - Room entity handles the check
+        room.assumeChairRole(sessionId);
+        roomRepository.trackSession(sessionId, normalizedRoomCode);
+        broadcast(normalizedRoomCode);
+        
+        // Send success response back on the general topic but include request ID
+        broker.convertAndSend("/topic/room/" + normalizedRoomCode + "/chairAssumed", 
+            Map.of("success", true, "requestId", msg.requestId()));
     }
     
     @MessageMapping("/room/{roomCode}/poll/start")

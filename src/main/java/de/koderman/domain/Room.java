@@ -96,13 +96,13 @@ public class Room {
         }
     }
 
-    public void assumeChairRole(String sessionId) throws IllegalAccessException {
+    public void assumeChairRole(String sessionId) {
         lock.lock();
         try {
             if (chairSessionId == null) {
                 chairSessionId = sessionId;
             } else {
-                throw new IllegalAccessException("Chair role is already occupied");
+                throw new ChairAccessException("Chair role is already occupied", this.roomCode, sessionId);
             }
         } finally {
             lock.unlock();
@@ -129,7 +129,7 @@ public class Room {
     
     private void requireChairAccess(String sessionId) {
         if (!isChairSession(sessionId)) {
-            throw new ChairAccessException("Chair access required for this operation");
+            throw new ChairAccessException("Chair access required for this operation", this.roomCode, sessionId);
         }
     }
 
