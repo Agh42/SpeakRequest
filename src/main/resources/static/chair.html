@@ -347,10 +347,10 @@
       setTimeout(() => {
         if (elConn.textContent === 'Assuming chair role...') {
           // No response received, likely room doesn't exist
-          alert('Unable to access chair role. The room may not exist or there may be a connection issue.\n\nYou will be redirected to the landing page.');
+          alert('Unable to access chair role. \n\nYou will be redirected to the landing page.');
           window.location.href = '/landing.html';
         }
-      }, 2000); // 2 second timeout
+      }, 1000); // 2 second timeout
     }
 
     // --- Utilities ---
@@ -491,7 +491,7 @@
         
         // Show user-friendly error message
         setTimeout(() => {
-          alert('Failed to connect to the meeting room.\n\nPlease check your internet connection and try again.\n\nYou will be redirected to the landing page.');
+          alert('Failed to connect to the meeting room as chair.\n\nConnection was dropped. Please check your internet connection and try again.\n\nYou will be redirected to the landing page.');
           window.location.href = '/landing.html';
         }, 1000);
       });
