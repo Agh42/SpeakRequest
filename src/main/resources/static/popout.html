@@ -124,6 +124,7 @@
     <div class="card" id="pollInProgressCard" style="display: none;">
       <div class="muted small">Poll in Progress</div>
       <div id="pollInProgressQuestion" class="big" style="font-size: 1.8rem; margin: 15px 0;">--</div>
+      <div id="pollInProgressOptions" style="margin: 15px 0;">--</div>
       <div class="muted small">Votes Received</div>
       <div id="pollInProgressCount" class="timer ok" style="font-size: 2.8rem;">0</div>
     </div>
@@ -229,6 +230,7 @@
     const elPollResultsData = document.getElementById('pollResultsData');
     const elPollInProgressCard = document.getElementById('pollInProgressCard');
     const elPollInProgressQuestion = document.getElementById('pollInProgressQuestion');
+    const elPollInProgressOptions = document.getElementById('pollInProgressOptions');
     const elPollInProgressCount = document.getElementById('pollInProgressCount');
     const elNormalDisplay = document.getElementById('normalDisplay');
     const elMeetingTopicDisplay = document.getElementById('meetingTopicDisplay');
@@ -425,6 +427,7 @@
         elPollResultsCard.style.display = 'none';
         
         elPollInProgressQuestion.textContent = DOMPurify.sanitize(state.pollState.question);
+        elPollInProgressOptions.innerHTML = renderPollOptions(state.pollState.pollType, state.pollState.options);
         elPollInProgressCount.textContent = state.pollState.totalVotes || 0;
         return;
       }
@@ -557,6 +560,47 @@
         'OPT_8': '8 - Veto'
       };
       return labels[vote] || vote;
+    }
+    
+    function renderPollOptions(pollType, options) {
+      let html = '<div style="margin: 10px 0;">';
+      
+      if (pollType === 'YES_NO') {
+        // Simple Yes/No options
+        html += '<div style="font-size: 0.95rem; color: rgba(255,255,255,0.8);">';
+        html += '<div style="margin: 6px 0;">• Yes</div>';
+        html += '<div style="margin: 6px 0;">• No</div>';
+        html += '</div>';
+      } else if (pollType === 'GRADIENTS') {
+        // Gradient options (1-8 scale)
+        const gradientOptions = [
+          { num: '1', label: 'Whole-hearted Endorsement' },
+          { num: '2', label: 'Agreement with Minor Point' },
+          { num: '3', label: 'Support with Reservations' },
+          { num: '4', label: 'Abstain' },
+          { num: '5', label: 'More Discussion Needed' },
+          { num: '6', label: 'Don\'t Like But Will Support' },
+          { num: '7', label: 'Serious Disagreement' },
+          { num: '8', label: 'Veto' }
+        ];
+        
+        html += '<div style="font-size: 0.75rem; color: rgba(255,255,255,0.8);">';
+        gradientOptions.forEach(opt => {
+          html += `<div style="margin: 4px 0;"><strong>${opt.num}</strong> - ${opt.label}</div>`;
+        });
+        html += '</div>';
+        html += '<div style="margin-top: 8px; font-size: 0.5rem; color: rgba(255,255,255,0.5); font-style: italic;">Reference: Kaner, S. (2014). Facilitator\'s Guide to Participatory Decision-Making. Third edition, Jossey-Bass: San Francisco, California, United States of America.</div>';
+      } else if ((pollType === 'MULTISELECT' || pollType === 'MULTISELECT_MULTIPLE') && options && options.length > 0) {
+        // Multiselect options
+        html += '<div style="font-size: 0.95rem; color: rgba(255,255,255,0.8);">';
+        options.forEach((optionLabel, index) => {
+          html += `<div style="margin: 6px 0;">• ${DOMPurify.sanitize(optionLabel)}</div>`;
+        });
+        html += '</div>';
+      }
+      
+      html += '</div>';
+      return html;
     }
     
     function renderGradientsResults(results, totalVotes) {
