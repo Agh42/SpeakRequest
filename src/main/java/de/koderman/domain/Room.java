@@ -12,24 +12,28 @@ public class Room {
     private int defaultLimitSec = 180; // per-speaker
     private final ReentrantLock lock = new ReentrantLock();
     private String chairSessionId = null; // Track chair WebSocket session
-    
+
     // Room configuration fields
     private String topic = null;
     private MeetingGoal meetingGoal = null;
     private ParticipationFormat participationFormat = null;
     private DecisionRule decisionRule = null;
     private Deliverable deliverable = null;
-    
+
     // Polling state
     private String pollQuestion = null;
     private String pollType = null;
     private String pollStatus = null; // "ACTIVE", "ENDED", "CLOSED", null
     private final Map<String, Integer> pollResults = new HashMap<>();
-    private final Map<String, String> sessionVotes = new HashMap<>(); // Track each session's vote (allows vote changes) - for single selection
-    private final Map<String, Set<String>> sessionMultiVotes = new HashMap<>(); // Track each session's votes (allows vote changes) - for multiple selection
+    private final Map<String, String> sessionVotes = new HashMap<>(); // Track each session's vote (allows vote changes)
+                                                                      // - for single selection
+    private final Map<String, Set<String>> sessionMultiVotes = new HashMap<>(); // Track each session's votes (allows
+                                                                                // vote changes) - for multiple
+                                                                                // selection
     private PollResults lastPollResults = null;
     private List<String> pollOptions = null; // For MULTISELECT polls - list of option labels
-    private Integer votesPerParticipant = 1; // For MULTISELECT_MULTIPLE polls - number of votes each participant can cast
+    private Integer votesPerParticipant = 1; // For MULTISELECT_MULTIPLE polls - number of votes each participant can
+                                             // cast
 
     public Room(String roomCode) {
         this.roomCode = roomCode;
@@ -51,15 +55,14 @@ public class Room {
                 // Poll is active or ended (showing results in overlay)
                 int totalVotes = pollResults.values().stream().mapToInt(Integer::intValue).sum();
                 pollState = new PollState(
-                    pollQuestion,
-                    pollType,
-                    pollStatus,
-                    new HashMap<>(pollResults),
-                    totalVotes,
-                    lastPollResults,
-                    pollOptions != null ? List.copyOf(pollOptions) : null,
-                    votesPerParticipant
-                );
+                        pollQuestion,
+                        pollType,
+                        pollStatus,
+                        new HashMap<>(pollResults),
+                        totalVotes,
+                        lastPollResults,
+                        pollOptions != null ? List.copyOf(pollOptions) : null,
+                        votesPerParticipant);
             } else if ("CLOSED".equals(pollStatus) && lastPollResults != null) {
                 // Poll is closed, show only last results
                 pollState = new PollState(null, null, "CLOSED", Map.of(), 0, lastPollResults, null, null);
@@ -67,10 +70,11 @@ public class Room {
                 // No active poll, but we have last results
                 pollState = new PollState(null, null, null, Map.of(), 0, lastPollResults, null, null);
             }
-            
+
             RoomConfig roomConfig = new RoomConfig(topic, meetingGoal, participationFormat, decisionRule, deliverable);
-            
-            return new State(List.copyOf(queue), current, meetingStartSec, defaultLimitSec, roomCode, chairSessionId != null, pollState, roomConfig);
+
+            return new State(List.copyOf(queue), current, meetingStartSec, defaultLimitSec, roomCode,
+                    chairSessionId != null, pollState, roomConfig);
         } finally {
             lock.unlock();
         }
@@ -99,6 +103,9 @@ public class Room {
     public void assumeChairRole(String sessionId) {
         lock.lock();
         try {
+            if (isChairSession(sessionId)) {
+                return; // Already the chair
+            }
             if (chairSessionId == null) {
                 chairSessionId = sessionId;
             } else {
@@ -122,11 +129,12 @@ public class Room {
 
     private int findIndexByNameUnsafe(String name) {
         for (int i = 0; i < queue.size(); i++) {
-            if (queue.get(i).name().equalsIgnoreCase(name)) return i;
+            if (queue.get(i).name().equalsIgnoreCase(name))
+                return i;
         }
         return -1;
     }
-    
+
     private void requireChairAccess(String sessionId) {
         if (!isChairSession(sessionId)) {
             throw new ChairAccessException("Chair access required for this operation", this.roomCode, sessionId);
@@ -134,7 +142,7 @@ public class Room {
     }
 
     // DDD methods - encapsulate internal state management
-    
+
     public void nextParticipant(String sessionId) {
         lock.lock();
         try {
@@ -165,7 +173,8 @@ public class Room {
         lock.lock();
         try {
             requireChairAccess(sessionId);
-            if (current == null) return;
+            if (current == null)
+                return;
             if (!current.running()) {
                 long nowSec = Instant.now().getEpochSecond();
                 current = new Current(current.entry(), nowSec, current.elapsedMs(), true, current.limitSec());
@@ -179,7 +188,8 @@ public class Room {
         lock.lock();
         try {
             requireChairAccess(sessionId);
-            if (current == null) return;
+            if (current == null)
+                return;
             if (current.running()) {
                 long nowSec = Instant.now().getEpochSecond();
                 int addMs = (int) ((nowSec - current.startedAtSec()) * 1000);
@@ -195,7 +205,8 @@ public class Room {
         lock.lock();
         try {
             requireChairAccess(sessionId);
-            if (current == null) return;
+            if (current == null)
+                return;
             long nowSec = Instant.now().getEpochSecond();
             current = new Current(current.entry(), nowSec, 0, true, current.limitSec());
         } finally {
@@ -209,7 +220,7 @@ public class Room {
             requireChairAccess(sessionId);
             defaultLimitSec = seconds;
             if (current != null) {
-                current = new Current(current.entry(), current.startedAtSec(), 
+                current = new Current(current.entry(), current.startedAtSec(),
                         current.elapsedMs(), current.running(), seconds);
             }
         } finally {
@@ -231,9 +242,10 @@ public class Room {
             lock.unlock();
         }
     }
-    
+
     // Polling methods
-    public void startPoll(String sessionId, String question, String pollType, List<String> options, Integer votesPerParticipant) {
+    public void startPoll(String sessionId, String question, String pollType, List<String> options,
+            Integer votesPerParticipant) {
         lock.lock();
         try {
             requireChairAccess(sessionId);
@@ -245,7 +257,7 @@ public class Room {
             this.sessionMultiVotes.clear();
             this.pollOptions = null;
             this.votesPerParticipant = votesPerParticipant != null ? votesPerParticipant : 1;
-            
+
             // Initialize results based on poll type
             if ("YES_NO".equals(pollType)) {
                 this.pollResults.put("YES", 0);
@@ -273,7 +285,7 @@ public class Room {
             lock.unlock();
         }
     }
-    
+
     public boolean castVote(String sessionId, String vote) {
         lock.lock();
         try {
@@ -281,16 +293,16 @@ public class Room {
             if (!"ACTIVE".equals(pollStatus)) {
                 return false;
             }
-            
+
             // Check if vote is valid
             if (!pollResults.containsKey(vote)) {
                 return false;
             }
-            
+
             // Handle multiple selection differently
             if ("MULTISELECT_MULTIPLE".equals(pollType)) {
                 Set<String> currentVotes = sessionMultiVotes.computeIfAbsent(sessionId, k -> new HashSet<>());
-                
+
                 // Toggle vote: if already voted for this option, remove it (deselect)
                 if (currentVotes.contains(vote)) {
                     currentVotes.remove(vote);
@@ -312,7 +324,7 @@ public class Room {
                     // Decrement previous vote
                     pollResults.put(previousVote, pollResults.get(previousVote) - 1);
                 }
-                
+
                 // Record new vote
                 pollResults.put(vote, pollResults.get(vote) + 1);
                 sessionVotes.put(sessionId, vote);
@@ -322,7 +334,7 @@ public class Room {
             lock.unlock();
         }
     }
-    
+
     public void endPoll(String sessionId) {
         lock.lock();
         try {
@@ -331,13 +343,12 @@ public class Room {
                 // Store results for display
                 int totalVotes = pollResults.values().stream().mapToInt(Integer::intValue).sum();
                 lastPollResults = new PollResults(
-                    pollQuestion,
-                    pollType,
-                    new HashMap<>(pollResults),
-                    totalVotes,
-                    pollOptions != null ? List.copyOf(pollOptions) : null
-                );
-                
+                        pollQuestion,
+                        pollType,
+                        new HashMap<>(pollResults),
+                        totalVotes,
+                        pollOptions != null ? List.copyOf(pollOptions) : null);
+
                 // Mark poll as ended (results shown in overlay to participants)
                 pollStatus = "ENDED";
             }
@@ -345,7 +356,7 @@ public class Room {
             lock.unlock();
         }
     }
-    
+
     public void closePoll(String sessionId) {
         lock.lock();
         try {
@@ -363,7 +374,7 @@ public class Room {
             lock.unlock();
         }
     }
-    
+
     public void cancelPoll(String sessionId) {
         lock.lock();
         try {
@@ -379,7 +390,7 @@ public class Room {
             lock.unlock();
         }
     }
-    
+
     public boolean isPolling() {
         lock.lock();
         try {
@@ -388,8 +399,9 @@ public class Room {
             lock.unlock();
         }
     }
-    
-    public void updateRoomConfig(String sessionId, String topic, MeetingGoal meetingGoal, ParticipationFormat participationFormat, DecisionRule decisionRule, Deliverable deliverable) {
+
+    public void updateRoomConfig(String sessionId, String topic, MeetingGoal meetingGoal,
+            ParticipationFormat participationFormat, DecisionRule decisionRule, Deliverable deliverable) {
         lock.lock();
         try {
             requireChairAccess(sessionId);
