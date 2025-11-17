@@ -347,7 +347,7 @@
           alert('Unable to access chair role. \n\nYou will be redirected to the landing page.');
           window.location.href = '/landing.html';
         }
-      }, 1000); // 2 second timeout
+      }, 2000); // 2 second timeout
     }
 
     // --- Utilities ---
@@ -416,7 +416,15 @@
       client = Stomp.over(sock);
       client.debug = () => {}; // silence debug
 
-      client.connect({}, () => {
+      // Negotiate and enable STOMP heartbeats (5 seconds)
+      try {
+        client.heartbeat.outgoing = 5000; // send a ping every 5s
+        client.heartbeat.incoming = 5000; // expect a ping at least every 5s
+      } catch (e) {
+        // some stomp.js builds expose different fields; this is best-effort
+      }
+
+      client.connect({'heart-beat':'5000,5000'}, () => {
         elConn.textContent = 'Connected';
         elConn.classList.remove('warn');
         elConn.classList.add('ok');
@@ -479,7 +487,7 @@
             participantName: 'Chair-Candidate',
             requestId: 'chair-access-' + Date.now()
           }));
-        }, 100); // Small delay to ensure connection is established
+        }, 500); // Small delay to ensure connection is established
       }, (error) => {
         console.error('WebSocket connection failed:', error);
         elConn.textContent = 'Connection Failed';

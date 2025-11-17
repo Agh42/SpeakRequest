@@ -4,3 +4,11 @@ server:
     remote-ip-header: x-forwarded-for
     protocol-header: x-forwarded-proto
     use-relative-redirects: true
+
+logging:
+  level:
+    "[org.springframework.web.socket]": TRACE
+    "[org.springframework.messaging]": TRACE
+    "[org.springframework.web.socket.handler]": TRACE
+    "[org.springframework.web.socket.sockjs]": TRACE
+    "[org.springframework.messaging.simp]": TRACE
