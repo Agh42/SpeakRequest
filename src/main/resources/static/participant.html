@@ -834,7 +834,7 @@
       if (pollType === 'GRADIENTS') {
         const labels = {
           'OPT_1': '1 - Whole-hearted Endorsement',
-          'OPT_2': '2 - Agreement with Minor Point',
+          'OPT_2': '2 - Agreement with Minor Point of Contention',
           'OPT_3': '3 - Support with Reservations',
           'OPT_4': '4 - Abstain',
           'OPT_5': '5 - More Discussion Needed',
@@ -857,7 +857,7 @@
     function renderGradientsResults(results, totalVotes) {
       const gradientOptions = [
         { key: 'OPT_1', num: '1', label: 'Whole-hearted Endorsement' },
-        { key: 'OPT_2', num: '2', label: 'Agreement with Minor Point' },
+        { key: 'OPT_2', num: '2', label: 'Agreement with Minor Point of Contention' },
         { key: 'OPT_3', num: '3', label: 'Support with Reservations' },
         { key: 'OPT_4', num: '4', label: 'Abstain' },
         { key: 'OPT_5', num: '5', label: 'More Discussion Needed' },
@@ -1255,7 +1255,7 @@
     }
     
     elOverlayBtnOpt1.onclick = createGradientsVoteHandler('OPT_1', '1 - Whole-hearted Endorsement');
-    elOverlayBtnOpt2.onclick = createGradientsVoteHandler('OPT_2', '2 - Agreement with Minor Point');
+    elOverlayBtnOpt2.onclick = createGradientsVoteHandler('OPT_2', '2 - Agreement with Minor Point of Contention');
     elOverlayBtnOpt3.onclick = createGradientsVoteHandler('OPT_3', '3 - Support with Reservations');
     elOverlayBtnOpt4.onclick = createGradientsVoteHandler('OPT_4', '4 - Abstain');
     elOverlayBtnOpt5.onclick = createGradientsVoteHandler('OPT_5', '5 - More Discussion Needed');

@@ -449,7 +449,7 @@
           const response = JSON.parse(msg.body);
           if (response.success && response.requestId && response.requestId.startsWith('chair-access-')) {
             // Successfully assumed chair role
-            elConn.textContent = 'Connected - Chair Role Assumed';
+            elConn.textContent = 'Connected';
             elConn.classList.remove('warn');
             elConn.classList.add('ok');
           }
@@ -592,7 +592,7 @@
     function renderGradientsResults(results, totalVotes) {
       const gradientOptions = [
         { key: 'OPT_1', num: '1', label: 'Whole-hearted Endorsement' },
-        { key: 'OPT_2', num: '2', label: 'Agreement with Minor Point' },
+        { key: 'OPT_2', num: '2', label: 'Agreement with Minor Point of Contention' },
         { key: 'OPT_3', num: '3', label: 'Support with Reservations' },
         { key: 'OPT_4', num: '4', label: 'Abstain' },
         { key: 'OPT_5', num: '5', label: 'More Discussion Needed' },
