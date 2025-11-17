@@ -765,8 +765,11 @@
           resultsHTML += renderGradientsResults(pollState.results, pollState.totalVotes);
         } else if (pollState.pollType === 'MULTISELECT' || pollState.pollType === 'MULTISELECT_MULTIPLE') {
           resultsHTML += renderMultiselectResults(pollState.results, pollState.totalVotes, pollState.options);
+        } else if (pollState.pollType === 'YES_NO') {
+          // Yes/No results as bar chart
+          resultsHTML += renderYesNoResults(pollState.results, pollState.totalVotes);
         } else {
-          // Yes/No results
+          // Fallback for any other poll types
           for (const [option, count] of Object.entries(pollState.results)) {
             const percentage = pollState.totalVotes > 0 ? Math.round((count / pollState.totalVotes) * 100) : 0;
             resultsHTML += `<div style="margin: 4px 0;"><strong>${option}:</strong> ${count} (${percentage}%)</div>`;
@@ -810,7 +813,10 @@
           resultsHTML += renderMultiselectResults(results.results, results.totalVotes, results.options);
         } else if (results.pollType === 'GRADIENTS' || Object.keys(results.results).some(k => k.startsWith('OPT_'))) {
           resultsHTML += renderGradientsResults(results.results, results.totalVotes);
+        } else if (results.pollType === 'YES_NO') {
+          resultsHTML += renderYesNoResults(results.results, results.totalVotes);
         } else {
+          // Fallback for any other poll types
           for (const [option, count] of Object.entries(results.results)) {
             const percentage = results.totalVotes > 0 ? Math.round((count / results.totalVotes) * 100) : 0;
             resultsHTML += `<div style="margin: 4px 0;"><strong>${option}:</strong> ${count} (${percentage}%)</div>`;
@@ -980,6 +986,40 @@
         html += `<div style="margin: 12px 0;">`;
         // Option label
         html += `<div style="font-weight: bold; margin-bottom: 4px; font-size: 0.95rem;">${DOMPurify.sanitize(optionLabel)}</div>`;
+        // Bar container
+        html += `<div style="display: flex; align-items: center; gap: 8px;">`;
+        // Bar
+        html += `<div style="flex: 1; background: rgba(255,255,255,0.1); border-radius: 4px; height: 24px; position: relative; overflow: hidden;">`;
+        html += `<div style="background: rgba(96,165,250,0.6); width: ${widthPercent}%; height: 100%; border-radius: 4px; transition: width 0.3s ease;"></div>`;
+        html += `</div>`;
+        // Count and percentage
+        html += `<div style="min-width: 80px; text-align: right; font-weight: bold; font-size: 0.9rem;">${count} (${percentage}%)</div>`;
+        html += `</div>`;
+        html += `</div>`;
+      });
+      
+      html += '</div>';
+      
+      return html;
+    }
+    
+    function renderYesNoResults(results, totalVotes) {
+      const yesNoOptions = [
+        { key: 'YES', label: 'Yes' },
+        { key: 'NO', label: 'No' }
+      ];
+      
+      let html = '<div style="margin: 16px 0;">';
+      
+      // Create horizontal bars for Yes/No
+      yesNoOptions.forEach(opt => {
+        const count = results[opt.key] || 0;
+        const percentage = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+        const widthPercent = totalVotes > 0 ? (count / totalVotes) * 100 : 0;
+        
+        html += `<div style="margin: 12px 0;">`;
+        // Option label
+        html += `<div style="font-weight: bold; margin-bottom: 4px; font-size: 0.95rem;">${opt.label}</div>`;
         // Bar container
         html += `<div style="display: flex; align-items: center; gap: 8px;">`;
         // Bar
