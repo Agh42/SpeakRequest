@@ -1,10 +1,15 @@
 package de.koderman.domain;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Component
 public class RoomRepository {
-    private static final int MAX_ROOMS = 500000;
+    @Value("${app.room.max-rooms:2500}")
+    private int maxRooms;
+    
     private final ConcurrentHashMap<String, Room> roomsByCode = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, String> sessionToRoomCode = new ConcurrentHashMap<>();
     // TreeMap sorted by creation timestamp for efficient oldest room lookup
@@ -29,7 +34,7 @@ public class RoomRepository {
             }
             
             // Before creating a new room, check if we've reached the limit
-            if (roomsByCode.size() >= MAX_ROOMS) {
+            if (roomsByCode.size() >= maxRooms) {
                 removeOldestRoom();
             }
             
