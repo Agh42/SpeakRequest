@@ -496,8 +496,8 @@
         
         // Show user-friendly error message
         setTimeout(() => {
-          alert('Failed to connect to the meeting room as chair.\n\nConnection was dropped. Please check your internet connection and try again.\n\nYou will be redirected to the landing page.');
-          window.location.href = '/landing.html';
+          alert('Failed to connect to the meeting room as chair.\n\nConnection was dropped. Please check your internet connection and try again.\n\nYou will be redirected to the chair page to try again.');
+          window.location.href = `chair.html?room=${roomCode}`;
         }, 1000);
       });
     }
