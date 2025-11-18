@@ -5,10 +5,18 @@ server:
     protocol-header: x-forwarded-proto
     use-relative-redirects: true
 
+# Application configuration
+app:
+  room:
+    max-rooms: 2500
+
 logging:
   level:
-    "[org.springframework.web.socket]": TRACE
-    "[org.springframework.messaging]": TRACE
-    "[org.springframework.web.socket.handler]": TRACE
-    "[org.springframework.web.socket.sockjs]": TRACE
-    "[org.springframework.messaging.simp]": TRACE
+    #"[org.springframework.web.socket]": TRACE
+    #"[org.springframework.messaging]": TRACE
+    #"[org.springframework.web.socket.handler]": TRACE
+    #"[org.springframework.web.socket.sockjs]": TRACE
+    #"[org.springframework.messaging.simp]": TRACE
+    "[de.koderman.domain.Room]": INFO
+    #"[de.koderman.config.WebSocketDiagnosticsConfig]": TRACE
+    #"[ws.inbound]": TRACE

@@ -1,9 +1,12 @@
 package de.koderman.domain;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
+@Slf4j
 public class Room {
     private final String roomCode;
     private final List<Participant> queue = new ArrayList<>();
@@ -83,9 +86,12 @@ public class Room {
     public boolean isChairSession(String sessionId) {
         lock.lock();
         try {
-            return Optional.ofNullable(sessionId)
+            boolean isChair = Optional.ofNullable(sessionId)
                     .map(sid -> sid.equals(chairSessionId))
                     .orElse(false);
+            log.debug("Room[{}] isChairSession check: sessionId={}, currentChairId={}, result={}", 
+                     roomCode, sessionId, chairSessionId, isChair);
+            return isChair;
         } finally {
             lock.unlock();
         }
@@ -94,7 +100,10 @@ public class Room {
     public boolean hasChair() {
         lock.lock();
         try {
-            return chairSessionId != null;
+            boolean hasChair = chairSessionId != null;
+            log.debug("Room[{}] hasChair check: chairSessionId={}, result={}", 
+                     roomCode, chairSessionId, hasChair);
+            return hasChair;
         } finally {
             lock.unlock();
         }
@@ -103,12 +112,22 @@ public class Room {
     public void assumeChairRole(String sessionId) {
         lock.lock();
         try {
+            log.info("Room[{}] assumeChairRole attempt: requestingSessionId={}, currentChairId={}", 
+                     roomCode, sessionId, chairSessionId);
+            
             if (isChairSession(sessionId)) {
+                log.info("Room[{}] assumeChairRole: Session {} is already the chair, no-op", 
+                         roomCode, sessionId);
                 return; // Already the chair
             }
+            
             if (chairSessionId == null) {
                 chairSessionId = sessionId;
+                log.info("Room[{}] assumeChairRole: Successfully assigned chair role to session {}", 
+                         roomCode, sessionId);
             } else {
+                log.warn("Room[{}] assumeChairRole: Chair role already occupied by session {}, rejecting request from {}", 
+                         roomCode, chairSessionId, sessionId);
                 throw new ChairAccessException("Chair role is already occupied", this.roomCode, sessionId);
             }
         } finally {
@@ -119,9 +138,20 @@ public class Room {
     public void releaseChairRole(String sessionId) {
         lock.lock();
         try {
+            log.info("Room[{}] releaseChairRole attempt: requestingSessionId={}, currentChairId={}", 
+                     roomCode, sessionId, chairSessionId);
+            
             Optional.ofNullable(sessionId)
                     .filter(sid -> sid.equals(chairSessionId))
-                    .ifPresent(sid -> chairSessionId = null);
+                    .ifPresentOrElse(
+                        sid -> {
+                            chairSessionId = null;
+                            log.info("Room[{}] releaseChairRole: Successfully released chair role from session {}", 
+                                     roomCode, sessionId);
+                        },
+                        () -> log.debug("Room[{}] releaseChairRole: Session {} is not the chair or null, no action taken", 
+                                       roomCode, sessionId)
+                    );
         } finally {
             lock.unlock();
         }
@@ -137,8 +167,12 @@ public class Room {
 
     private void requireChairAccess(String sessionId) {
         if (!isChairSession(sessionId)) {
+            log.error("Room[{}] requireChairAccess: Access denied for session {} (current chair: {})", 
+                     roomCode, sessionId, chairSessionId);
             throw new ChairAccessException("Chair access required for this operation", this.roomCode, sessionId);
         }
+        log.debug("Room[{}] requireChairAccess: Access granted for chair session {}", 
+                 roomCode, sessionId);
     }
 
     // DDD methods - encapsulate internal state management
@@ -151,6 +185,11 @@ public class Room {
             if (!queue.isEmpty()) {
                 Participant next = queue.remove(0);
                 current = new Current(next, Instant.now().getEpochSecond(), 0, true, defaultLimitSec);
+                log.info("Room[{}] nextParticipant: Set {} as current speaker (by chair session {})", 
+                         roomCode, next.name(), sessionId);
+            } else {
+                log.info("Room[{}] nextParticipant: No participants in queue (by chair session {})", 
+                         roomCode, sessionId);
             }
         } finally {
             lock.unlock();
@@ -163,6 +202,11 @@ public class Room {
             int idx = findIndexByNameUnsafe(name);
             if (idx >= 0) {
                 queue.remove(idx);
+                log.info("Room[{}] withdrawParticipant: Removed {} from queue at position {}", 
+                         roomCode, name, idx);
+            } else {
+                log.debug("Room[{}] withdrawParticipant: Participant {} not found in queue", 
+                         roomCode, name);
             }
         } finally {
             lock.unlock();
@@ -232,12 +276,18 @@ public class Room {
         lock.lock();
         try {
             if (current != null && current.entry().name().equalsIgnoreCase(participant.name())) {
+                log.debug("Room[{}] addParticipantToQueue: {} is already the current speaker, not adding to queue", 
+                         roomCode, participant.name());
                 return;
             }
             if (findIndexByNameUnsafe(participant.name()) >= 0) {
+                log.debug("Room[{}] addParticipantToQueue: {} is already in queue, not adding duplicate", 
+                         roomCode, participant.name());
                 return;
             }
             queue.add(participant);
+            log.info("Room[{}] addParticipantToQueue: Added {} to queue (queue size now: {})", 
+                     roomCode, participant.name(), queue.size());
         } finally {
             lock.unlock();
         }
