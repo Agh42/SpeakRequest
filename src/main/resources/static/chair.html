@@ -494,11 +494,10 @@
         elConn.classList.remove('ok');
         elConn.classList.add('warn');
         
-        // Show user-friendly error message
+        // Wait 2 seconds then silently reconnect
         setTimeout(() => {
-          alert('Failed to connect to the meeting room as chair.\n\nConnection was dropped. Please check your internet connection and try again.\n\nYou will be redirected to the chair page to try again.');
-          window.location.href = `chair.html?room=${roomCode}`;
-        }, 1000);
+          connect();
+        }, 2000);
       });
     }
 
