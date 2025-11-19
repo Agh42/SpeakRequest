@@ -1,14 +1,16 @@
 package de.koderman.domain;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 @Component
 public class RoomRepository {
     @Value("${app.room.max-rooms:2500}")
-    private int maxRooms;
+    private int maxRooms = 100; // Default for manual instantiation in tests
     
     private final ConcurrentHashMap<String, Room> roomsByCode = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, String> sessionToRoomCode = new ConcurrentHashMap<>();
@@ -16,13 +18,22 @@ public class RoomRepository {
     private final TreeMap<Long, Room> roomsByTimestamp = new TreeMap<>();
     private final Object roomCreationLock = new Object();
 
+    @jakarta.annotation.PostConstruct
+    public void logConfiguredLimit() {
+        log.info("RoomRepository initialized with maxRooms: {}", maxRooms);
+    }
+
     public Optional<Room> getByCode(String roomCode) {
         return Optional.ofNullable(roomsByCode.get(roomCode));
     }
     
     public Room getByCodeOrThrow(String roomCode) {
-        return Optional.ofNullable(roomsByCode.get(roomCode))
-                .orElseThrow(() -> new RoomNotFoundException(roomCode));
+        Room room = roomsByCode.get(roomCode);
+        if (room == null) {
+            log.warn("Room not found: {}", roomCode);
+            throw new RoomNotFoundException(roomCode);
+        }
+        return room;
     }
     
     public Room createRoom(String roomCode) {
@@ -30,17 +41,21 @@ public class RoomRepository {
             // Check if room already exists
             Room existingRoom = roomsByCode.get(roomCode);
             if (existingRoom != null) {
+                log.info("Room already exists: {}", roomCode);
                 return existingRoom;
             }
             
             // Before creating a new room, check if we've reached the limit
             if (roomsByCode.size() >= maxRooms) {
+                log.warn("Room limit reached ({}), removing oldest room", maxRooms);
                 removeOldestRoom();
             }
             
             Room newRoom = new Room(roomCode);
             roomsByCode.put(roomCode, newRoom);
             roomsByTimestamp.put(newRoom.getMeetingStartSec(), newRoom);
+            log.info("Created room: {} (total: {})", roomCode, roomsByCode.size());
+            
             return newRoom;
         }
     }
@@ -53,6 +68,21 @@ public class RoomRepository {
         if (oldestEntry != null) {
             Room oldestRoom = oldestEntry.getValue();
             String oldestRoomCode = oldestRoom.getRoomCode();
+            Date creationTime = new Date(oldestEntry.getKey());
+            List<String> activeSessions = getSessionsForRoom(oldestRoomCode);
+            
+            log.warn("REMOVING OLDEST ROOM: {} created at {} with {} active sessions", 
+                oldestRoomCode, creationTime, activeSessions.size());
+            
+            if (!activeSessions.isEmpty()) {
+                log.error("WARNING: Removing room {} with {} ACTIVE sessions! Sessions: {}", 
+                    oldestRoomCode, activeSessions.size(), activeSessions);
+            }
+            
+            // Count sessions to be cleaned up
+            long sessionsToCleanup = sessionToRoomCode.entrySet().stream()
+                .filter(entry -> oldestRoomCode.equals(entry.getValue()))
+                .count();
             
             // Remove from both maps
             roomsByCode.remove(oldestRoomCode);
@@ -62,6 +92,11 @@ public class RoomRepository {
             sessionToRoomCode.entrySet().removeIf(entry -> 
                 oldestRoomCode.equals(entry.getValue())
             );
+            
+            log.warn("Removed oldest room: {}, cleaned up {} session mappings, remaining rooms: {}", 
+                oldestRoomCode, sessionsToCleanup, roomsByCode.size());
+        } else {
+            log.warn("Attempted to remove oldest room but no rooms exist in timestamp map");
         }
     }
 
@@ -70,12 +105,26 @@ public class RoomRepository {
     }
 
     public Optional<Room> getBySessionId(String sessionId) {
-        return Optional.ofNullable(sessionToRoomCode.get(sessionId))
-                .map(roomsByCode::get);
+        String roomCode = sessionToRoomCode.get(sessionId);
+        if (roomCode != null) {
+            Room room = roomsByCode.get(roomCode);
+            if (room == null) {
+                log.warn("Orphaned session mapping: {} -> {}", sessionId, roomCode);
+                sessionToRoomCode.remove(sessionId);
+            }
+            return Optional.ofNullable(room);
+        }
+        return Optional.empty();
     }
 
     public void trackSession(String sessionId, String roomCode) {
-        sessionToRoomCode.put(sessionId, roomCode);
+        String previousRoomCode = sessionToRoomCode.put(sessionId, roomCode);
+        if (previousRoomCode != null && !previousRoomCode.equals(roomCode)) {
+            log.warn("Session remapped: {} from {} to {}", sessionId, previousRoomCode, roomCode);
+        }
+        if (!roomsByCode.containsKey(roomCode)) {
+            log.error("Tracking session for non-existent room: {}", roomCode);
+        }
     }
 
     public void untrackSession(String sessionId) {
@@ -84,15 +133,15 @@ public class RoomRepository {
     
     public void destroyRoom(String roomCode) {
         synchronized (roomCreationLock) {
-            // Remove room from registry
             Room room = roomsByCode.remove(roomCode);
-            
-            // Remove from timestamp map
             if (room != null) {
+                List<String> activeSessions = getSessionsForRoom(roomCode);
+                if (!activeSessions.isEmpty()) {
+                    log.warn("Destroying room {} with {} active sessions", roomCode, activeSessions.size());
+                }
                 roomsByTimestamp.remove(room.getMeetingStartSec());
-                
-                // Remove all session tracking for this room
                 sessionToRoomCode.entrySet().removeIf(entry -> roomCode.equals(entry.getValue()));
+                log.info("Destroyed room: {} (remaining: {})", roomCode, roomsByCode.size());
             }
         }
     }

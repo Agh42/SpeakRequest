@@ -24,7 +24,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class MeetingController {
     private final SimpMessagingTemplate broker;
-    private final RoomRepository roomRepository = new RoomRepository();
+    private final RoomRepository roomRepository;
     private final Random random = new Random();
     
     @MessageExceptionHandler
