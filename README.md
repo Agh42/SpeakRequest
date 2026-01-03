@@ -1,4 +1,4 @@
-# SpeakRequest - Speech Time and Realtime Polls Manager
+# SpeakRequest - Hybrid Meeting Manager and Realtime Polls
 
 **A meeting manager for live and hybrid meetings**
 
