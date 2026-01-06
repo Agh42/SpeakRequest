@@ -1,6 +1,6 @@
 package de.koderman.domain;
 
-public enum DecisionRule {
+public enum DecisionRule implements Localizable {
     UNANIMITY("Unanimity", "All participants must fully agree before a decision is made."),
     GRADIENTS_OF_AGREEMENT("Gradients of Agreement", "Participants express varying levels of support, revealing nuanced consensus rather than a simple yes/no."),
     DOT_VOTING("Dot Voting", "Each person allocates a limited number of votes (dots) to indicate preferences or priorities visually."),
@@ -20,6 +20,19 @@ public enum DecisionRule {
         this.description = description;
     }
     
+    @Override
     public String getDisplayName() { return displayName; }
+    
+    @Override
     public String getDescription() { return description; }
+    
+    @Override
+    public String getNameKey() {
+        return "decision." + this.name() + ".name";
+    }
+    
+    @Override
+    public String getDescriptionKey() {
+        return "decision." + this.name() + ".description";
+    }
 }

@@ -1,6 +1,6 @@
 package de.koderman.domain;
 
-public enum MeetingGoal {
+public enum MeetingGoal implements Localizable {
     SHARE_INFORMATION("Share Information", "Ensure everyone has the same facts, updates, or context."),
     ADVANCE_THINKING("Advance the Thinking", "Develop ideas further through discussion, analysis, and reflection."),
     OBTAIN_INPUT("Obtain Input", "Gather perspectives, feedback, or expertise from participants."),
@@ -17,6 +17,19 @@ public enum MeetingGoal {
         this.description = description;
     }
     
+    @Override
     public String getDisplayName() { return displayName; }
+    
+    @Override
     public String getDescription() { return description; }
+    
+    @Override
+    public String getNameKey() {
+        return "goal." + this.name() + ".name";
+    }
+    
+    @Override
+    public String getDescriptionKey() {
+        return "goal." + this.name() + ".description";
+    }
 }

@@ -1,5 +1,6 @@
 package de.koderman.infrastructure;
 
+import de.koderman.config.MessageService;
 import de.koderman.domain.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
@@ -25,13 +26,15 @@ import java.util.*;
 public class MeetingController {
     private final SimpMessagingTemplate broker;
     private final RoomRepository roomRepository;
+    private final MessageService messageService;
     private final Random random = new Random();
     
     @MessageExceptionHandler
     public void handleRoomNotFound(RoomNotFoundException ex) {
         // Send error message to the specific room topic so clients can handle it
+        String errorMessage = messageService.getMessage("error.room.notfound", new Object[]{ex.getRoomCode()});
         RoomError error = new RoomError(
-            "Room not found: " + ex.getRoomCode(),
+            errorMessage,
             ex.getRoomCode(),
             "room_not_found",
             "/landing.html"
@@ -42,8 +45,9 @@ public class MeetingController {
     @MessageExceptionHandler
     public void handleChairAccessException(ChairAccessException ex) {
         // Send error message only to the specific client that made the illegal access attempt
+        String errorMessage = messageService.getMessage("error.chair.unauthorized", new Object[]{ex.getMessage()});
         RoomError error = new RoomError(
-            "Unauthorized chair access: " + ex.getMessage(),
+            errorMessage,
             ex.getRoomCode(),
             "chair_access_denied",
             "/landing.html"
@@ -174,8 +178,9 @@ public class MeetingController {
             broker.convertAndSend("/topic/room/" + roomCode + "/state", s);
         } catch (RoomNotFoundException ex) {
             // Room was destroyed during the operation, send error to clients
+            String errorMessage = messageService.getMessage("error.room.destroyed");
             RoomError error = new RoomError(
-                "Room no longer exists",
+                errorMessage,
                 roomCode,
                 "room_destroyed", 
                 "/landing.html"
@@ -372,8 +377,9 @@ public class MeetingController {
         if (room.isChairSession(sessionId)) {
             // Create destruction message
             String landingUrl = "/landing.html";
+            String destroyedMessage = messageService.getMessage("error.room.destroyed");
             RoomDestroyed destroyedMsg = new RoomDestroyed(
-                "The room has been closed by the chair.",
+                destroyedMessage,
                 landingUrl
             );
             

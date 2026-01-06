@@ -32,3 +32,4 @@ gradlew.bat
 
 .docker-cache/
 .vscode/settings.json
+bin/

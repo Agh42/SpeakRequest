@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>i18n Demo - SPEEK.NOW</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="stylesheet" href="styles.css"/>
+  <script src="i18n.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="header">
+      <!-- Using data-i18n attribute for translation -->
+      <h1 data-i18n="app.name"></h1>
+      <div class="pill" data-i18n="app.tagline"></div>
+    </header>
+
+    <main class="grid">
+      <section class="card">
+        <!-- Simple translation -->
+        <h2 data-i18n="landing.create.title"></h2>
+        <p class="muted" data-i18n="landing.create.description"></p>
+        
+        <!-- Button with translated text -->
+        <button class="primary" data-i18n="landing.create.button"></button>
+        
+        <!-- Status message (will be updated programmatically) -->
+        <div id="status" class="muted small"></div>
+      </section>
+
+      <section class="card">
+        <h2 data-i18n="landing.join.title"></h2>
+        <p class="muted" data-i18n="landing.join.description"></p>
+        
+        <!-- Input with translated placeholder -->
+        <input 
+          id="roomCode" 
+          data-i18n-placeholder="landing.join.placeholder" 
+          maxlength="4" 
+          style="text-transform: uppercase"
+        />
+        
+        <button class="accent" data-i18n="landing.join.button"></button>
+      </section>
+
+      <section class="card">
+        <h2>Programmatic Translation Examples</h2>
+        <div class="muted">
+          <button id="btnTestSimple" class="primary">Test Simple Translation</button>
+          <button id="btnTestParam" class="accent">Test Translation with Parameter</button>
+          <button id="btnShowAll" class="ghost">Show All Messages</button>
+        </div>
+        <div id="result" class="muted small" style="margin-top: 16px;"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // Wait for i18n to be ready
+    i18n.init().then(() => {
+      console.log('i18n initialized!');
+
+      // Example: Programmatic translation
+      document.getElementById('btnTestSimple').addEventListener('click', () => {
+        const message = i18n.t('chair.title');
+        document.getElementById('result').textContent = `Translation of 'chair.title': ${message}`;
+      });
+
+      // Example: Translation with parameter
+      document.getElementById('btnTestParam').addEventListener('click', () => {
+        const roomCode = 'AB12';
+        const message = i18n.t('error.room.notfound', [roomCode]);
+        document.getElementById('result').textContent = `Translation with parameter: ${message}`;
+      });
+
+      // Example: Show all loaded messages
+      document.getElementById('btnShowAll').addEventListener('click', () => {
+        const messages = i18n.getAllMessages();
+        const count = Object.keys(messages).length;
+        document.getElementById('result').innerHTML = 
+          `Loaded ${count} messages:<br><pre>${JSON.stringify(messages, null, 2).substring(0, 500)}...</pre>`;
+      });
+
+      // Example: Update status programmatically
+      document.getElementById('status').textContent = i18n.t('landing.create.status.creating');
+    });
+  </script>
+</body>
+</html>
