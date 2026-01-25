@@ -24,29 +24,38 @@ SpeakRequest is a real-time meeting manager for live and hybrid meetings, built 
 
 ## Architecture
 
-### Monolithic Design
-The application follows a single-file architecture pattern where all components are defined in `MeetingApp.java`:
-- Domain models (Room, Participant, etc.)
-- WebSocket configuration
-- REST controllers
-- Message handlers
-- Repository layer
+### Modular Backend Design
+The application follows Domain-Driven Design (DDD) principles with a clear separation of concerns:
+- **Domain package** (`de.koderman.domain`): Entities, value objects, DTOs, and repository
+- **Configuration package** (`de.koderman.config`): Spring configuration classes including WebSocket setup
+- **Infrastructure package** (`de.koderman.infrastructure`): Controllers and application services
+- **Main application class**: `MeetingApp.java` for application bootstrap
 
 ### Key Components
 
-1. **Domain Entities**
-   - `Room`: Core entity managing meeting state, speak queue, timer, polls, and configuration
-   - `Participant`: Represents a person in the speak queue
-   - `Current`: Tracks the currently speaking participant with timer state
-   - `RoomRepository`: In-memory storage with concurrent access control
+1. **Domain Layer** (`de.koderman.domain` package)
+   - **Entities**: `Room` - Core entity managing meeting state, speak queue, timer, polls, and configuration
+   - **Value Objects**: `Participant`, `Current`, `RoomConfig`, `PollState`, `PollResults`
+   - **DTOs/Records**: `RequestSpeak`, `Withdraw`, `Join`, `AssumeChair`, `CastVote`, `StartPoll`, `UpdateRoomConfig`, etc.
+   - **Enums**: `MeetingGoal`, `ParticipationFormat`, `DecisionRule`, `Deliverable`
+   - **Repository**: `RoomRepository` - In-memory storage with concurrent access control
+   - **Exceptions**: `RoomNotFoundException`, `ChairAccessException`, `RoomError`
 
-2. **Communication Layer**
+2. **Configuration Layer** (`de.koderman.config` package)
+   - `WsConfig`: WebSocket/STOMP configuration
+   - `StartupPropertiesLogger`: Application startup logging
+
+3. **Infrastructure Layer** (`de.koderman.infrastructure` package)
+   - `MeetingController`: Application service coordinating domain operations, WebSocket message handlers
+   - `Health`: Health check endpoint
+
+4. **Communication Layer**
    - REST endpoints for room management (`/api/rooms/*`)
    - WebSocket endpoints for real-time updates (`/ws`)
    - STOMP messaging for bidirectional communication
    - Topic-based broadcasting (`/topic/room/{roomCode}/state`)
 
-3. **State Management**
+5. **State Management**
    - Thread-safe using `ReentrantLock` for Room operations
    - `ConcurrentHashMap` for room and session tracking
    - Automatic room limit enforcement (max 500,000 rooms)
@@ -55,7 +64,7 @@ The application follows a single-file architecture pattern where all components 
 ## Coding Standards
 
 ### Code Style
-- **Single-file monolith**: All code resides in `MeetingApp.java`
+- **DDD-based package structure**: Code organized into domain, config, and infrastructure packages
 - **Records for DTOs**: Use Java records for immutable data transfer objects
 - **Lombok annotations**: Use `@Getter`, `@Setter`, `@RequiredArgsConstructor` where appropriate
 - **Minimal comments**: Code should be self-documenting; avoid excessive comments
@@ -421,7 +430,7 @@ stompClient.connect({}, frame => {
 
 ## Best Practices
 
-1. **Maintain Monolith**: Keep code in single file unless complexity demands refactoring
+1. **Follow DDD Structure**: Maintain clear separation between domain, config, and infrastructure layers
 2. **Use Records**: Prefer records for DTOs and immutable data
 3. **Validate Early**: Use Jakarta Validation on all inputs
 4. **Lock Consistently**: Always use lock for Room state modifications
@@ -434,7 +443,6 @@ stompClient.connect({}, frame => {
 
 ## Future Considerations
 
-- Consider extracting to multi-file architecture if complexity grows
 - Add persistent storage layer if needed
 - Implement rate limiting for production
 - Add authentication for advanced features
