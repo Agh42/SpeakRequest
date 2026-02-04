@@ -404,7 +404,7 @@
       '#FFD9EC', '#D5AAFF', '#B5E7FF', '#C4F0C4', '#FFF8B8', '#FFD2A6'
     ];
     let currentRotation = 0; // Current rotation angle of the circle
-    let lastSpeakerName = null; // Track last speaker to detect changes
+    let lastSpeakerId = null; // Track last speaker to detect changes
 
     // --- Avatar Circle Functions ---
     
@@ -427,13 +427,13 @@
       }
     }
     
-    function getParticipantColor(name) {
-      if (!participantColors.has(name)) {
+    function getParticipantColor(id) {
+      if (!participantColors.has(id)) {
         // Assign random color from palette
         const color = pastelColors[Math.floor(Math.random() * pastelColors.length)];
-        participantColors.set(name, color);
+        participantColors.set(id, color);
       }
-      return participantColors.get(name);
+      return participantColors.get(id);
     }
     
     function updateAvatarCircle(state) {
@@ -441,22 +441,12 @@
       const circle = document.getElementById('avatarCircle');
       if (!container || !circle) return;
       
-      // Build list of all participants (queue + current speaker)
-      const allParticipants = [];
-      
-      if (state.current && state.current.entry) {
-        allParticipants.push({
-          name: state.current.entry.name,
-          isSpeaking: true
-        });
-      }
-      
-      state.queue.forEach(p => {
-        allParticipants.push({
-          name: p.name,
-          isSpeaking: false
-        });
-      });
+      // Build list of all participants from members set
+      const allParticipants = (state.members || []).map(member => ({
+        id: member.id,
+        name: member.name,
+        isSpeaking: state.current?.entry?.id === member.id
+      }));
       
       if (allParticipants.length === 0) {
         circle.innerHTML = '<div style="color: var(--muted); text-align: center; padding-top: 20px;">Waiting for participants...</div>';
@@ -494,10 +484,10 @@
       
       // Check if speaker changed
       const currentSpeaker = allParticipants.find(p => p.isSpeaking);
-      const speakerChanged = currentSpeaker && lastSpeakerName !== currentSpeaker.name;
+      const speakerChanged = currentSpeaker && lastSpeakerId !== currentSpeaker.id;
       
       if (speakerChanged) {
-        lastSpeakerName = currentSpeaker.name;
+        lastSpeakerId = currentSpeaker.id;
         
         // Find the index of the current speaker
         const speakerIndex = allParticipants.findIndex(p => p.isSpeaking);
@@ -519,7 +509,7 @@
       circle.style.transform = `rotate(${currentRotation}deg)`;
       
       // Only recreate avatars if participant list changed
-      const participantKey = allParticipants.map(p => p.name).join(',');
+      const participantKey = allParticipants.map(p => p.id).join(',');
       if (circle.dataset.participantKey !== participantKey) {
         circle.dataset.participantKey = participantKey;
         circle.innerHTML = '';
@@ -527,10 +517,10 @@
         allParticipants.forEach((participant, index) => {
           const avatar = document.createElement('div');
           avatar.className = 'avatar';
-          avatar.dataset.participantName = participant.name;
+          avatar.dataset.participantId = participant.id;
           
           const initials = getInitials(participant.name);
-          const color = getParticipantColor(participant.name);
+          const color = getParticipantColor(participant.id);
           
           avatar.style.backgroundColor = color;
           avatar.style.color = color; // For glow effect
@@ -560,7 +550,7 @@
       } else {
         // Update highlighting and counter-rotation without recreating
         allParticipants.forEach((participant, index) => {
-          const avatar = circle.querySelector(`[data-participant-name="${CSS.escape(participant.name)}"]`);
+          const avatar = circle.querySelector(`[data-participant-id="${CSS.escape(participant.id)}"]`);
           if (avatar) {
             // Update speaking class
             if (participant.isSpeaking) {
