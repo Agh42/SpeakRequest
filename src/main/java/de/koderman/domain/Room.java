@@ -10,6 +10,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Room {
     private final String roomCode;
     private final List<Participant> queue = new ArrayList<>();
+    private final Set<Participant> members = new HashSet<>();
     private Current current = null;
     private final long meetingStartSec = Instant.now().getEpochSecond();
     private int defaultLimitSec = 180; // per-speaker
@@ -76,7 +77,7 @@ public class Room {
 
             RoomConfig roomConfig = new RoomConfig(topic, meetingGoal, participationFormat, decisionRule, deliverable);
 
-            return new State(List.copyOf(queue), current, meetingStartSec, defaultLimitSec, roomCode,
+            return new State(List.copyOf(queue), Set.copyOf(members), current, meetingStartSec, defaultLimitSec, roomCode,
                     chairSessionId != null, pollState, roomConfig);
         } finally {
             lock.unlock();
@@ -275,6 +276,7 @@ public class Room {
     public void addParticipantToQueue(Participant participant) {
         lock.lock();
         try {
+            members.add(participant);
             if (current != null && current.entry().name().equalsIgnoreCase(participant.name())) {
                 log.debug("Room[{}] addParticipantToQueue: {} is already the current speaker, not adding to queue", 
                          roomCode, participant.name());

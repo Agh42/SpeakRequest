@@ -112,6 +112,14 @@ public class MeetingController {
         return new RoomInfo(normalizedRoomCode, roomRepository.exists(normalizedRoomCode));
     }
 
+    @GetMapping("/api/rooms/{roomCode}/members")
+    @ResponseBody
+    public Set<Participant> getMembers(@PathVariable String roomCode) {
+        String normalizedRoomCode = normalizeRoomCode(roomCode);
+        Room room = roomRepository.getByCodeOrThrow(normalizedRoomCode);
+        return room.snapshot().members();
+    }
+
     // Metadata endpoints for enum descriptions
     @GetMapping("/api/metadata/meeting-goals")
     @ResponseBody
