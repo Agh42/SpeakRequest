@@ -442,11 +442,14 @@
       if (!container || !circle) return;
       
       // Build list of all participants from members set
-      const allParticipants = (state.members || []).map(member => ({
-        id: member.id,
-        name: member.name,
-        isSpeaking: state.current?.entry?.id === member.id
-      }));
+      // Sort by ID to ensure consistent order regardless of server order
+      const allParticipants = (state.members || [])
+        .map(member => ({
+          id: member.id,
+          name: member.name,
+          isSpeaking: state.current?.entry?.id === member.id
+        }))
+        .sort((a, b) => a.id.localeCompare(b.id));
       
       if (allParticipants.length === 0) {
         circle.innerHTML = '<div style="color: var(--muted); text-align: center; padding-top: 20px;">Waiting for participants...</div>';

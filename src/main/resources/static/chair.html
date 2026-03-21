@@ -462,11 +462,14 @@
       if (!container || !circle) return;
       
       // Build list of all participants from members set
-      const allParticipants = (state.members || []).map(member => ({
-        id: member.id,
-        name: member.name,
-        isSpeaking: state.current?.entry?.id === member.id
-      }));
+      // Sort by ID to ensure consistent order regardless of server order
+      const allParticipants = (state.members || [])
+        .map(member => ({
+          id: member.id,
+          name: member.name,
+          isSpeaking: state.current?.entry?.id === member.id
+        }))
+        .sort((a, b) => a.id.localeCompare(b.id));
       
       if (allParticipants.length === 0) {
         circle.innerHTML = '<div style="color: var(--muted); text-align: center; padding-top: 20px;">Waiting for participants...</div>';
@@ -530,10 +533,17 @@
       
       // Only recreate avatars if participant list changed
       const participantKey = allParticipants.map(p => p.id).join(',');
+      console.log('updateAvatarCircle:', {
+        participantCount: allParticipants.length,
+        participantKey: participantKey,
+        storedKey: circle.dataset.participantKey,
+        willRecreate: circle.dataset.participantKey !== participantKey,
+        currentSpeakerId: state.current?.entry?.id
+      });
       if (circle.dataset.participantKey !== participantKey) {
         circle.dataset.participantKey = participantKey;
         circle.innerHTML = '';
-        
+
         allParticipants.forEach((participant, index) => {
           const avatar = document.createElement('div');
           avatar.className = 'avatar';
@@ -684,6 +694,7 @@
     function updateUI(state) {
       meetingStart = state.meetingStartSec;
       currentState = state; // Store the current state
+      console.log('updateUI state.members:', state.members);
       elLimit.value = state.defaultLimitSec;
 
       // Queue

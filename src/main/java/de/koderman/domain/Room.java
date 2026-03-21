@@ -276,19 +276,27 @@ public class Room {
     public void addParticipantToQueue(Participant participant) {
         lock.lock();
         try {
-            members.add(participant);
+            // Only add to members if not already present (check by name to avoid duplicates)
+            boolean memberExists = members.stream()
+                    .anyMatch(m -> m.name().equalsIgnoreCase(participant.name()));
+            if (!memberExists) {
+                members.add(participant);
+                log.debug("Room[{}] addParticipantToQueue: Added {} to members set",
+                         roomCode, participant.name());
+            }
+
             if (current != null && current.entry().name().equalsIgnoreCase(participant.name())) {
-                log.debug("Room[{}] addParticipantToQueue: {} is already the current speaker, not adding to queue", 
+                log.debug("Room[{}] addParticipantToQueue: {} is already the current speaker, not adding to queue",
                          roomCode, participant.name());
                 return;
             }
             if (findIndexByNameUnsafe(participant.name()) >= 0) {
-                log.debug("Room[{}] addParticipantToQueue: {} is already in queue, not adding duplicate", 
+                log.debug("Room[{}] addParticipantToQueue: {} is already in queue, not adding duplicate",
                          roomCode, participant.name());
                 return;
             }
             queue.add(participant);
-            log.info("Room[{}] addParticipantToQueue: Added {} to queue (queue size now: {})", 
+            log.info("Room[{}] addParticipantToQueue: Added {} to queue (queue size now: {})",
                      roomCode, participant.name(), queue.size());
         } finally {
             lock.unlock();
