@@ -36,6 +36,13 @@
       <div id="chairStatus" class="pill ok">Chair: Occupied (You)</div>
     </header>
 
+    <!-- Rotating Avatar Circle Section -->
+    <section class="card wide-card avatar-section">
+      <div id="avatarCircleContainer" class="avatar-circle-container">
+        <div id="avatarCircle" class="avatar-circle"></div>
+      </div>
+    </section>
+
     <main class="grid">
       <!-- Manage speakers -->
       <section class="card">
@@ -409,6 +416,189 @@
     let multiselectOptions = []; // Track multiselect poll options
     let isMultipleSelection = false; // Track if this is multiple selection (vs single selection)
 
+    // --- Avatar Circle Variables ---
+    const participantColors = new Map(); // Map participant name to color
+    const pastelColors = [
+      '#FFB6C1', '#FFD4E5', '#E0BBE4', '#C5B4E3', '#B4D4FF', '#B8E6FF',
+      '#C1FFC1', '#D4FFD4', '#FFFFB8', '#FFE4B5', '#FFCBA4', '#FFB3BA',
+      '#FFD9EC', '#D5AAFF', '#B5E7FF', '#C4F0C4', '#FFF8B8', '#FFD2A6'
+    ];
+    let currentRotation = 0; // Current rotation angle of the circle
+    let lastSpeakerId = null; // Track last speaker to detect changes
+
+    // --- Avatar Circle Functions ---
+    
+    function getInitials(name) {
+      if (!name || name.trim() === '') return '??';
+      
+      const words = name.trim().split(/\s+/);
+      
+      if (words.length >= 2) {
+        // Two or more words: use first letter of first two words
+        return (words[0][0] + words[1][0]).toUpperCase();
+      } else {
+        // One word: use first two letters
+        const word = words[0];
+        if (word.length >= 2) {
+          return word.substring(0, 2).toUpperCase();
+        } else {
+          return word[0].toUpperCase() + '?';
+        }
+      }
+    }
+    
+    function getParticipantColor(id) {
+      if (!participantColors.has(id)) {
+        // Assign random color from palette
+        const color = pastelColors[Math.floor(Math.random() * pastelColors.length)];
+        participantColors.set(id, color);
+      }
+      return participantColors.get(id);
+    }
+    
+    function updateAvatarCircle(state) {
+      const container = document.getElementById('avatarCircleContainer');
+      const circle = document.getElementById('avatarCircle');
+      if (!container || !circle) return;
+      
+      // Build list of all participants from members set
+      // Sort by ID to ensure consistent order regardless of server order
+      const allParticipants = (state.members || [])
+        .map(member => ({
+          id: member.id,
+          name: member.name,
+          isSpeaking: state.current?.entry?.id === member.id
+        }))
+        .sort((a, b) => a.id.localeCompare(b.id));
+      
+      if (allParticipants.length === 0) {
+        circle.innerHTML = '<div style="color: var(--muted); text-align: center; padding-top: 20px;">Waiting for participants...</div>';
+        return;
+      }
+      
+      // Calculate circle dimensions using container's actual size
+      // Use clientWidth/clientHeight for coordinates relative to container
+      const containerWidth = container.clientWidth;
+      const containerHeight = container.clientHeight;
+      
+      // Avatar size (responsive)
+      const avatarSize = window.innerWidth <= 480 ? 40 : (window.innerWidth <= 768 ? 50 : 60);
+      
+      // Calculate circle radius
+      const participantCount = allParticipants.length;
+      const minRadius = avatarSize * 2.5; // Minimum radius
+      const circumference = participantCount * avatarSize * 2.5; // Space between avatars
+      const calculatedRadius = Math.max(minRadius, circumference / (2 * Math.PI));
+      const radius = calculatedRadius;
+      const circleDiameter = radius * 2;
+      
+      // Start with center at exact middle of container
+      let centerX = containerWidth / 2;
+      let centerY = containerHeight / 2;
+      
+      // If circle is too large to fit, move center UP to show only bottom portion
+      if (circleDiameter > containerHeight) {
+        // Move center up so that bottom of circle is at bottom of container
+        centerY = radius; // This puts center at radius distance from top, so bottom edge touches bottom
+      }
+      
+      // Set transform origin to match the circle center point
+      circle.style.transformOrigin = `${centerX}px ${centerY}px`;
+      
+      // Check if speaker changed
+      const currentSpeaker = allParticipants.find(p => p.isSpeaking);
+      const speakerChanged = currentSpeaker && lastSpeakerId !== currentSpeaker.id;
+      
+      if (speakerChanged) {
+        lastSpeakerId = currentSpeaker.id;
+        
+        // Find the index of the current speaker
+        const speakerIndex = allParticipants.findIndex(p => p.isSpeaking);
+        
+        // Calculate angle to rotate speaker to bottom (6 o'clock position = 90 degrees)
+        const anglePerParticipant = 360 / participantCount;
+        const speakerAngle = speakerIndex * anglePerParticipant;
+        const targetRotation = 90 - speakerAngle; // Rotate so speaker is at 90 degrees (bottom)
+        
+        // Normalize rotation to avoid spinning multiple times
+        let rotationDiff = targetRotation - currentRotation;
+        while (rotationDiff > 180) rotationDiff -= 360;
+        while (rotationDiff < -180) rotationDiff += 360;
+        
+        currentRotation += rotationDiff;
+      }
+      
+      // Apply rotation to circle
+      circle.style.transform = `rotate(${currentRotation}deg)`;
+      
+      // Only recreate avatars if participant list changed
+      const participantKey = allParticipants.map(p => p.id).join(',');
+      console.log('updateAvatarCircle:', {
+        participantCount: allParticipants.length,
+        participantKey: participantKey,
+        storedKey: circle.dataset.participantKey,
+        willRecreate: circle.dataset.participantKey !== participantKey,
+        currentSpeakerId: state.current?.entry?.id
+      });
+      if (circle.dataset.participantKey !== participantKey) {
+        circle.dataset.participantKey = participantKey;
+        circle.innerHTML = '';
+
+        allParticipants.forEach((participant, index) => {
+          const avatar = document.createElement('div');
+          avatar.className = 'avatar';
+          avatar.dataset.participantId = participant.id;
+          
+          const initials = getInitials(participant.name);
+          const color = getParticipantColor(participant.id);
+          
+          avatar.style.backgroundColor = color;
+          avatar.style.color = color; // For glow effect
+          
+          // Position avatar around circle
+          const anglePerParticipant = 360 / participantCount;
+          const angle = index * anglePerParticipant;
+          const angleRad = (angle - 90) * (Math.PI / 180); // -90 to start at top
+          
+          const x = centerX + radius * Math.cos(angleRad) - avatarSize / 2;
+          const y = centerY + radius * Math.sin(angleRad) - avatarSize / 2;
+          
+          avatar.style.left = `${x}px`;
+          avatar.style.top = `${y}px`;
+          
+          const initialsSpan = document.createElement('span');
+          initialsSpan.className = 'initials';
+          initialsSpan.textContent = initials;
+          
+          // Counter-rotate the initials so they stay upright
+          initialsSpan.style.display = 'inline-block';
+          initialsSpan.style.transform = `rotate(${-currentRotation}deg)`;
+          
+          avatar.appendChild(initialsSpan);
+          circle.appendChild(avatar);
+        });
+      } else {
+        // Update highlighting and counter-rotation without recreating
+        allParticipants.forEach((participant, index) => {
+          const avatar = circle.querySelector(`[data-participant-id="${CSS.escape(participant.id)}"]`);
+          if (avatar) {
+            // Update speaking class
+            if (participant.isSpeaking) {
+              avatar.classList.add('speaking');
+            } else {
+              avatar.classList.remove('speaking');
+            }
+            
+            // Update counter-rotation of initials
+            const initialsSpan = avatar.querySelector('.initials');
+            if (initialsSpan) {
+              initialsSpan.style.transform = `rotate(${-currentRotation}deg)`;
+            }
+          }
+        });
+      }
+    }
+
     // --- WebSocket ---
     function connect() {
       const scheme = location.protocol === 'https:' ? 'wss' : 'ws';
@@ -504,6 +694,7 @@
     function updateUI(state) {
       meetingStart = state.meetingStartSec;
       currentState = state; // Store the current state
+      console.log('updateUI state.members:', state.members);
       elLimit.value = state.defaultLimitSec;
 
       // Queue
@@ -524,6 +715,7 @@
       }
 
       updateTimers(state);
+      updateAvatarCircle(state); // Update the rotating avatar circle
       updatePollUI(state);
       updateRoomConfigUI(state);
     }

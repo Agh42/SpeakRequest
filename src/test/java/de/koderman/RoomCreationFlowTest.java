@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import static org.junit.jupiter.api.Assertions.*;
+import de.koderman.config.MessageService;
 import de.koderman.domain.*;
 import de.koderman.infrastructure.*;
 
@@ -21,18 +22,16 @@ class RoomCreationFlowTest {
 
     @BeforeEach
     void setUp() {
-        // Create a mock SimpMessagingTemplate since we don't need actual messaging
+        // Create mocks for dependencies
         SimpMessagingTemplate mockBroker = mock(SimpMessagingTemplate.class);
-        controller = new MeetingController(mockBroker);
+        MessageService mockMessageService = mock(MessageService.class);
         
-        // Access the repository through reflection to test it directly
-        try {
-            var field = MeetingController.class.getDeclaredField("roomRepository");
-            field.setAccessible(true);
-            repository = (RoomRepository) field.get(controller);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to access roomRepository", e);
-        }
+        // Configure mock MessageService to return keys as messages (fallback behavior)
+        when(mockMessageService.getMessage(anyString())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(mockMessageService.getMessage(anyString(), any(Object[].class))).thenAnswer(invocation -> invocation.getArgument(0));
+        
+        repository = new RoomRepository();
+        controller = new MeetingController(mockBroker, repository, mockMessageService);
     }
 
     @Test

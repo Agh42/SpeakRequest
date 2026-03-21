@@ -1,6 +1,6 @@
 package de.koderman.domain;
 
-public enum ParticipationFormat {
+public enum ParticipationFormat implements Localizable {
     STRUCTURED_GO_AROUNDS("Structured Go-Arounds", "Everyone contributes in turn, ensuring equal participation and balanced input."),
     PRESENTATIONS_AND_REPORTS("Presentations and Reports", "Individuals or teams share prepared findings or updates with the group."),
     SMALL_GROUPS("Small Groups", "Participants work in subgroups to explore topics or solve problems collaboratively."),
@@ -22,6 +22,19 @@ public enum ParticipationFormat {
         this.description = description;
     }
     
+    @Override
     public String getDisplayName() { return displayName; }
+    
+    @Override
     public String getDescription() { return description; }
+    
+    @Override
+    public String getNameKey() {
+        return "format." + this.name() + ".name";
+    }
+    
+    @Override
+    public String getDescriptionKey() {
+        return "format." + this.name() + ".description";
+    }
 }

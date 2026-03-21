@@ -1,6 +1,6 @@
 package de.koderman.domain;
 
-public enum Deliverable {
+public enum Deliverable implements Localizable {
     DEFINE_PROBLEM("Define a problem", "Clearly articulate the issue or challenge that needs to be addressed"),
     CREATE_MILESTONE_MAP("Create a milestone map", "Identify key checkpoints and timeline for project phases"),
     ANALYZE_PROBLEM("Analyze a problem", "Examine causes, effects, and context of the issue in depth"),
@@ -26,6 +26,19 @@ public enum Deliverable {
         this.description = description;
     }
     
+    @Override
     public String getDisplayName() { return displayName; }
+    
+    @Override
     public String getDescription() { return description; }
+    
+    @Override
+    public String getNameKey() {
+        return "deliverable." + this.name() + ".name";
+    }
+    
+    @Override
+    public String getDescriptionKey() {
+        return "deliverable." + this.name() + ".description";
+    }
 }
