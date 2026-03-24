@@ -49,297 +49,525 @@
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
       vertical-align: middle;
     }
+
+    #chairShell {
+      --shell-header-height: 76px;
+      --sidebar-width: 0px;
+    }
+
+    @media (min-width: 768px) {
+      #chairShell {
+        --sidebar-width: 88px;
+      }
+
+      #chairShell.sidebar-expanded {
+        --sidebar-width: 272px;
+      }
+    }
+
+    #sidebar {
+      transition: width 0.28s ease, transform 0.28s ease, opacity 0.28s ease;
+    }
+
+    @media (min-width: 768px) {
+      #sidebar {
+        width: var(--sidebar-width);
+      }
+    }
+
+    #sidebar.collapsed .sidebar-label,
+    #sidebar.collapsed .sidebar-title,
+    #sidebar.collapsed .sidebar-copy {
+      display: none;
+    }
+
+    #sidebar.collapsed .sidebar-link {
+      justify-content: center;
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
+    }
+
+    #sidebar.collapsed .sidebar-link .material-symbols-outlined {
+      margin-right: 0;
+    }
+
+    .nav-active {
+      background: linear-gradient(90deg, rgba(187, 195, 255, 0.24), rgba(187, 195, 255, 0));
+      color: #dae2fd;
+      box-shadow: inset 3px 0 0 rgba(187, 195, 255, 0.95);
+    }
+
+    .nav-inactive {
+      color: rgba(197, 197, 217, 0.72);
+    }
+
+    .nav-inactive:hover {
+      color: #dae2fd;
+      background: rgba(45, 52, 73, 0.72);
+    }
+
+    #mobileMenuPanel {
+      transform: translateX(-100%);
+      transition: transform 0.28s ease;
+    }
+
+    #mobileMenuPanel[data-open='true'] {
+      transform: translateX(0);
+    }
   </style>
   <script src="stomp.min.js"></script>
   <script src="purify.min.js"></script>
   <script src="metadata-loader.js"></script>
   <script src="share.js"></script>
 </head>
-<body class="bg-background text-on-surface font-body min-h-screen">
-  <div class="wrap mx-auto max-w-[1400px] px-4 py-6 md:px-6 md:py-8">
-    <header class="header bg-surface-container rounded-2xl p-4 md:p-6 shadow-xl mb-6">
-      <h1 class="font-headline text-2xl font-extrabold tracking-tight"><a href="/landing.html" style="text-decoration: none; color: inherit;">SPEEK.NOW</a> - Chair View</h1>
-      <div class="room-code-display mt-3 flex flex-wrap items-center gap-2">
-        <span class="muted small">Room Code:</span>
-        <span id="roomCodeDisplay" class="room-code">----</span>
-        <button id="btnShareParticipantUrlHeader" class="primary inline-flex items-center gap-2 rounded-xl bg-surface-container-high px-3 py-2 text-sm font-medium" style="margin-right: 8px;" aria-label="Share participation link"><span class="material-symbols-outlined text-lg">share</span> Share</button>
+<body class="min-h-screen bg-background font-body text-on-surface">
+  <div id="chairShell" class="relative min-h-screen overflow-x-hidden bg-[radial-gradient(circle_at_top,rgba(187,195,255,0.14),transparent_28%),linear-gradient(180deg,#0b1326_0%,#0a1122_100%)] md:pl-[calc(var(--sidebar-width))]">
+    <header class="fixed inset-x-0 top-0 z-40 border-b border-white/5 bg-background/90 backdrop-blur-xl">
+      <div class="mx-auto flex max-w-[1500px] items-center justify-between gap-3 px-4 py-3 md:px-6 lg:px-8">
+        <div class="flex min-w-0 items-center gap-3 md:gap-4">
+          <a href="/landing.html" class="font-headline text-lg font-extrabold tracking-tight text-on-surface no-underline md:text-xl">SPEEK.NOW</a>
+          <div class="hidden h-8 w-px bg-white/10 sm:block"></div>
+          <div class="min-w-0 rounded-full bg-surface-container-high px-3 py-2 text-sm font-semibold text-on-surface shadow-[0_10px_30px_rgba(0,0,0,0.18)]">
+            <span class="mr-2 text-[10px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Room</span>
+            <span id="roomCodeDisplay" class="font-headline text-base font-extrabold tracking-[0.2em]">----</span>
+          </div>
+          <button id="btnShareParticipantUrlHeader" class="inline-flex items-center gap-2 rounded-full bg-surface-container px-3 py-2 text-sm font-medium text-on-surface transition hover:bg-surface-container-high" aria-label="Share participation link">
+            <span class="material-symbols-outlined text-lg">share</span>
+            <span class="hidden sm:inline">Share</span>
+          </button>
+        </div>
+        <div class="flex items-center gap-2 md:gap-3">
+          <div id="conn" class="rounded-full bg-surface-container px-3 py-2 text-xs font-semibold text-on-surface-variant md:text-sm">Connecting…</div>
+          <div id="chairStatus" class="hidden rounded-full bg-surface-container-high px-3 py-2 text-xs font-semibold text-on-surface-variant sm:block md:text-sm">Chair: Occupied (You)</div>
+          <button type="button" class="inline-flex items-center gap-2 rounded-full bg-surface-container px-3 py-2 text-sm font-medium text-on-surface transition hover:bg-surface-container-high md:hidden" data-menu-trigger="mobile" aria-label="Open menu">
+            <span class="material-symbols-outlined text-lg">menu</span>
+          </button>
+          <button type="button" class="hidden items-center gap-2 rounded-full bg-surface-container px-3 py-2 text-sm font-medium text-on-surface transition hover:bg-surface-container-high md:inline-flex" data-menu-trigger="desktop" aria-label="Open room settings">
+            <span class="material-symbols-outlined text-lg">settings</span>
+            <span>Settings</span>
+          </button>
+          <button id="btnDestroyRoom" class="hidden items-center gap-2 rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_18px_36px_rgba(127,29,29,0.35)] transition hover:bg-red-500 lg:inline-flex">
+            <span class="material-symbols-outlined text-lg">delete</span>
+            <span>Destroy Room</span>
+          </button>
+        </div>
       </div>
-      <div id="conn" class="pill">Connecting…</div>
-      <div id="chairStatus" class="pill ok">Chair: Occupied (You)</div>
     </header>
 
-    <main class="grid gap-5 lg:grid-cols-2">
-      <!-- Manage speakers -->
-      <section class="card bg-surface-container rounded-2xl p-5 shadow-xl space-y-4">
-        <h2 class="font-headline text-xl font-bold">Manage speakers</h2>
-        <div class="row flex flex-wrap gap-2">
-          <button id="btnNext" class="accent inline-flex items-center gap-2 rounded-xl bg-surface-container-high px-4 py-2"><span class="material-symbols-outlined">mic</span> Next speaker</button>
-          <button id="btnPause" class="ghost inline-flex items-center gap-2 rounded-xl bg-surface-container-highest px-4 py-2"><span class="material-symbols-outlined">pause</span> Pause</button>
-          <button id="btnStart" class="primary inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-surface"><span class="material-symbols-outlined">play_arrow</span> Start</button>
-          <button id="btnReset" class="ghost inline-flex items-center gap-2 rounded-xl bg-surface-container-highest px-4 py-2"><span class="material-symbols-outlined">history</span> Reset</button>
+    <aside id="sidebar" class="collapsed fixed left-0 top-[76px] z-30 hidden h-[calc(100vh-76px)] overflow-y-auto bg-surface-container/95 px-3 py-5 shadow-[0_24px_50px_rgba(0,0,0,0.35)] backdrop-blur-xl md:flex md:flex-col">
+      <div class="mb-6 flex items-start justify-between gap-2 px-2">
+        <div class="min-w-0">
+          <div class="sidebar-title font-headline text-lg font-extrabold tracking-tight text-on-surface">The Orchestrator</div>
+          <div class="sidebar-copy text-[10px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Chair navigation</div>
         </div>
-        
-        <h3 class="subsection-heading">Request to speak on behalf</h3>
-        <div class="row">
-          <input id="participantName" class="w-full rounded-xl bg-surface-container-high px-3 py-2 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/60" placeholder="Participant initials or name" maxlength="30"/>
-        </div>
-        <div class="row flex flex-wrap gap-2">
-          <button id="btnParticipantRequest" class="primary inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-surface"><span class="material-symbols-outlined">pan_tool</span> Request to Speak</button>
-          <button id="btnParticipantWithdraw" class="ghost rounded-xl bg-surface-container-highest px-4 py-2">Withdraw Request</button>
-        </div>
-        <div id="participantStatus" class="muted small">Enter participant's names to request/withdraw on their behalf.</div>
-      </section>
-
-      <!-- Chair controls -->
-      <section class="card bg-surface-container-high rounded-2xl p-5 shadow-xl space-y-4">
-        <h2 class="font-headline text-xl font-bold">Meeting Controls</h2>
-        <div class="row flex flex-wrap gap-2">
-          <button id="btnPopout" class="accent inline-flex items-center gap-2 rounded-xl bg-surface-container-highest px-4 py-2"><span class="material-symbols-outlined">tv</span> Open Popout Window</button>
-          <button id="btnDestroyRoom" class="ghost inline-flex items-center gap-2 rounded-xl px-4 py-2" style="background-color: #dc2626; color: white;"><span class="material-symbols-outlined">delete</span> Destroy Room</button>
-        </div>
-        <div class="muted small">Open popout window to display speaker queue on separate screen / projector.</div>
-        <div class="row flex items-center gap-2">
-          <label class="muted">Per-speaker limit (sec)</label>
-          <input id="limit" class="w-28 rounded-xl bg-surface-container-high px-3 py-2 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60" type="number" min="10" step="10" value="180"/>
-          <button id="btnSetLimit" class="ghost rounded-xl bg-surface-container-highest px-4 py-2">Set</button>
-        </div>
-
-        <div class="two">
-          <div>
-            <div class="muted small">Current speaker</div>
-            <div id="curName" class="big">--</div>
-          </div>
-          <div>
-            <div class="muted small">Speaker time</div>
-            <div id="speakTimer" class="timer ok">00:00</div>
-            <div class="muted tiny" id="remaining">(remaining: 00:00)</div>
-          </div>
-          <div>
-            <div class="muted small">Meeting time</div>
-            <div id="meetingTimer" class="timer">00:00</div>
-          </div>
-        </div>
-
-        <div class="muted small">Queue (<span id="qCount">0</span>)</div>
-        <ul id="queue" class="list"></ul>
-      </section>
-
-      <!-- Room Info -->
-      <section class="card bg-surface-container rounded-2xl p-5 shadow-xl space-y-4">
-        <h2 class="font-headline text-xl font-bold">Room Information</h2>
-        <div class="room-info">
-          <div class="room-code-large">
-            <div class="muted small">Share this code with participants to let them join:</div>
-            <div id="roomCodeLarge" class="room-code-big">----</div>
-          </div>
-          <div class="row flex flex-wrap gap-2">
-            <button id="btnCopyCode" class="ghost inline-flex items-center gap-2 rounded-xl bg-surface-container-highest px-4 py-2"><span class="material-symbols-outlined">content_copy</span> Copy Code</button>
-            <button id="btnShareLink" class="ghost inline-flex items-center gap-2 rounded-xl bg-surface-container-highest px-4 py-2"><span class="material-symbols-outlined">link</span> Copy Participant Link</button>
-            <button id="btnShareParticipantUrl" class="primary inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-surface" aria-label="Share participation link"><span class="material-symbols-outlined">share</span> Share</button>
-          </div>
-          <div id="copyStatus" class="muted small"></div>
-          
-          <!-- Room Configuration -->
-          <div class="bg-surface-container-high rounded-xl p-4" style="margin-top: 20px; padding-top: 16px;">
-            <div class="muted small" style="margin-bottom: 12px; font-weight: bold;">Meeting Configuration</div>
-            
-            <div style="margin-bottom: 10px;">
-              <label for="configTopic" class="muted small" style="display: block; margin-bottom: 4px;">Topic</label>
-              <input id="configTopic" class="w-full rounded-xl bg-surface-container-high px-3 py-2 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/60" type="text" placeholder="Enter meeting topic" maxlength="100"/>
-            </div>
-            
-            <div style="margin-bottom: 10px;">
-              <label for="configParticipationFormat" class="muted small" style="display: block; margin-bottom: 4px;">Participation Format</label>
-              <select id="configParticipationFormat" class="w-full rounded-xl bg-surface-container-high px-3 py-2 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60">
-                <option value="">-- Select Participation Format --</option>
-                <option value="OPEN_DISCUSSION">Open Discussion</option>
-                <option value="STRUCTURED_GO_AROUNDS">Structured Go-Arounds</option>
-                <option value="PRESENTATIONS_AND_REPORTS">Presentations and Reports</option>
-                <option value="SMALL_GROUPS">Small Groups</option>
-                <option value="LISTING_IDEAS">Listing Ideas</option>
-                <option value="JIGSAW">Jigsaw</option>
-                <option value="INDIVIDUAL_WRITING">Individual Writing</option>
-                <option value="MULTI_TASKING">Multi-Tasking</option>
-                <option value="FISHBOWLS">Fishbowls</option>
-                <option value="TRADESHOW">Tradeshow</option>
-                <option value="SCRAMBLER">Scrambler</option>
-                <option value="ROLEPLAYS">Roleplays</option>
-              </select>
-            </div>
-            
-            <div style="margin-bottom: 10px;">
-              <label for="configMeetingGoal" class="muted small" style="display: block; margin-bottom: 4px;">Meeting Goal</label>
-              <select id="configMeetingGoal" class="w-full rounded-xl bg-surface-container-high px-3 py-2 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60">
-                <option value="">-- Select Meeting Goal --</option>
-                <option value="MAKE_DECISIONS">Make Decisions</option>
-                <option value="ADVANCE_THINKING">Advance the Thinking</option>
-                <option value="SHARE_INFORMATION">Share Information</option>
-                <option value="OBTAIN_INPUT">Obtain Input</option>
-                <option value="IMPROVE_COMMUNICATION">Improve Communication</option>
-                <option value="BUILD_CAPACITY">Build Capacity</option>
-                <option value="BUILD_COMMUNITY">Build Community</option>
-              </select>
-            </div>
-            
-            <div style="margin-bottom: 10px;">
-              <label for="configDecisionRule" class="muted small" style="display: block; margin-bottom: 4px;">Decision Rule</label>
-              <select id="configDecisionRule" class="w-full rounded-xl bg-surface-container-high px-3 py-2 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60">
-                <option value="">-- Select Decision Rule --</option>
-                <option value="UNANIMITY">Unanimity</option>
-                <option value="GRADIENTS_OF_AGREEMENT">Gradients of Agreement</option>
-                <option value="DOT_VOTING">Dot Voting</option>
-                <option value="SUPERMAJORITY">Supermajority</option>
-                <option value="MAJORITY">Majority</option>
-                <option value="PLURALITY">Plurality</option>
-                <option value="CONSENT">Consent</option>
-                <option value="PERSON_IN_CHARGE">Person in Charge</option>
-                <option value="COMMISSION">Commission</option>
-                <option value="FLIP_A_COIN">Flip a Coin</option>
-              </select>
-            </div>
-            
-            <div style="margin-bottom: 10px;">
-              <label for="configDeliverable" class="muted small" style="display: block; margin-bottom: 4px;">A.T. Deliverable</label>
-              <select id="configDeliverable" class="w-full rounded-xl bg-surface-container-high px-3 py-2 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60">
-                <option value="">-- Select Deliverable --</option>
-                <option value="DEFINE_PROBLEM">Define a problem</option>
-                <option value="CREATE_MILESTONE_MAP">Create a milestone map</option>
-                <option value="ANALYZE_PROBLEM">Analyze a problem</option>
-                <option value="CREATE_WORK_BREAKDOWN">Create a work breakdown structure</option>
-                <option value="IDENTIFY_ROOT_CAUSES">Identify root causes</option>
-                <option value="CONDUCT_RESOURCE_ANALYSIS">Conduct a resource analysis</option>
-                <option value="IDENTIFY_PATTERNS">Identify underlying patterns</option>
-                <option value="CONDUCT_RISK_ASSESSMENT">Conduct a risk assessment</option>
-                <option value="SORT_IDEAS_INTO_THEMES">Sort a list of ideas into themes</option>
-                <option value="DEFINE_SELECTION_CRITERIA">Define selection criteria</option>
-                <option value="REARRANGE_BY_PRIORITY">Rearrange a list of items by priority</option>
-                <option value="EVALUATE_OPTIONS">Evaluate options</option>
-                <option value="DRAW_FLOWCHART">Draw a flowchart</option>
-                <option value="IDENTIFY_SUCCESS_FACTORS">Identify critical success factors</option>
-                <option value="IDENTIFY_CORE_VALUES">Identify core values</option>
-                <option value="EDIT_STATEMENT">Edit and/or wordsmith a statement</option>
-              </select>
-            </div>
-            
-            <!-- Description Display Area -->
-            <div id="configDescriptions" style="margin-top: 16px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 12px; font-size: 0.85rem; line-height: 1.5; display: none;">
-              <div class="muted small" style="margin-bottom: 8px; font-weight: bold;">Selected Options:</div>
-              <div id="configDescriptionText"></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Start Poll -->
-      <section class="card bg-surface-container-high rounded-2xl p-5 shadow-xl space-y-4">
-        <h2 class="font-headline text-xl font-bold">Conduct Poll</h2>
-        
-        <!-- Poll selection screen -->
-        <div id="pollSelection" style="display: block;">
-          <div class="muted small" style="margin-bottom: 8px;">Select a poll type to start polling:</div>
-          <div class="row flex flex-wrap gap-2">
-            <button id="btnYesNoPoll" class="accent inline-flex items-center gap-2 rounded-xl bg-surface-container-highest px-4 py-2"><span class="material-symbols-outlined">bar_chart</span> Yes/No Poll</button>
-            <button id="btnGradientsPoll" class="accent inline-flex items-center gap-2 rounded-xl bg-surface-container-highest px-4 py-2"><span class="material-symbols-outlined">bar_chart</span> Gradients of Agreement</button>
-          </div>
-          <div class="row flex flex-wrap gap-2" style="margin-top: 8px;">
-            <button id="btnSingleSelectionPoll" class="accent inline-flex items-center gap-2 rounded-xl bg-surface-container-highest px-4 py-2"><span class="material-symbols-outlined">bar_chart</span> Single Selection</button>
-            <button id="btnMultipleSelectionPoll" class="accent inline-flex items-center gap-2 rounded-xl bg-surface-container-highest px-4 py-2"><span class="material-symbols-outlined">bar_chart</span> Multiple Selection</button>
-          </div>
-        </div>
-        
-        <!-- Poll creation screen -->
-        <div id="pollCreation" style="display: none;">
-          <div class="row">
-            <input id="pollQuestion" class="flex-1 rounded-xl bg-surface-container-high px-3 py-2 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/60" placeholder="Enter poll question" maxlength="200"/>
-          </div>
-          <div class="row flex flex-wrap gap-2">
-            <button id="btnStartPolling" class="primary inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-surface"><span class="material-symbols-outlined">play_arrow</span> Start Polling</button>
-            <button id="btnCancelPoll" class="ghost inline-flex items-center gap-2 rounded-xl bg-surface-container-highest px-4 py-2"><span class="material-symbols-outlined">close</span> Cancel</button>
-          </div>
-          <div id="pollCreationStatus" class="muted small"></div>
-        </div>
-        
-        <!-- Multiselect poll creation screen -->
-        <div id="multiselectPollCreation" style="display: none;">
-          <div class="row">
-            <input id="multiselectPollQuestion" class="flex-1 rounded-xl bg-surface-container-high px-3 py-2 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/60" placeholder="Enter poll question (max 100 chars)" maxlength="100"/>
-          </div>
-          
-          <div style="margin-top: 12px;">
-            <div style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
-              <span class="muted small">Poll Options:</span>
-              <a id="btnPasteOptions" href="#" class="muted small" style="text-decoration: underline; cursor: pointer;">paste options</a>
-            </div>
-            <div id="multiselectOptionsContainer"></div>
-            <button id="btnAddOption" class="ghost" style="margin-top: 8px; width: 100%;">+ Add Option</button>
-          </div>
-          
-          <!-- Voting configuration for multiple selection -->
-          <div id="votingConfiguration" class="bg-surface-container rounded-xl p-3" style="margin-top: 12px; padding-top: 12px; display: none;">
-            <div class="muted small" style="margin-bottom: 8px;">Voting Configuration:</div>
-            <div class="row">
-              <label class="muted small" style="flex: 0 0 auto; margin-right: 8px;">Select up to X options:</label>
-              <select id="multiselectVotesPerParticipant" style="flex: 1;">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5">5</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-                <option value="8">8</option>
-                <option value="9">9</option>
-                <option value="10">10</option>
-              </select>
-            </div>
-          </div>
-          
-          <div class="row flex flex-wrap gap-2" style="margin-top: 12px;">
-            <button id="btnStartMultiselectPolling" class="primary inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-surface"><span class="material-symbols-outlined">play_arrow</span> Start Poll</button>
-            <button id="btnCancelMultiselectPoll" class="ghost inline-flex items-center gap-2 rounded-xl bg-surface-container-highest px-4 py-2"><span class="material-symbols-outlined">close</span> Cancel</button>
-          </div>
-          <div id="multiselectPollCreationStatus" class="muted small"></div>
-        </div>
-        
-        <!-- Active poll screen -->
-        <div id="pollActive" style="display: none;">
-          <div class="muted small">Poll Question:</div>
-          <div id="activePollQuestion" class="big" style="font-size: 1.1rem; margin: 8px 0;"></div>
-          <div class="muted small">Votes received: <span id="pollVoteCount" style="font-weight: bold;">0</span></div>
-          <div class="row" style="margin-top: 12px;">
-            <button id="btnEndPoll" class="accent inline-flex items-center gap-2 rounded-xl bg-surface-container-highest px-4 py-2"><span class="material-symbols-outlined">bar_chart</span> End Poll and Show Results</button>
-          </div>
-        </div>
-        
-        <!-- Poll results screen -->
-        <div id="pollResults" style="display: none;">
-          <div class="muted small">Last Poll Results:</div>
-          <div id="pollResultsQuestion" style="font-weight: bold; margin: 8px 0;"></div>
-          <div id="pollResultsData" style="margin: 8px 0;"></div>
-          <div class="row flex flex-wrap gap-2" style="margin-top: 12px;">
-            <button id="btnContinueDiscussion" class="primary inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-surface"><span class="material-symbols-outlined">forum</span> Continue Discussion</button>
-            <button id="btnNewPoll" class="accent inline-flex items-center gap-2 rounded-xl bg-surface-container-highest px-4 py-2"><span class="material-symbols-outlined">bar_chart</span> Start New Poll</button>
-          </div>
-        </div>
-        
-        <!-- No polls message -->
-        <div id="pollNone" style="display: none;">
-          <div class="muted small">No polls conducted yet</div>
-          <div class="row" style="margin-top: 12px;">
-            <button id="btnStartFirstPoll" class="accent inline-flex items-center gap-2 rounded-xl bg-surface-container-highest px-4 py-2"><span class="material-symbols-outlined">bar_chart</span> Start Poll</button>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <footer class="mt-6 rounded-2xl bg-surface-container p-4 shadow-lg">
-      <div class="footer-links flex flex-wrap items-center gap-3 text-sm text-on-surface-variant">
-        <a class="hover:text-on-surface" href="legal.html">Imprint</a>
-        <a class="hover:text-on-surface" href="https://github.com/Agh42/SpeakRequest" target="_blank" rel="noopener noreferrer">Source</a>
-        <a class="hover:text-on-surface" href="legal.html">Legal / Data Privacy</a>
+        <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-surface-container-high text-on-surface transition hover:bg-surface-container-highest" data-sidebar-toggle aria-label="Toggle sidebar">
+          <span class="material-symbols-outlined text-lg">left_panel_open</span>
+        </button>
       </div>
-    </footer>
+      <nav class="flex flex-1 flex-col gap-2">
+        <a href="#section-controls" class="sidebar-link nav-active flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition" data-nav-link data-target="section-controls">
+          <span class="material-symbols-outlined text-lg">tune</span>
+          <span class="sidebar-label">Controls</span>
+        </a>
+        <a href="#section-queue" class="sidebar-link nav-inactive flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition" data-nav-link data-target="section-queue">
+          <span class="material-symbols-outlined text-lg">format_list_numbered</span>
+          <span class="sidebar-label">Queue</span>
+        </a>
+        <a href="#section-poll" class="sidebar-link nav-inactive flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition" data-nav-link data-target="section-poll">
+          <span class="material-symbols-outlined text-lg">ballot</span>
+          <span class="sidebar-label">Poll</span>
+        </a>
+        <a href="#section-menu" class="sidebar-link nav-inactive flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-semibold transition" data-nav-link data-target="section-menu">
+          <span class="material-symbols-outlined text-lg">menu</span>
+          <span class="sidebar-label">Menu</span>
+        </a>
+      </nav>
+    </aside>
+
+    <main class="px-4 pb-24 pt-24 md:px-6 lg:px-8 lg:pt-28">
+      <div class="mx-auto flex max-w-[1500px] flex-col gap-6 lg:grid lg:grid-cols-12 lg:items-start">
+        <div class="space-y-6 lg:col-span-4">
+          <section id="section-controls" class="scroll-mt-28 rounded-[28px] bg-surface-container p-5 shadow-[0_28px_80px_rgba(0,0,0,0.28)] md:p-6">
+            <div class="mb-5 flex items-center justify-between gap-3">
+              <div>
+                <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-on-surface-variant">Controls</p>
+                <h2 class="font-headline text-2xl font-extrabold tracking-tight text-on-surface">Meeting Controls</h2>
+              </div>
+              <div class="rounded-full bg-tertiary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-tertiary">Live</div>
+            </div>
+
+            <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+              <button id="btnNext" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-4 text-sm font-semibold text-surface shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] transition hover:brightness-110"><span class="material-symbols-outlined">mic</span> Next</button>
+              <button id="btnPause" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-4 text-sm font-semibold text-on-surface transition hover:bg-surface-container-high"><span class="material-symbols-outlined">pause</span> Pause</button>
+              <button id="btnStart" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-tertiary px-4 py-4 text-sm font-semibold text-[#042112] transition hover:brightness-110"><span class="material-symbols-outlined">play_arrow</span> Start</button>
+              <button id="btnReset" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-4 text-sm font-semibold text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface"><span class="material-symbols-outlined">history</span> Reset</button>
+            </div>
+
+            <div class="mt-6 rounded-[24px] bg-surface-container-high p-4">
+              <div class="mb-3 flex items-center justify-between gap-3">
+                <h3 class="font-headline text-lg font-bold text-on-surface">Request To Speak On Behalf</h3>
+                <span class="text-[10px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Chair proxy</span>
+              </div>
+              <input id="participantName" class="w-full rounded-2xl bg-background/60 px-4 py-3 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/60" placeholder="Participant initials or name" maxlength="30"/>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <button id="btnParticipantRequest" class="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-surface transition hover:brightness-110"><span class="material-symbols-outlined">pan_tool</span> Request</button>
+                <button id="btnParticipantWithdraw" class="rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface">Withdraw</button>
+              </div>
+              <div id="participantStatus" class="mt-3 text-sm text-on-surface-variant">Enter participant's names to request or withdraw on their behalf.</div>
+            </div>
+
+            <div class="mt-6 rounded-[24px] bg-surface-container-low p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+              <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p class="text-[11px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Utility</p>
+                  <h3 class="font-headline text-lg font-bold text-on-surface">Projection And Limits</h3>
+                </div>
+                <button id="btnPopout" class="inline-flex items-center gap-2 rounded-full bg-surface-container-highest px-4 py-2 text-sm font-semibold text-on-surface transition hover:bg-surface-container-high"><span class="material-symbols-outlined">tv</span> Popout</button>
+              </div>
+              <p class="text-sm text-on-surface-variant">Open the speaker queue in a separate window for a projector or second display.</p>
+              <div class="mt-4 flex flex-wrap items-center gap-2">
+                <label for="limit" class="text-sm font-medium text-on-surface-variant">Per-speaker limit (sec)</label>
+                <input id="limit" class="w-28 rounded-full bg-surface-container-high px-4 py-2 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60" type="number" min="10" step="10" value="180"/>
+                <button id="btnSetLimit" class="rounded-full bg-surface-container-highest px-4 py-2 text-sm font-semibold text-on-surface transition hover:bg-surface-container-high">Set</button>
+              </div>
+            </div>
+          </section>
+
+          <section id="section-menu" class="scroll-mt-28 rounded-[28px] bg-surface-container p-5 shadow-[0_28px_80px_rgba(0,0,0,0.24)] md:p-6">
+            <div class="mb-5 flex items-center justify-between gap-3">
+              <div>
+                <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-on-surface-variant">Room menu</p>
+                <h2 class="font-headline text-2xl font-extrabold tracking-tight text-on-surface">Room Information</h2>
+              </div>
+              <div class="rounded-full bg-surface-container-high px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">Visible</div>
+            </div>
+
+            <div class="rounded-[24px] bg-surface-container-high p-4">
+              <div class="text-sm text-on-surface-variant">Share this code with participants to let them join:</div>
+              <div id="roomCodeLarge" class="mt-3 font-headline text-4xl font-extrabold tracking-[0.28em] text-on-surface">----</div>
+              <div class="mt-4 flex flex-wrap gap-2">
+                <button id="btnCopyCode" class="inline-flex items-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container"><span class="material-symbols-outlined">content_copy</span> Copy Code</button>
+                <button id="btnShareLink" class="inline-flex items-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container"><span class="material-symbols-outlined">link</span> Copy Participant Link</button>
+                <button id="btnShareParticipantUrl" class="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-surface transition hover:brightness-110" aria-label="Share participation link"><span class="material-symbols-outlined">share</span> Share</button>
+              </div>
+              <div id="copyStatus" class="mt-3 text-sm text-on-surface-variant"></div>
+            </div>
+
+            <div class="mt-4 rounded-[24px] bg-surface-container-high p-4">
+              <div class="mb-4 flex items-center justify-between gap-3">
+                <h3 class="font-headline text-lg font-bold text-on-surface">Meeting Configuration</h3>
+                <span class="text-[10px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Metadata</span>
+              </div>
+
+              <div class="space-y-3">
+                <div>
+                  <label for="configTopic" class="mb-1 block text-sm font-medium text-on-surface-variant">Topic</label>
+                  <input id="configTopic" class="w-full rounded-2xl bg-background/60 px-4 py-3 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/60" type="text" placeholder="Enter meeting topic" maxlength="100"/>
+                </div>
+
+                <div>
+                  <label for="configParticipationFormat" class="mb-1 block text-sm font-medium text-on-surface-variant">Participation Format</label>
+                  <select id="configParticipationFormat" class="w-full rounded-2xl bg-background/60 px-4 py-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60">
+                    <option value="">-- Select Participation Format --</option>
+                    <option value="OPEN_DISCUSSION">Open Discussion</option>
+                    <option value="STRUCTURED_GO_AROUNDS">Structured Go-Arounds</option>
+                    <option value="PRESENTATIONS_AND_REPORTS">Presentations and Reports</option>
+                    <option value="SMALL_GROUPS">Small Groups</option>
+                    <option value="LISTING_IDEAS">Listing Ideas</option>
+                    <option value="JIGSAW">Jigsaw</option>
+                    <option value="INDIVIDUAL_WRITING">Individual Writing</option>
+                    <option value="MULTI_TASKING">Multi-Tasking</option>
+                    <option value="FISHBOWLS">Fishbowls</option>
+                    <option value="TRADESHOW">Tradeshow</option>
+                    <option value="SCRAMBLER">Scrambler</option>
+                    <option value="ROLEPLAYS">Roleplays</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label for="configMeetingGoal" class="mb-1 block text-sm font-medium text-on-surface-variant">Meeting Goal</label>
+                  <select id="configMeetingGoal" class="w-full rounded-2xl bg-background/60 px-4 py-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60">
+                    <option value="">-- Select Meeting Goal --</option>
+                    <option value="MAKE_DECISIONS">Make Decisions</option>
+                    <option value="ADVANCE_THINKING">Advance the Thinking</option>
+                    <option value="SHARE_INFORMATION">Share Information</option>
+                    <option value="OBTAIN_INPUT">Obtain Input</option>
+                    <option value="IMPROVE_COMMUNICATION">Improve Communication</option>
+                    <option value="BUILD_CAPACITY">Build Capacity</option>
+                    <option value="BUILD_COMMUNITY">Build Community</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label for="configDecisionRule" class="mb-1 block text-sm font-medium text-on-surface-variant">Decision Rule</label>
+                  <select id="configDecisionRule" class="w-full rounded-2xl bg-background/60 px-4 py-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60">
+                    <option value="">-- Select Decision Rule --</option>
+                    <option value="UNANIMITY">Unanimity</option>
+                    <option value="GRADIENTS_OF_AGREEMENT">Gradients of Agreement</option>
+                    <option value="DOT_VOTING">Dot Voting</option>
+                    <option value="SUPERMAJORITY">Supermajority</option>
+                    <option value="MAJORITY">Majority</option>
+                    <option value="PLURALITY">Plurality</option>
+                    <option value="CONSENT">Consent</option>
+                    <option value="PERSON_IN_CHARGE">Person in Charge</option>
+                    <option value="COMMISSION">Commission</option>
+                    <option value="FLIP_A_COIN">Flip a Coin</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label for="configDeliverable" class="mb-1 block text-sm font-medium text-on-surface-variant">A.T. Deliverable</label>
+                  <select id="configDeliverable" class="w-full rounded-2xl bg-background/60 px-4 py-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60">
+                    <option value="">-- Select Deliverable --</option>
+                    <option value="DEFINE_PROBLEM">Define a problem</option>
+                    <option value="CREATE_MILESTONE_MAP">Create a milestone map</option>
+                    <option value="ANALYZE_PROBLEM">Analyze a problem</option>
+                    <option value="CREATE_WORK_BREAKDOWN">Create a work breakdown structure</option>
+                    <option value="IDENTIFY_ROOT_CAUSES">Identify root causes</option>
+                    <option value="CONDUCT_RESOURCE_ANALYSIS">Conduct a resource analysis</option>
+                    <option value="IDENTIFY_PATTERNS">Identify underlying patterns</option>
+                    <option value="CONDUCT_RISK_ASSESSMENT">Conduct a risk assessment</option>
+                    <option value="SORT_IDEAS_INTO_THEMES">Sort a list of ideas into themes</option>
+                    <option value="DEFINE_SELECTION_CRITERIA">Define selection criteria</option>
+                    <option value="REARRANGE_BY_PRIORITY">Rearrange a list of items by priority</option>
+                    <option value="EVALUATE_OPTIONS">Evaluate options</option>
+                    <option value="DRAW_FLOWCHART">Draw a flowchart</option>
+                    <option value="IDENTIFY_SUCCESS_FACTORS">Identify critical success factors</option>
+                    <option value="IDENTIFY_CORE_VALUES">Identify core values</option>
+                    <option value="EDIT_STATEMENT">Edit and/or wordsmith a statement</option>
+                  </select>
+                </div>
+              </div>
+
+              <div id="configDescriptions" class="mt-4 rounded-2xl bg-black/20 p-4 text-sm leading-6" style="display: none;">
+                <div class="mb-2 text-sm font-semibold text-on-surface">Selected Options</div>
+                <div id="configDescriptionText"></div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <section id="section-center-shell" class="scroll-mt-28 lg:col-span-5">
+          <div class="rounded-[32px] bg-surface-container-high p-5 shadow-[0_28px_90px_rgba(0,0,0,0.32)] md:p-6 lg:p-8">
+            <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-on-surface-variant">Center shell</p>
+                <h2 class="font-headline text-3xl font-extrabold tracking-tight text-on-surface md:text-4xl">Conference Table Foundation</h2>
+              </div>
+              <div class="rounded-full bg-surface-container-highest px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-primary">Phase 2 shell</div>
+            </div>
+
+            <div class="relative overflow-hidden rounded-[28px] bg-[radial-gradient(circle_at_center,rgba(187,195,255,0.16),transparent_48%),linear-gradient(180deg,rgba(34,42,61,0.92),rgba(23,31,51,0.98))] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] md:p-8">
+              <div class="absolute -left-20 top-10 h-52 w-52 rounded-full bg-primary/10 blur-3xl"></div>
+              <div class="absolute -right-16 bottom-2 h-40 w-40 rounded-full bg-tertiary/10 blur-3xl"></div>
+              <div class="relative space-y-8">
+                <div class="grid gap-4 md:grid-cols-3">
+                  <div class="rounded-[24px] bg-background/50 p-4 backdrop-blur">
+                    <div class="text-[11px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Current speaker</div>
+                    <div id="curName" class="mt-2 font-headline text-2xl font-extrabold tracking-tight text-on-surface">--</div>
+                  </div>
+                  <div class="rounded-[24px] bg-background/60 p-4 backdrop-blur">
+                    <div class="text-[11px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Speaker time</div>
+                    <div id="speakTimer" class="mt-2 font-headline text-3xl font-extrabold tracking-tight text-on-surface">00:00</div>
+                    <div id="remaining" class="mt-1 text-sm text-on-surface-variant">(remaining: 00:00)</div>
+                  </div>
+                  <div class="rounded-[24px] bg-background/50 p-4 backdrop-blur">
+                    <div class="text-[11px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Meeting time</div>
+                    <div id="meetingTimer" class="mt-2 font-headline text-3xl font-extrabold tracking-tight text-on-surface">00:00</div>
+                  </div>
+                </div>
+
+                <div class="rounded-[32px] bg-surface-container px-6 py-10 text-center shadow-[0_24px_60px_rgba(0,0,0,0.22)] md:px-8 md:py-14">
+                  <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-on-surface-variant">Reserved focus area</p>
+                  <div class="mx-auto mt-6 flex aspect-square w-full max-w-[360px] items-center justify-center rounded-full bg-[radial-gradient(circle,rgba(187,195,255,0.18),rgba(45,52,73,0.72)_58%,rgba(23,31,51,0.96)_75%)] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06),0_32px_60px_rgba(0,0,0,0.35)]">
+                    <div class="rounded-full bg-background/80 px-6 py-3 text-sm font-semibold uppercase tracking-[0.28em] text-primary shadow-[0_18px_30px_rgba(0,0,0,0.3)]">Phase 3 conference table</div>
+                  </div>
+                  <p class="mx-auto mt-6 max-w-xl text-sm leading-7 text-on-surface-variant">The center column establishes spacing, hierarchy, and live timer visibility now so the future conference-table visualization can land without another shell rewrite.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="space-y-6 lg:col-span-3">
+          <section id="section-queue" class="scroll-mt-28 rounded-[28px] bg-surface-container p-5 shadow-[0_28px_80px_rgba(0,0,0,0.26)] md:p-6">
+            <div class="mb-5 flex items-center justify-between gap-3">
+              <div>
+                <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-on-surface-variant">Queue</p>
+                <h2 class="font-headline text-2xl font-extrabold tracking-tight text-on-surface">Speaker Queue</h2>
+              </div>
+              <div class="rounded-full bg-surface-container-high px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant"><span id="qCount">0</span> waiting</div>
+            </div>
+            <ul id="queue" class="space-y-3"></ul>
+          </section>
+
+          <section id="section-poll" class="scroll-mt-28 rounded-[28px] bg-surface-container-high p-5 shadow-[0_28px_80px_rgba(0,0,0,0.28)] md:p-6">
+            <div class="mb-5 flex items-center justify-between gap-3">
+              <div>
+                <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-on-surface-variant">Polling</p>
+                <h2 class="font-headline text-2xl font-extrabold tracking-tight text-on-surface">Conduct Poll</h2>
+              </div>
+              <span class="rounded-full bg-tertiary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-tertiary">Realtime</span>
+            </div>
+
+            <div id="pollSelection" style="display: block;">
+              <div class="mb-3 text-sm text-on-surface-variant">Select a poll type to start polling:</div>
+              <div class="flex flex-wrap gap-2">
+                <button id="btnYesNoPoll" class="inline-flex items-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container"><span class="material-symbols-outlined">bar_chart</span> Yes/No Poll</button>
+                <button id="btnGradientsPoll" class="inline-flex items-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container"><span class="material-symbols-outlined">bar_chart</span> Gradients of Agreement</button>
+              </div>
+              <div class="mt-2 flex flex-wrap gap-2">
+                <button id="btnSingleSelectionPoll" class="inline-flex items-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container"><span class="material-symbols-outlined">bar_chart</span> Single Selection</button>
+                <button id="btnMultipleSelectionPoll" class="inline-flex items-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container"><span class="material-symbols-outlined">bar_chart</span> Multiple Selection</button>
+              </div>
+            </div>
+
+            <div id="pollCreation" style="display: none;">
+              <div class="row">
+                <input id="pollQuestion" class="flex-1 rounded-2xl bg-background/60 px-4 py-3 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/60" placeholder="Enter poll question" maxlength="200"/>
+              </div>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <button id="btnStartPolling" class="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-surface transition hover:brightness-110"><span class="material-symbols-outlined">play_arrow</span> Start Polling</button>
+                <button id="btnCancelPoll" class="inline-flex items-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container"><span class="material-symbols-outlined">close</span> Cancel</button>
+              </div>
+              <div id="pollCreationStatus" class="mt-3 text-sm text-on-surface-variant"></div>
+            </div>
+
+            <div id="multiselectPollCreation" style="display: none;">
+              <div class="row">
+                <input id="multiselectPollQuestion" class="flex-1 rounded-2xl bg-background/60 px-4 py-3 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/60" placeholder="Enter poll question (max 100 chars)" maxlength="100"/>
+              </div>
+
+              <div class="mt-3">
+                <div class="mb-2 flex items-center justify-between gap-3">
+                  <span class="text-sm text-on-surface-variant">Poll Options:</span>
+                  <a id="btnPasteOptions" href="#" class="text-sm text-on-surface-variant underline">paste options</a>
+                </div>
+                <div id="multiselectOptionsContainer"></div>
+                <button id="btnAddOption" class="mt-2 w-full rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface">+ Add Option</button>
+              </div>
+
+              <div id="votingConfiguration" class="mt-3 rounded-2xl bg-surface-container p-3" style="display: none;">
+                <div class="mb-2 text-sm text-on-surface-variant">Voting Configuration:</div>
+                <div class="row">
+                  <label class="mr-2 text-sm text-on-surface-variant" style="flex: 0 0 auto;">Select up to X options:</label>
+                  <select id="multiselectVotesPerParticipant" class="flex-1 rounded-2xl bg-background/60 px-4 py-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="mt-3 flex flex-wrap gap-2">
+                <button id="btnStartMultiselectPolling" class="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-surface transition hover:brightness-110"><span class="material-symbols-outlined">play_arrow</span> Start Poll</button>
+                <button id="btnCancelMultiselectPoll" class="inline-flex items-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container"><span class="material-symbols-outlined">close</span> Cancel</button>
+              </div>
+              <div id="multiselectPollCreationStatus" class="mt-3 text-sm text-on-surface-variant"></div>
+            </div>
+
+            <div id="pollActive" style="display: none;">
+              <div class="text-sm text-on-surface-variant">Poll Question:</div>
+              <div id="activePollQuestion" class="mt-2 font-headline text-xl font-bold text-on-surface"></div>
+              <div class="mt-2 text-sm text-on-surface-variant">Votes received: <span id="pollVoteCount" class="font-bold text-on-surface">0</span></div>
+              <div class="mt-3 row">
+                <button id="btnEndPoll" class="inline-flex items-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container"><span class="material-symbols-outlined">bar_chart</span> End Poll and Show Results</button>
+              </div>
+            </div>
+
+            <div id="pollResults" style="display: none;">
+              <div class="text-sm text-on-surface-variant">Last Poll Results:</div>
+              <div id="pollResultsQuestion" class="mt-2 font-semibold text-on-surface"></div>
+              <div id="pollResultsData" class="mt-2"></div>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <button id="btnContinueDiscussion" class="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-surface transition hover:brightness-110"><span class="material-symbols-outlined">forum</span> Continue Discussion</button>
+                <button id="btnNewPoll" class="inline-flex items-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container"><span class="material-symbols-outlined">bar_chart</span> Start New Poll</button>
+              </div>
+            </div>
+
+            <div id="pollNone" style="display: none;">
+              <div class="text-sm text-on-surface-variant">No polls conducted yet</div>
+              <div class="mt-3 row">
+                <button id="btnStartFirstPoll" class="inline-flex items-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container"><span class="material-symbols-outlined">bar_chart</span> Start Poll</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <footer class="mx-auto mt-6 max-w-[1500px] rounded-[28px] bg-surface-container px-5 py-4 text-sm text-on-surface-variant shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
+        <div class="flex flex-wrap items-center gap-3">
+          <a class="transition hover:text-on-surface" href="legal.html">Imprint</a>
+          <a class="transition hover:text-on-surface" href="https://github.com/Agh42/SpeakRequest" target="_blank" rel="noopener noreferrer">Source</a>
+          <a class="transition hover:text-on-surface" href="legal.html">Legal / Data Privacy</a>
+        </div>
+      </footer>
+    </main>
   </div>
+
+  <div class="fixed inset-0 z-40 hidden bg-black/45 md:hidden" id="mobileMenuBackdrop"></div>
+  <aside id="mobileMenuPanel" class="fixed left-0 top-0 z-50 flex h-full w-[min(88vw,360px)] flex-col bg-surface-container p-5 shadow-[0_32px_80px_rgba(0,0,0,0.42)] md:hidden" data-open="false" style="transform: translateX(-100%);">
+    <div class="mb-6 flex items-start justify-between gap-4">
+      <div>
+        <div class="font-headline text-2xl font-extrabold tracking-tight text-on-surface">Menu</div>
+        <div class="mt-1 text-[10px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Room actions and metadata</div>
+      </div>
+      <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-surface-container-high text-on-surface" data-close-mobile-menu aria-label="Close menu">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="rounded-[24px] bg-surface-container-high p-4">
+      <div class="text-[11px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Quick actions</div>
+      <div class="mt-3 flex flex-col gap-2">
+        <button type="button" class="inline-flex items-center justify-between rounded-2xl bg-surface-container-highest px-4 py-3 text-left text-sm font-semibold text-on-surface" data-menu-anchor="section-controls">
+          <span>Jump to controls</span>
+          <span class="material-symbols-outlined text-lg">arrow_forward</span>
+        </button>
+        <button type="button" class="inline-flex items-center justify-between rounded-2xl bg-surface-container-highest px-4 py-3 text-left text-sm font-semibold text-on-surface" data-menu-anchor="section-menu">
+          <span>Open settings and metadata</span>
+          <span class="material-symbols-outlined text-lg">arrow_forward</span>
+        </button>
+        <button type="button" class="inline-flex items-center justify-between rounded-2xl bg-red-600 px-4 py-3 text-left text-sm font-semibold text-white shadow-[0_18px_36px_rgba(127,29,29,0.28)]" data-destroy-room-trigger>
+          <span>Destroy room</span>
+          <span class="material-symbols-outlined text-lg">delete</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="mt-4 rounded-[24px] bg-surface-container-high p-4">
+      <div class="text-[11px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Room metadata</div>
+      <div class="mt-3 text-sm text-on-surface-variant">Room code</div>
+      <div class="mt-1 font-headline text-3xl font-extrabold tracking-[0.24em] text-on-surface" data-room-code-mirror>----</div>
+      <p class="mt-3 text-sm leading-6 text-on-surface-variant">Use the menu to reach settings, sharing, and secondary room actions without leaving the single-page chair workflow.</p>
+    </div>
+  </aside>
+
+  <nav id="mobileBottomNav" class="fixed inset-x-0 bottom-0 z-40 flex items-center justify-around gap-2 border-t border-white/5 bg-background/95 px-3 py-2 backdrop-blur-xl md:hidden">
+    <a href="#section-controls" class="nav-active flex min-w-[64px] flex-col items-center gap-1 rounded-2xl px-3 py-2 text-[11px] font-bold uppercase tracking-[0.18em]" data-nav-link data-target="section-controls">
+      <span class="material-symbols-outlined text-lg">tune</span>
+      <span>Controls</span>
+    </a>
+    <a href="#section-queue" class="nav-inactive flex min-w-[64px] flex-col items-center gap-1 rounded-2xl px-3 py-2 text-[11px] font-bold uppercase tracking-[0.18em]" data-nav-link data-target="section-queue">
+      <span class="material-symbols-outlined text-lg">format_list_numbered</span>
+      <span>Queue</span>
+    </a>
+    <a href="#section-poll" class="nav-inactive flex min-w-[64px] flex-col items-center gap-1 rounded-2xl px-3 py-2 text-[11px] font-bold uppercase tracking-[0.18em]" data-nav-link data-target="section-poll">
+      <span class="material-symbols-outlined text-lg">ballot</span>
+      <span>Poll</span>
+    </a>
+    <button type="button" class="nav-inactive flex min-w-[64px] flex-col items-center gap-1 rounded-2xl px-3 py-2 text-[11px] font-bold uppercase tracking-[0.18em]" data-open-mobile-menu>
+      <span class="material-symbols-outlined text-lg">menu</span>
+      <span>Menu</span>
+    </button>
+  </nav>
 
   <!-- Paste Options Modal -->
   <div id="pasteOptionsModal" class="modal fixed inset-0 z-50 bg-black/50 p-4" style="display: none;">
@@ -1356,6 +1584,156 @@
         text: `Join the meeting with room code ${roomCode}:`
       });
     }
+
+    const chairShell = document.getElementById('chairShell');
+    const sidebar = document.getElementById('sidebar');
+    const mobileMenuPanel = document.getElementById('mobileMenuPanel');
+    const mobileMenuBackdrop = document.getElementById('mobileMenuBackdrop');
+    const sidebarToggleButtons = document.querySelectorAll('[data-sidebar-toggle]');
+    const headerMenuButtons = document.querySelectorAll('[data-menu-trigger]');
+    const mobileMenuButtons = document.querySelectorAll('[data-open-mobile-menu]');
+    const closeMobileMenuButtons = document.querySelectorAll('[data-close-mobile-menu]');
+    const navLinks = Array.from(document.querySelectorAll('[data-nav-link]'));
+    const menuAnchorButtons = Array.from(document.querySelectorAll('[data-menu-anchor]'));
+    const roomCodeMirrors = Array.from(document.querySelectorAll('[data-room-code-mirror]'));
+    const sectionIds = ['section-controls', 'section-queue', 'section-poll', 'section-menu'];
+    const sections = sectionIds
+      .map(id => document.getElementById(id))
+      .filter(Boolean);
+    const fixedHeaderOffset = () => {
+      const header = document.querySelector('header');
+      return header ? header.getBoundingClientRect().height + 16 : 92;
+    };
+
+    roomCodeMirrors.forEach(el => {
+      el.textContent = roomCode;
+    });
+
+    function setSidebarCollapsed(collapsed) {
+      if (!sidebar || !chairShell) return;
+      sidebar.classList.toggle('collapsed', collapsed);
+      chairShell.classList.toggle('sidebar-expanded', !collapsed);
+      const icon = sidebar.querySelector('[data-sidebar-toggle] .material-symbols-outlined');
+      if (icon) {
+        icon.textContent = collapsed ? 'right_panel_open' : 'left_panel_close';
+      }
+    }
+
+    function openMobileMenu() {
+      if (!mobileMenuPanel || !mobileMenuBackdrop) return;
+      mobileMenuPanel.dataset.open = 'true';
+      mobileMenuBackdrop.classList.remove('hidden');
+      document.body.classList.add('overflow-hidden');
+    }
+
+    function closeMobileMenu() {
+      if (!mobileMenuPanel || !mobileMenuBackdrop) return;
+      mobileMenuPanel.dataset.open = 'false';
+      mobileMenuBackdrop.classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+    }
+
+    function scrollToSection(sectionId) {
+      const target = document.getElementById(sectionId);
+      if (!target) return;
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      window.setTimeout(() => {
+        const rect = target.getBoundingClientRect();
+        const absoluteTop = window.scrollY + rect.top - fixedHeaderOffset();
+        window.scrollTo({ top: absoluteTop, behavior: 'smooth' });
+      }, 10);
+    }
+
+    function updateActiveNavigation(activeSectionId) {
+      navLinks.forEach(link => {
+        const isActive = link.dataset.target === activeSectionId;
+        link.classList.toggle('nav-active', isActive);
+        link.classList.toggle('nav-inactive', !isActive);
+        link.dataset.active = isActive ? 'true' : 'false';
+      });
+    }
+
+    sidebarToggleButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        setSidebarCollapsed(!sidebar.classList.contains('collapsed'));
+      });
+    });
+
+    headerMenuButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        if (window.innerWidth >= 768) {
+          setSidebarCollapsed(!sidebar.classList.contains('collapsed'));
+          scrollToSection('section-menu');
+          return;
+        }
+        openMobileMenu();
+      });
+    });
+
+    mobileMenuButtons.forEach(button => {
+      button.addEventListener('click', openMobileMenu);
+    });
+
+    closeMobileMenuButtons.forEach(button => {
+      button.addEventListener('click', closeMobileMenu);
+    });
+
+    if (mobileMenuBackdrop) {
+      mobileMenuBackdrop.addEventListener('click', closeMobileMenu);
+    }
+
+    navLinks.forEach(link => {
+      link.addEventListener('click', event => {
+        event.preventDefault();
+        const target = link.dataset.target;
+        if (!target) return;
+        scrollToSection(target);
+        if (window.innerWidth < 768) {
+          closeMobileMenu();
+        }
+      });
+    });
+
+    menuAnchorButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const target = button.dataset.menuAnchor;
+        closeMobileMenu();
+        if (target) {
+          scrollToSection(target);
+        }
+      });
+    });
+
+    const mobileDestroyTrigger = document.querySelector('[data-destroy-room-trigger]');
+    if (mobileDestroyTrigger) {
+      mobileDestroyTrigger.addEventListener('click', () => {
+        closeMobileMenu();
+        document.getElementById('btnDestroyRoom')?.click();
+      });
+    }
+
+    const observer = new IntersectionObserver(entries => {
+      const visibleEntries = entries
+        .filter(entry => entry.isIntersecting)
+        .sort((first, second) => second.intersectionRatio - first.intersectionRatio);
+      if (visibleEntries.length > 0) {
+        updateActiveNavigation(visibleEntries[0].target.id);
+      }
+    }, {
+      rootMargin: `-${fixedHeaderOffset()}px 0px -45% 0px`,
+      threshold: [0.2, 0.35, 0.55]
+    });
+
+    sections.forEach(section => observer.observe(section));
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth >= 768) {
+        closeMobileMenu();
+      }
+    });
+
+    setSidebarCollapsed(true);
+    updateActiveNavigation('section-controls');
   </script>
 </body>
 </html>
