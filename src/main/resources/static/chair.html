@@ -81,7 +81,7 @@
         
         <h3 class="subsection-heading">Request to speak on behalf</h3>
         <div class="row">
-          <input id="participantName" placeholder="Participant initials or name" maxlength="30"/>
+          <input id="participantName" class="w-full rounded-xl bg-surface-container-high px-3 py-2 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/60" placeholder="Participant initials or name" maxlength="30"/>
         </div>
         <div class="row flex flex-wrap gap-2">
           <button id="btnParticipantRequest" class="primary inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-surface"><span class="material-symbols-outlined">pan_tool</span> Request to Speak</button>
@@ -98,10 +98,10 @@
           <button id="btnDestroyRoom" class="ghost inline-flex items-center gap-2 rounded-xl px-4 py-2" style="background-color: #dc2626; color: white;"><span class="material-symbols-outlined">delete</span> Destroy Room</button>
         </div>
         <div class="muted small">Open popout window to display speaker queue on separate screen / projector.</div>
-        <div class="row">
+        <div class="row flex items-center gap-2">
           <label class="muted">Per-speaker limit (sec)</label>
-          <input id="limit" type="number" min="10" step="10" value="180" style="width:110px"/>
-          <button id="btnSetLimit" class="ghost">Set</button>
+          <input id="limit" class="w-28 rounded-xl bg-surface-container-high px-3 py-2 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60" type="number" min="10" step="10" value="180"/>
+          <button id="btnSetLimit" class="ghost rounded-xl bg-surface-container-highest px-4 py-2">Set</button>
         </div>
 
         <div class="two">
@@ -145,12 +145,12 @@
             
             <div style="margin-bottom: 10px;">
               <label for="configTopic" class="muted small" style="display: block; margin-bottom: 4px;">Topic</label>
-              <input id="configTopic" type="text" placeholder="Enter meeting topic" style="width: 100%; padding: 6px;" maxlength="100"/>
+              <input id="configTopic" class="w-full rounded-xl bg-surface-container-high px-3 py-2 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/60" type="text" placeholder="Enter meeting topic" maxlength="100"/>
             </div>
             
             <div style="margin-bottom: 10px;">
               <label for="configParticipationFormat" class="muted small" style="display: block; margin-bottom: 4px;">Participation Format</label>
-              <select id="configParticipationFormat" style="width: 100%; padding: 6px;">
+              <select id="configParticipationFormat" class="w-full rounded-xl bg-surface-container-high px-3 py-2 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60">
                 <option value="">-- Select Participation Format --</option>
                 <option value="OPEN_DISCUSSION">Open Discussion</option>
                 <option value="STRUCTURED_GO_AROUNDS">Structured Go-Arounds</option>
@@ -169,7 +169,7 @@
             
             <div style="margin-bottom: 10px;">
               <label for="configMeetingGoal" class="muted small" style="display: block; margin-bottom: 4px;">Meeting Goal</label>
-              <select id="configMeetingGoal" style="width: 100%; padding: 6px;">
+              <select id="configMeetingGoal" class="w-full rounded-xl bg-surface-container-high px-3 py-2 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60">
                 <option value="">-- Select Meeting Goal --</option>
                 <option value="MAKE_DECISIONS">Make Decisions</option>
                 <option value="ADVANCE_THINKING">Advance the Thinking</option>
@@ -183,7 +183,7 @@
             
             <div style="margin-bottom: 10px;">
               <label for="configDecisionRule" class="muted small" style="display: block; margin-bottom: 4px;">Decision Rule</label>
-              <select id="configDecisionRule" style="width: 100%; padding: 6px;">
+              <select id="configDecisionRule" class="w-full rounded-xl bg-surface-container-high px-3 py-2 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60">
                 <option value="">-- Select Decision Rule --</option>
                 <option value="UNANIMITY">Unanimity</option>
                 <option value="GRADIENTS_OF_AGREEMENT">Gradients of Agreement</option>
@@ -200,7 +200,7 @@
             
             <div style="margin-bottom: 10px;">
               <label for="configDeliverable" class="muted small" style="display: block; margin-bottom: 4px;">A.T. Deliverable</label>
-              <select id="configDeliverable" style="width: 100%; padding: 6px;">
+              <select id="configDeliverable" class="w-full rounded-xl bg-surface-container-high px-3 py-2 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60">
                 <option value="">-- Select Deliverable --</option>
                 <option value="DEFINE_PROBLEM">Define a problem</option>
                 <option value="CREATE_MILESTONE_MAP">Create a milestone map</option>
