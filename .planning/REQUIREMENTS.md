@@ -9,7 +9,7 @@ Requirements for the Chair View redesign milestone. Each maps to roadmap phases.
 
 ### Design System
 
-- [ ] **DS-01**: Chair view uses "The Orchestrator" color palette (midnight base `#0b1326`, tonal surface layers, zero explicit 1px borders)
+- [x] **DS-01**: Chair view uses "The Orchestrator" color palette (midnight base `#0b1326`, tonal surface layers, zero explicit 1px borders)
 - [x] **DS-02**: Chair view uses Tailwind CSS (CDN) as the style framework, replacing `styles.css` for the chair page
 - [x] **DS-03**: Manrope font (headlines/display) and Inter font (body/labels) loaded via Google Fonts in chair.html
 - [x] **DS-04**: Material Symbols Outlined icon font used throughout chair view, replacing any previous icon approach
@@ -81,7 +81,7 @@ Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DS-01 | Phase 1 | Pending |
+| DS-01 | Phase 1 | Complete |
 | DS-02 | Phase 1 | Complete |
 | DS-03 | Phase 1 | Complete |
 | DS-04 | Phase 1 | Complete |
