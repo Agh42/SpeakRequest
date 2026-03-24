@@ -27,13 +27,51 @@
           colors: {
             background: '#0b1326',
             surface: '#0b1326',
+            'surface-dim': '#0b1326',
+            'surface-bright': '#31394d',
+            'surface-container-lowest': '#060e20',
+            'surface-container-low': '#131b2e',
             'surface-container': '#171f33',
             'surface-container-high': '#222a3d',
             'surface-container-highest': '#2d3449',
+            'surface-variant': '#2d3449',
+            'surface-tint': '#bbc3ff',
             primary: '#bbc3ff',
+            'primary-container': '#3d5afe',
+            'primary-fixed': '#dee0ff',
+            'primary-fixed-dim': '#bbc3ff',
+            'on-primary': '#001d93',
+            'on-primary-container': '#f1f0ff',
+            'on-primary-fixed': '#000f5d',
+            'on-primary-fixed-variant': '#002ccd',
+            secondary: '#adcbda',
+            'secondary-container': '#304d5a',
+            'secondary-fixed': '#c9e7f7',
+            'secondary-fixed-dim': '#adcbda',
+            'on-secondary': '#163440',
+            'on-secondary-container': '#9fbdcc',
+            'on-secondary-fixed': '#001f2a',
+            'on-secondary-fixed-variant': '#2e4b57',
             tertiary: '#00e475',
+            'tertiary-container': '#007f3e',
+            'tertiary-fixed': '#62ff96',
+            'tertiary-fixed-dim': '#00e475',
+            'on-tertiary': '#003918',
+            'on-tertiary-container': '#c8ffcf',
+            'on-tertiary-fixed': '#00210b',
+            'on-tertiary-fixed-variant': '#005226',
+            error: '#ffb4ab',
+            'error-container': '#93000a',
+            'on-error': '#690005',
+            'on-error-container': '#ffdad6',
             'on-surface': '#dae2fd',
-            'on-surface-variant': '#c5c5d9'
+            'on-surface-variant': '#c5c5d9',
+            'on-background': '#dae2fd',
+            outline: '#8e8fa2',
+            'outline-variant': '#444656',
+            'inverse-surface': '#dae2fd',
+            'inverse-on-surface': '#283044',
+            'inverse-primary': '#2848ee'
           },
           fontFamily: {
             headline: ['Manrope', 'sans-serif'],
@@ -48,6 +86,11 @@
     .material-symbols-outlined {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
       vertical-align: middle;
+    }
+
+    .glass-panel {
+      background: rgba(45, 52, 73, 0.6);
+      backdrop-filter: blur(24px);
     }
 
     #chairShell {
@@ -347,41 +390,29 @@
           </section>
         </div>
 
-        <section id="section-center-shell" class="scroll-mt-28 lg:col-span-5">
-          <div class="rounded-[32px] bg-surface-container-high p-5 shadow-[0_28px_90px_rgba(0,0,0,0.32)] md:p-6 lg:p-8">
-            <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-on-surface-variant">Center shell</p>
-                <h2 class="font-headline text-3xl font-extrabold tracking-tight text-on-surface md:text-4xl">Conference Table Foundation</h2>
+        <section id="section-center-shell" class="scroll-mt-28 lg:col-span-5 flex flex-col items-center justify-center space-y-8 py-8 lg:py-0">
+          <div class="relative w-full aspect-square max-w-[320px] sm:max-w-[380px] lg:max-w-[450px] flex items-center justify-center mx-auto">
+            <div class="absolute inset-0 rounded-full border border-primary/10 animate-[ping_3s_linear_infinite]"></div>
+            <div class="absolute inset-4 rounded-full border border-primary/20"></div>
+            <div class="absolute inset-8 sm:inset-10 lg:inset-12 rounded-full glass-panel border border-white/5 shadow-2xl flex flex-col items-center justify-center text-center p-6 lg:p-8 z-10">
+              <div class="mb-1">
+                <span class="text-[10px] uppercase font-bold tracking-[0.2em] text-on-surface-variant">Speaker Remaining</span>
               </div>
-              <div class="rounded-full bg-surface-container px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">Phase 2 shell</div>
-            </div>
-
-            <div class="relative overflow-hidden rounded-[28px] bg-surface-container p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] md:p-8">
-              <div class="relative space-y-8">
-                <div class="grid gap-4 md:grid-cols-3">
-                  <div class="rounded-[24px] bg-surface p-4">
-                    <div class="text-[11px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Current speaker</div>
-                    <div id="curName" class="mt-2 font-headline text-2xl font-extrabold tracking-tight text-on-surface">--</div>
-                  </div>
-                  <div class="rounded-[24px] bg-surface-container-high p-4">
-                    <div class="text-[11px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Speaker time</div>
-                    <div id="speakTimer" class="mt-2 font-headline text-3xl font-extrabold tracking-tight text-on-surface">00:00</div>
-                    <div id="remaining" class="mt-1 text-sm text-on-surface-variant">(remaining: 00:00)</div>
-                  </div>
-                  <div class="rounded-[24px] bg-surface p-4">
-                    <div class="text-[11px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Meeting time</div>
-                    <div id="meetingTimer" class="mt-2 font-headline text-3xl font-extrabold tracking-tight text-on-surface">00:00</div>
-                  </div>
-                </div>
-
-                <div class="rounded-[32px] bg-surface-container-high px-6 py-10 text-center shadow-[0_24px_60px_rgba(0,0,0,0.22)] md:px-8 md:py-14">
-                  <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-on-surface-variant">Reserved focus area</p>
-                  <div class="mx-auto mt-6 flex aspect-square w-full max-w-[360px] items-center justify-center rounded-full border border-white/5 bg-surface shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06),0_32px_60px_rgba(0,0,0,0.24)]">
-                    <div class="rounded-full bg-surface-container-high px-6 py-3 text-sm font-semibold uppercase tracking-[0.28em] text-on-surface-variant shadow-[0_18px_30px_rgba(0,0,0,0.22)]">Phase 3 conference table</div>
-                  </div>
-                  <p class="mx-auto mt-6 max-w-xl text-sm leading-7 text-on-surface-variant">The center column establishes spacing, hierarchy, and live timer visibility now so the future conference-table visualization can land without another shell rewrite.</p>
-                </div>
+              <div id="speakTimer" class="font-headline text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tighter mb-1">00:00</div>
+              <div id="remaining" class="mb-4 text-sm text-on-surface-variant">(remaining: 00:00)</div>
+              <div class="h-1 w-20 sm:w-24 lg:w-32 bg-surface-container-highest rounded-full overflow-hidden mb-6">
+                <div class="h-full w-3/4 bg-primary shadow-[0_0_12px_rgba(61,90,254,0.5)]"></div>
+              </div>
+              <div class="bg-primary/10 px-4 py-1.5 lg:py-2 rounded-full">
+                <span id="roomCodeDisplay2" class="text-primary font-bold tracking-tight text-xs">ROOM: ----</span>
+              </div>
+              <div class="mt-6 lg:mt-8">
+                <span class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">Current Speaker</span>
+                <div id="curName" class="text-base sm:text-lg lg:text-xl font-bold font-headline mt-1">--</div>
+              </div>
+              <div class="mt-4">
+                <span class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">Total Meeting Time</span>
+                <div id="meetingTimer" class="text-base sm:text-lg lg:text-xl font-bold font-headline mt-1">00:00</div>
               </div>
             </div>
           </div>
@@ -592,6 +623,7 @@
 
     // Display room code
     document.getElementById('roomCodeDisplay').textContent = roomCode;
+    document.getElementById('roomCodeDisplay2').textContent = 'ROOM: ' + roomCode;
     document.getElementById('roomCodeLarge').textContent = roomCode;
 
     // Connect as participant first, then try to assume chair role
