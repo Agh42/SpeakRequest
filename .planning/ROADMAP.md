@@ -12,7 +12,7 @@ This milestone refactors the existing chair experience into The Orchestrator des
 - Integer phases (1, 2, 3): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
-- [ ] **Phase 1: Design System Foundation** - Establish Tailwind, typography, iconography, and The Orchestrator token system in the chair view.
+- [x] **Phase 1: Design System Foundation** - Establish Tailwind, typography, iconography, and The Orchestrator token system in the chair view. (Completed 2026-03-24)
 - [ ] **Phase 2: Structural Layout Shell** - Build the new header, sidebar, desktop grid, and mobile navigation that frame the redesigned experience.
 - [ ] **Phase 3: Conference Table Experience** - Deliver the round-table centerpiece with participant avatars, queue markers, and the central timer display.
 - [ ] **Phase 4: Functional Control Migration** - Rebuild the chair's control, queue, poll, and sharing panels in the new layout while preserving existing interactions.
@@ -28,10 +28,12 @@ This milestone refactors the existing chair experience into The Orchestrator des
   1. The chair page renders with the midnight palette, tonal surface layers, and no explicit 1px section borders.
   2. Tailwind CDN drives the chair page styling and the legacy chair-specific styling dependency is removed or bypassed for the redesigned screen.
   3. Manrope is visible in display and headline treatments, Inter is used for body and labels, and Material Symbols Outlined icons render consistently across the page.
-**Plans**: 2 plans
+**Plans**: 4 plans
 Plans:
 - [x] 01-01-PLAN.md - Bootstrap Tailwind, fonts, and Material Symbols in chair view
 - [x] 01-02-PLAN.md - Apply Orchestrator tonal foundation and no-line styling baseline
+- [x] 01-03-PLAN.md - Gap closure for participant/limit/config control styling consistency
+- [x] 01-04-PLAN.md - Gap closure for remaining poll text input styling consistency
 **UI hint**: yes
 
 ### Phase 2: Structural Layout Shell
@@ -90,7 +92,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Design System Foundation | 0/0 | Not started | - |
+| 1. Design System Foundation | 4/4 | Complete | 2026-03-24 |
 | 2. Structural Layout Shell | 0/0 | Not started | - |
 | 3. Conference Table Experience | 0/0 | Not started | - |
 | 4. Functional Control Migration | 0/0 | Not started | - |

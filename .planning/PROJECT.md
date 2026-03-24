@@ -23,11 +23,14 @@ The chair can see every participant's status at a glance — who is speaking, wh
 - ✓ QR code join flow — existing
 - ✓ DOMPurify sanitization of all user-supplied strings — existing
 - ✓ Mobile-responsive layout (current chair.html) — existing
+- ✓ Chair view now boots with Tailwind + tokenized Orchestrator base palette — validated in Phase 1
+- ✓ Manrope/Inter typography and Material Symbols icon system baseline in chair view — validated in Phase 1
+- ✓ Tonal no-line styling baseline and consistent text input control language established — validated in Phase 1
 
 ### Active
 
 - [ ] Chair view fully reworked to "The Orchestrator" design system (deep-navy dark theme, tonal layering, no explicit borders)
-- [ ] Tailwind CSS (CDN) + Manrope/Inter Google Fonts adopted in chair.html
+- [x] Tailwind CSS (CDN) + Manrope/Inter Google Fonts adopted in chair.html
 - [ ] Full collapsible sidebar navigation (Meeting Controls, Speaker Queue, Live Polling, Agenda sections)
 - [ ] Full mockup header: hamburger toggle, room-code badge, copy-code/copy-link, destroy-room, notifications+settings icons
 - [ ] Central round conference table — top-down SVG/CSS abstract view with participant avatars
@@ -66,7 +69,7 @@ The chair can see every participant's status at a glance — who is speaking, wh
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Adopt Tailwind CDN | Design mockup already uses it; avoids build pipeline complexity | — Pending |
+| Adopt Tailwind CDN | Design mockup already uses it; avoids build pipeline complexity | Accepted and implemented in Phase 1 |
 | Round table shape | User-selected; all seats equidistant from center | — Pending |
 | Initials-only avatars | No profile picture support in backend; initials from participant name | — Pending |
 | Table hidden on mobile | Mobile screen too small for meaningful table view; bottom nav serves navigation | — Pending |
@@ -90,4 +93,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-24 after initialization*
+*Last updated: 2026-03-24 after Phase 1 completion*

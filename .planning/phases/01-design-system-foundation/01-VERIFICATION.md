@@ -1,23 +1,24 @@
 ---
 phase: 01-design-system-foundation
-verified: 2026-03-24T15:30:03.2787839Z
-status: human_needed
-score: 3/3 must-haves verified
-human_verification:
-  - test: "Visual tonal hierarchy and no-line baseline"
-    expected: "Chair page presents midnight palette and tonal surface layering with no visible explicit 1px section dividers."
-    why_human: "Visual hierarchy and perceived divider prominence are presentation qualities that static pattern checks cannot fully validate."
-  - test: "Typography and icon rendering"
-    expected: "Headlines/display text render in Manrope, body/labels in Inter, and Material Symbols Outlined icons render consistently."
-    why_human: "Actual browser font fallback/rendering and icon glyph appearance depend on runtime environment and require visual confirmation."
+verified: 2026-03-24T17:07:37Z
+status: passed
+score: 7/7 must-haves verified
+re_verification:
+  previous_status: human_needed
+  previous_score: 6/6
+  gaps_closed:
+    - "Remaining poll text-input styling gap is closed (`pollQuestion` and `multiselectPollQuestion` now use tonal token classes)."
+  gaps_remaining: []
+  regressions: []
+human_verification: []
 ---
 
 # Phase 1: Design System Foundation Verification Report
 
 **Phase Goal:** The chair view adopts The Orchestrator visual system so every later UI element can be built on the same tokens, fonts, icons, and surface hierarchy.
-**Verified:** 2026-03-24T15:30:03.2787839Z
-**Status:** human_needed
-**Re-verification:** No - initial verification
+**Verified:** 2026-03-24T17:07:37Z
+**Status:** passed
+**Re-verification:** Yes - after gap-closure execution (01-04)
 
 ## Goal Achievement
 
@@ -25,74 +26,66 @@ human_verification:
 
 | # | Truth | Status | Evidence |
 | --- | --- | --- | --- |
-| 1 | Chair page renders with midnight palette, tonal layers, and no explicit 1px section borders. | ✓ VERIFIED | `src/main/resources/static/chair.html:58` (`bg-background text-on-surface`), multiple `bg-surface-container*` section classes (for example `:60`, `:71`, `:99`, `:127`, `:243`), and border pattern scan count `0` for `border: 1px`, `border-top: 1px`, `border-b`. |
-| 2 | Tailwind CDN drives chair page styling and legacy chair-specific stylesheet dependency is removed/bypassed. | ✓ VERIFIED | Tailwind CDN present at `src/main/resources/static/chair.html:19`; `styles.css` reference count `0` in `chair.html`. |
-| 3 | Manrope/Inter typography and Material Symbols Outlined icon system are active in chair page. | ✓ VERIFIED | Google Fonts include Manrope + Inter + Material Symbols at `src/main/resources/static/chair.html:22`; body uses `font-body` at `:58`; headline uses `font-headline` at `:61`; `material-symbols-outlined` usage count `24`. |
+| 1 | Chair page renders with midnight palette, tonal surface layers, and no explicit 1px section borders. | ✓ VERIFIED | `body` uses `bg-background text-on-surface font-body` at `src/main/resources/static/chair.html:58`; tonal sections use `bg-surface-container*` throughout (for example lines `60`, `74`, `99`, `127`, `243`); explicit `1px` border pattern scan returned `NO_MATCH`. |
+| 2 | Tailwind CDN drives chair page styling and legacy chair-specific stylesheet dependency is removed/bypassed. | ✓ VERIFIED | Tailwind CDN is present at `src/main/resources/static/chair.html:19`; `styles.css` scan returned `NO_MATCH`. |
+| 3 | Manrope/Inter typography and Material Symbols Outlined icon system are active. | ✓ VERIFIED | Google Fonts include Manrope, Inter, and Material Symbols Outlined at `src/main/resources/static/chair.html:22`; icon class usage is present in controls (for example `src/main/resources/static/chair.html:76`). |
+| 4 | Core text inputs (`participantName`, `limit`, `configTopic`) use the same tonal control baseline. | ✓ VERIFIED | Styled inputs at `src/main/resources/static/chair.html:84`, `src/main/resources/static/chair.html:103`, `src/main/resources/static/chair.html:148`. |
+| 5 | Meeting configuration controls (`configTopic`, `configParticipationFormat`, `configMeetingGoal`, `configDecisionRule`, `configDeliverable`) render with consistent tonal input/select styling. | ✓ VERIFIED | All listed controls use tokenized tonal classes (`bg-surface-container-high`, rounded corners, on-surface text, focus ring) at `src/main/resources/static/chair.html:148`, `src/main/resources/static/chair.html:153`, `src/main/resources/static/chair.html:172`, `src/main/resources/static/chair.html:186`, `src/main/resources/static/chair.html:203`. |
+| 6 | Remaining poll text input gap is closed for `pollQuestion` and `multiselectPollQuestion`. | ✓ VERIFIED | Tonal classes on poll inputs at `src/main/resources/static/chair.html:253` and `src/main/resources/static/chair.html:265`. |
+| 7 | Existing IDs, behavior hooks, and runtime scripts remain unchanged for key chair actions. | ✓ VERIFIED | IDs remain present (for example `btnNext` at `src/main/resources/static/chair.html:76`, `queue` at `src/main/resources/static/chair.html:124`, `speakTimer` at `src/main/resources/static/chair.html:114`, `meetingTimer` at `src/main/resources/static/chair.html:119`); action hooks remain wired (`$('#btnNext').onclick` through `$('#btnReset').onclick`) at `src/main/resources/static/chair.html:832`, `src/main/resources/static/chair.html:833`, `src/main/resources/static/chair.html:834`, `src/main/resources/static/chair.html:835`. |
 
-**Score:** 3/3 truths verified
+**Score:** 7/7 truths verified
 
 ### Required Artifacts
 
 | Artifact | Expected | Status | Details |
 | --- | --- | --- | --- |
-| `src/main/resources/static/chair.html` | Provides Tailwind/bootstrap tokens, typography, icon baseline, and tonal no-line sectioning foundation. | ✓ VERIFIED | Exists, substantive implementation present in `<head>` asset/bootstrap config and throughout section class assignments; runtime DOM IDs and script hooks preserved. |
+| `src/main/resources/static/chair.html` | Provides design-token baseline (palette, typography, icon system) and complete tonal text-input consistency while preserving runtime hooks. | ✓ VERIFIED | Exists, substantive, and wired. Gap-closure controls, including poll inputs, are tokenized and existing runtime IDs/hooks remain intact. |
 
 ### Key Link Verification
 
 | From | To | Via | Status | Details |
 | --- | --- | --- | --- | --- |
-| `src/main/resources/static/chair.html` | Tailwind CDN | `<script src="https://cdn.tailwindcss.com"></script>` | ✓ WIRED | Found at `src/main/resources/static/chair.html:19`. |
-| `src/main/resources/static/chair.html` | Google Fonts + Material Symbols | `<link ... fonts.googleapis.com ...>` | ✓ WIRED | Found at `src/main/resources/static/chair.html:22`. |
-| `src/main/resources/static/chair.html` | In-page runtime handlers | Preserved IDs and selectors (`querySelector`, `getElementById`) | ✓ WIRED | IDs exist (`btnNext`, `btnPause`, `btnStart`, `btnReset`, `participantName`, `queue`, `speakTimer`, `meetingTimer`), selector hooks present in script section. |
-| `src/main/resources/static/chair.html` | Orchestrator token classes | `bg-background`, `bg-surface-container*`, `text-on-surface` class usage | ✓ WIRED | Tokenized classes applied to body and major sections. |
+| `src/main/resources/static/chair.html` | Tailwind CDN | `<script src="https://cdn.tailwindcss.com"></script>` | ✓ WIRED | Present at `src/main/resources/static/chair.html:19`. |
+| `src/main/resources/static/chair.html` | Google Fonts + Material Symbols | `fonts.googleapis.com` stylesheet link | ✓ WIRED | Present at `src/main/resources/static/chair.html:22`. |
+| `src/main/resources/static/chair.html` | Tonal control styling on target gap controls | Class updates on existing IDs | ✓ WIRED | Target controls include tonal classes at lines `84`, `103`, `148`, `153`, `172`, `186`, `203`, `253`, `265`. |
+| `src/main/resources/static/chair.html` | Existing behavior wiring | Preserved IDs + existing selector-based event handlers | ✓ WIRED | IDs retained and handlers remain bound at lines `832`-`835` and related selector declarations (`1184`-`1188`). |
 
 ### Data-Flow Trace (Level 4)
 
 | Artifact | Data Variable | Source | Produces Real Data | Status |
 | --- | --- | --- | --- | --- |
-| `src/main/resources/static/chair.html` | N/A (phase-1 design foundation concerns static visual system setup) | N/A | N/A | ✓ NOT APPLICABLE |
+| `src/main/resources/static/chair.html` | N/A (phase scope is design-system foundation + form styling baseline) | N/A | N/A | ✓ NOT APPLICABLE |
 
 ### Behavioral Spot-Checks
 
 | Behavior | Command | Result | Status |
 | --- | --- | --- | --- |
-| Design-system dependency markers are present and legacy stylesheet/border markers are absent | `node -e "..."` static content check over `chair.html` | `PASS tailwind,fonts,material,noStylesCss,no1pxBorders` | ✓ PASS |
+| Poll input gap-closure markers are present and no legacy border marker is reintroduced | PowerShell `Select-String` checks over `chair.html` (input inventory, poll IDs, border scan) | Poll inputs detected and styled at lines `253`, `265`; border scan `NO_MATCH` | ✓ PASS |
+| DS dependencies and runtime hooks remain intact | PowerShell `Select-String` checks over `chair.html` (Tailwind, fonts, handlers) | Tailwind `FOUND`; fonts/icons `FOUND`; key handlers present at lines `832`-`835` | ✓ PASS |
 
 ### Requirements Coverage
 
 | Requirement | Source Plan | Description | Status | Evidence |
 | --- | --- | --- | --- | --- |
-| DS-01 | `01-02-PLAN.md` | Orchestrator palette + tonal layers + zero explicit 1px borders | ✓ SATISFIED | Token classes applied broadly; explicit 1px border pattern scan found none in `src/main/resources/static/chair.html`. |
-| DS-02 | `01-01-PLAN.md`, `01-02-PLAN.md` | Tailwind CDN replaces `styles.css` dependency for chair page | ✓ SATISFIED | Tailwind CDN include at line 19; no `styles.css` reference in chair page. |
-| DS-03 | `01-01-PLAN.md` | Manrope + Inter loaded in chair page | ✓ SATISFIED | Fonts link includes both families at line 22 and mapped through Tailwind font aliases. |
-| DS-04 | `01-01-PLAN.md` | Material Symbols Outlined used as icon system | ✓ SATISFIED | Material Symbols font loaded at line 22; icon class usage count is non-zero across controls. |
+| DS-01 | `01-02-PLAN.md`, `01-03-PLAN.md`, `01-04-PLAN.md` | Orchestrator palette + tonal layers + zero explicit 1px borders + complete tonal text-input baseline | ✓ SATISFIED | Body/token classes present (`src/main/resources/static/chair.html:58`), border scan `NO_MATCH`, and poll input gap closure at `src/main/resources/static/chair.html:253`, `src/main/resources/static/chair.html:265`. |
+| DS-02 | `01-01-PLAN.md`, `01-02-PLAN.md`, `01-03-PLAN.md` | Tailwind CDN in chair page and `styles.css` dependency removed/bypassed | ✓ SATISFIED | Tailwind include at `src/main/resources/static/chair.html:19`; `styles.css` absent (`NO_MATCH`). |
+| DS-03 | `01-01-PLAN.md` | Manrope + Inter loaded and used | ✓ SATISFIED | Fonts link at `src/main/resources/static/chair.html:22`; `font-body` on root at `src/main/resources/static/chair.html:58`; headline class in sections (for example `src/main/resources/static/chair.html:61`). |
+| DS-04 | `01-01-PLAN.md` | Material Symbols Outlined icon system in use | ✓ SATISFIED | Material Symbols loaded at `src/main/resources/static/chair.html:22`; icon class style and usage at `src/main/resources/static/chair.html:48` and `src/main/resources/static/chair.html:76`. |
 
 ### Anti-Patterns Found
 
 | File | Line | Pattern | Severity | Impact |
 | --- | --- | --- | --- | --- |
-| `src/main/resources/static/chair.html` | N/A | No TODO/FIXME/HACK markers detected. | ℹ️ Info | No blocker anti-patterns found. |
-| `src/main/resources/static/chair.html` | N/A | `placeholder` attribute matches are regular input hints, not implementation stubs. | ℹ️ Info | No action required. |
-
-### Human Verification Required
-
-### 1. Visual tonal hierarchy and no-line baseline
-
-**Test:** Open chair page in browser and inspect major section grouping (header/cards/footer/modal) across desktop and mobile widths.
-**Expected:** Midnight palette and tonal surface hierarchy are visually clear, with no explicit 1px divider-line look between major sections.
-**Why human:** Visual perception of hierarchy and divider prominence cannot be fully validated by static pattern checks.
-
-### 2. Typography and icon rendering
-
-**Test:** Load chair page and verify headline/body typography and icon glyph rendering in at least one Chromium browser and one non-Chromium browser.
-**Expected:** Headline/display text appears in Manrope, body/labels in Inter, and Material Symbols icons render correctly without fallback anomalies.
-**Why human:** Final font/icon rendering depends on browser/runtime asset loading and fallback behavior.
+| `src/main/resources/static/chair.html` | N/A | `TODO/FIXME/XXX/HACK/PLACEHOLDER` patterns not found in phase scope checks | ℹ️ Info | No blocker anti-patterns detected for phase-01 design-system outcome. |
+| `src/main/resources/static/chair.html` | `253`, `265` | Gap-closure poll inputs use concrete tonal classes, not placeholders | ℹ️ Info | Confirms closure is substantive rather than stubbed. |
+| `src/main/resources/static/chair.html` | `449` | `client.debug = () => {};` | ℹ️ Info | Intentional debug silencing, not a missing implementation. |
 
 ### Gaps Summary
 
-No code gaps were found against phase must-haves and DS-01..DS-04 traceability. All automated verification checks passed. Remaining work is visual/runtime confirmation only.
+No code-level gaps remain for DS-01..DS-04 or the 01-04 gap-closure must-haves. Human validation was completed and approved.
 
 ---
 
-_Verified: 2026-03-24T15:30:03.2787839Z_
+_Verified: 2026-03-24T17:07:37Z_
 _Verifier: the agent (gsd-verifier)_
