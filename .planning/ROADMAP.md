@@ -30,8 +30,8 @@ This milestone refactors the existing chair experience into The Orchestrator des
   3. Manrope is visible in display and headline treatments, Inter is used for body and labels, and Material Symbols Outlined icons render consistently across the page.
 **Plans**: 2 plans
 Plans:
-- [ ] 01-01-PLAN.md - Bootstrap Tailwind, fonts, and Material Symbols in chair view
-- [ ] 01-02-PLAN.md - Apply Orchestrator tonal foundation and no-line styling baseline
+- [x] 01-01-PLAN.md - Bootstrap Tailwind, fonts, and Material Symbols in chair view
+- [x] 01-02-PLAN.md - Apply Orchestrator tonal foundation and no-line styling baseline
 **UI hint**: yes
 
 ### Phase 2: Structural Layout Shell
