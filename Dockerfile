@@ -4,7 +4,7 @@ WORKDIR /home/gradle/project
 
 COPY gradle/ gradle/
 COPY gradlew gradlew
-COPY build.gradle settings.gradle* gradle.properties* ./
+COPY build.gradle settings.gradle* ./
 
 RUN chmod +x gradlew
 
