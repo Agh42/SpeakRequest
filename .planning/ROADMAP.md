@@ -13,7 +13,7 @@ This milestone refactors the existing chair experience into The Orchestrator des
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
 - [x] **Phase 1: Design System Foundation** - Establish Tailwind, typography, iconography, and The Orchestrator token system in the chair view. (Completed 2026-03-24)
-- [ ] **Phase 2: Structural Layout Shell** - Build the new header, sidebar, desktop grid, and mobile navigation that frame the redesigned experience.
+- [x] **Phase 2: Structural Layout Shell** - Build the new header, sidebar, desktop grid, and mobile navigation that frame the redesigned experience. (Completed 2026-03-24)
 - [ ] **Phase 3: Conference Table Experience** - Deliver the round-table centerpiece with participant avatars, queue markers, and the central timer display.
 - [ ] **Phase 4: Functional Control Migration** - Rebuild the chair's control, queue, poll, and sharing panels in the new layout while preserving existing interactions.
 - [ ] **Phase 5: Integration Verification & Completion** - Reconnect every remaining DOM binding, preserve sanitization and metadata displays, and verify end-to-end migration completeness.
@@ -47,8 +47,8 @@ Plans:
   4. Sidebar and navigation behaviors are usable without changing any backend APIs or introducing new routes.
 **Plans**: 2 plans
 Plans:
-- [ ] 02-01-PLAN.md - Build fixed header and desktop three-column shell with anchored section contracts
-- [ ] 02-02-PLAN.md - Implement collapsible sidebar and mobile navigation behaviors with active-section syncing
+- [x] 02-01-PLAN.md - Build fixed header and desktop three-column shell with anchored section contracts
+- [x] 02-02-PLAN.md - Implement collapsible sidebar and mobile navigation behaviors with active-section syncing
 **UI hint**: yes
 
 ### Phase 3: Conference Table Experience
@@ -96,7 +96,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Design System Foundation | 4/4 | Complete | 2026-03-24 |
-| 2. Structural Layout Shell | 0/0 | Not started | - |
+| 2. Structural Layout Shell | 2/2 | Complete | 2026-03-24 |
 | 3. Conference Table Experience | 0/0 | Not started | - |
 | 4. Functional Control Migration | 0/0 | Not started | - |
 | 5. Integration Verification & Completion | 0/0 | Not started | - |
