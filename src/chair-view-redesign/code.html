@@ -3,73 +3,72 @@
 <html class="dark" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>The Orchestrator - Chair View</title>
+<title>SPEEK.NOW | The Orchestrator</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
         tailwind.config = {
-          darkMode: "class",
-          theme: {
-            extend: {
-              colors: {
-                "secondary-container": "#304d5a",
-                "surface-container-lowest": "#060e20",
-                "surface-container-high": "#222a3d",
-                "tertiary": "#00e475",
-                "secondary-fixed-dim": "#adcbda",
-                "surface-bright": "#31394d",
-                "on-primary-fixed": "#000f5d",
-                "inverse-primary": "#2848ee",
-                "on-primary": "#001d93",
-                "on-tertiary-container": "#c8ffcf",
-                "on-secondary-fixed-variant": "#2e4b57",
-                "surface-variant": "#2d3449",
-                "on-background": "#dae2fd",
-                "surface-tint": "#bbc3ff",
-                "on-error-container": "#ffdad6",
-                "inverse-surface": "#dae2fd",
-                "outline-variant": "#444656",
-                "on-primary-container": "#f1f0ff",
-                "primary-fixed-dim": "#bbc3ff",
-                "primary-fixed": "#dee0ff",
-                "on-secondary-fixed": "#001f2a",
-                "surface": "#0b1326",
-                "background": "#0b1326",
-                "on-secondary-container": "#9fbdcc",
-                "on-tertiary-fixed": "#00210b",
-                "on-primary-fixed-variant": "#002ccd",
-                "on-error": "#690005",
-                "outline": "#8e8fa2",
-                "on-tertiary": "#003918",
-                "on-surface-variant": "#c5c5d9",
-                "primary": "#bbc3ff",
-                "surface-container-highest": "#2d3449",
-                "surface-container": "#171f33",
-                "on-tertiary-fixed-variant": "#005226",
-                "error": "#ffb4ab",
-                "tertiary-fixed": "#62ff96",
-                "surface-container-low": "#131b2e",
-                "primary-container": "#3d5afe",
-                "inverse-on-surface": "#283044",
-                "tertiary-container": "#007f3e",
-                "secondary-fixed": "#c9e7f7",
-                "on-secondary": "#163440",
-                "secondary": "#adcbda",
-                "on-surface": "#dae2fd",
-                "tertiary-fixed-dim": "#00e475",
-                "error-container": "#93000a",
-                "surface-dim": "#0b1326"
-              },
-              fontFamily: {
-                "headline": ["Manrope"],
-                "body": ["Inter"],
-                "label": ["Inter"]
-              },
-              borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "secondary-container": "#304d5a",
+                        "on-error": "#690005",
+                        "tertiary": "#00e475",
+                        "primary-fixed": "#dee0ff",
+                        "surface-container-highest": "#2d3449",
+                        "outline-variant": "#444656",
+                        "surface-bright": "#31394d",
+                        "error": "#ffb4ab",
+                        "background": "#0b1326",
+                        "primary-container": "#3d5afe",
+                        "on-secondary": "#163440",
+                        "on-primary-fixed-variant": "#002ccd",
+                        "secondary-fixed-dim": "#adcbda",
+                        "surface-container-high": "#222a3d",
+                        "on-surface-variant": "#c5c5d9",
+                        "surface-dim": "#0b1326",
+                        "on-tertiary-fixed": "#00210b",
+                        "surface-container-low": "#131b2e",
+                        "on-primary": "#001d93",
+                        "on-tertiary-fixed-variant": "#005226",
+                        "on-primary-container": "#f1f0ff",
+                        "on-tertiary-container": "#c8ffcf",
+                        "on-background": "#dae2fd",
+                        "secondary": "#adcbda",
+                        "on-secondary-fixed": "#001f2a",
+                        "primary": "#bbc3ff",
+                        "surface-variant": "#2d3449",
+                        "on-primary-fixed": "#000f5d",
+                        "surface": "#0b1326",
+                        "on-secondary-container": "#9fbdcc",
+                        "inverse-on-surface": "#283044",
+                        "surface-container": "#171f33",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-container": "#007f3e",
+                        "surface-tint": "#bbc3ff",
+                        "inverse-surface": "#dae2fd",
+                        "tertiary-fixed": "#62ff96",
+                        "outline": "#8e8fa2",
+                        "primary-fixed-dim": "#bbc3ff",
+                        "secondary-fixed": "#c9e7f7",
+                        "tertiary-fixed-dim": "#00e475",
+                        "on-tertiary": "#003918",
+                        "surface-container-lowest": "#060e20",
+                        "on-surface": "#dae2fd",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#2e4b57",
+                        "inverse-primary": "#2848ee"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
             },
-          },
         }
     </script>
 <style>
@@ -80,493 +79,338 @@
             background: rgba(45, 52, 73, 0.6);
             backdrop-filter: blur(24px);
         }
-        /* ── Circular participant table ───────────────────────────────────── */
-        @keyframes avatar-enter {
-            from { opacity: 0; transform: scale(0.55); }
-            to   { opacity: 1; transform: scale(1); }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
         }
-        @keyframes speaker-enter {
-            0%   { opacity: 0; transform: scale(0.4); }
-            65%  { opacity: 1; transform: scale(1.12); }
-            100% { opacity: 1; transform: scale(1); }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
-        @keyframes mic-ring-pulse {
-            0%,100% { box-shadow: 0 0 20px rgba(187,195,255,.55), 0 0 48px rgba(187,195,255,.2); }
-            50%     { box-shadow: 0 0 32px rgba(187,195,255,.85), 0 0 72px rgba(187,195,255,.35); }
+        
+        /* Sidebar transition */
+        #sidebar {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        @keyframes hand-raise-pulse {
-            0%,100% { transform: scale(1) rotate(0deg); }
-            25%     { transform: scale(1.3) rotate(-12deg); }
-            75%     { transform: scale(1.15) rotate(10deg); }
+        #sidebar.collapsed {
+            width: 72px;
+        }
+        @media (max-width: 767px) {
+            #sidebar.collapsed {
+                width: 256px;
+                transform: translateX(-100%);
+            }
+        }
+        #sidebar.collapsed .sidebar-text,
+        #sidebar.collapsed .sidebar-header-text {
+            display: none;
+        }
+        #sidebar.collapsed .nav-item {
+            padding-left: 0;
+            padding-right: 0;
+            justify-content: center;
+        }
+        #sidebar.collapsed .nav-item span:not(.material-symbols-outlined) {
+            display: none;
+        }
+        #sidebar.collapsed .sidebar-footer-item {
+            justify-content: center;
+            padding-left: 0;
+            padding-right: 0;
+        }
+        
+        /* Main content margin adjustment */
+        #main-content {
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @media (min-width: 768px) {
+            body:has(#sidebar:not(.collapsed)) #main-content {
+                margin-left: 256px;
+            }
+            body:has(#sidebar.collapsed) #main-content {
+                margin-left: 72px;
+            }
         }
     </style>
 </head>
-<body class="bg-background text-on-background font-body selection:bg-primary/30">
-<!-- SideNavBar (Authority: JSON) -->
-<aside class="h-screen w-64 fixed left-0 top-0 bg-[#0b1326] border-r border-white/5 flex flex-col p-4 overflow-y-auto z-50">
-<div class="mb-10 px-4">
-<h1 class="text-2xl font-black text-[#dae2fd] tracking-tighter font-headline">The Orchestrator</h1>
-<p class="text-[10px] uppercase tracking-wider text-[#dae2fd]/60 font-label mt-1">Meeting Chair</p>
-</div>
-<nav class="space-y-1 flex-1">
-<a class="flex items-center gap-3 px-4 py-3 text-[#3d5afe] bg-[#222a3d] rounded-lg transition-all font-medium text-sm" href="#">
-<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
-                Command Center
-            </a>
-<a class="flex items-center gap-3 px-4 py-3 text-[#dae2fd]/60 hover:text-[#dae2fd] hover:bg-[#171f33] rounded-lg transition-all font-medium text-sm" href="#">
-<span class="material-symbols-outlined" data-icon="group">group</span>
-                Speaker Queue
-            </a>
-<a class="flex items-center gap-3 px-4 py-3 text-[#dae2fd]/60 hover:text-[#dae2fd] hover:bg-[#171f33] rounded-lg transition-all font-medium text-sm" href="#">
-<span class="material-symbols-outlined" data-icon="how_to_reg">how_to_reg</span>
-                Proxy Requests
-            </a>
-<a class="flex items-center gap-3 px-4 py-3 text-[#dae2fd]/60 hover:text-[#dae2fd] hover:bg-[#171f33] rounded-lg transition-all font-medium text-sm" href="#">
-<span class="material-symbols-outlined" data-icon="poll">poll</span>
-                Live Polling
-            </a>
-<a class="flex items-center gap-3 px-4 py-3 text-[#dae2fd]/60 hover:text-[#dae2fd] hover:bg-[#171f33] rounded-lg transition-all font-medium text-sm" href="#">
-<span class="material-symbols-outlined" data-icon="event_note">event_note</span>
-                Agenda
-            </a>
-<a class="flex items-center gap-3 px-4 py-3 text-[#dae2fd]/60 hover:text-[#dae2fd] hover:bg-[#171f33] rounded-lg transition-all font-medium text-sm" href="#">
-<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
-                Analytics
-            </a>
-</nav>
-<div class="mt-auto pt-6 border-t border-white/5">
-<button class="w-full bg-primary-container text-on-primary-container font-bold py-3 rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
-<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
-                New Agenda Item
-            </button>
-<div class="mt-6 flex items-center gap-3 px-2">
-<img alt="User Profile" class="w-10 h-10 rounded-full bg-surface-container-highest" data-alt="Professional avatar of the meeting chair" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAT7oofQkrfBROgWPNnDuqmgLDmyHVyAUVU6E8gS9G9jL8P58hg9gkn0sf8Y6qB3gxjbbW-khSkgaSjRSuFHak0tO19lA4SihAX7OzUQsqj-9tdywuBxW6c41vXQ-x1BhSXzt8ltCA64JCxuMJbfC3zUBgQXDLCN7cEulW7XHtbitr7dU0c6niMZE1EawTa4egBiA9sCuKsdgWEdhX8VlmpXaTUfow9u48vq6I5Bq1DZt-UEpslHZmuyUIYU7zudAwDp1kceKuFg"/>
-<div class="overflow-hidden">
-<p class="text-sm font-bold truncate">The Orchestrator</p>
-<p class="text-xs text-on-surface-variant truncate">Meeting Chair</p>
+<body class="bg-background text-on-background font-body selection:bg-primary/30 overflow-x-hidden">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-4 md:px-8 h-16 bg-[#0b1326] border-b border-white/5">
+<div class="flex items-center gap-4 md:gap-6">
+<button class="p-2 rounded-lg hover:bg-surface-container-high text-[#dae2fd]/60 flex items-center justify-center" onclick="document.getElementById('sidebar').classList.toggle('collapsed')">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<span class="text-xl md:text-2xl font-black tracking-tighter text-[#dae2fd]">SPEEK.NOW</span>
+<div class="hidden sm:flex items-center gap-1.5 md:gap-2 bg-surface-container-high px-3 py-1 rounded-full border border-white/5">
+<span class="text-[#3d5afe] font-bold text-xs md:text-sm">Room: 2QGY</span>
+<div class="flex items-center gap-1 border-l border-white/10 ml-2 pl-2">
+<button class="material-symbols-outlined text-[16px] hover:text-primary transition-colors" title="Copy Code">content_copy</button>
+<button class="material-symbols-outlined text-[16px] hover:text-primary transition-colors" title="Copy Link">link</button>
 </div>
 </div>
 </div>
-</aside>
-<!-- TopAppBar (Authority: JSON) -->
-<header class="fixed top-0 right-0 w-[calc(100%-16rem)] h-20 z-40 bg-[#0b1326]/60 backdrop-blur-xl flex justify-between items-center px-8">
-<div class="flex items-center gap-4">
-<h2 class="text-lg font-bold text-[#dae2fd] font-headline">Live Session</h2>
-<div class="h-4 w-px bg-white/10"></div>
-<div class="flex items-center gap-2 text-tertiary font-label text-sm">
-<span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
-                LIVE • 00:42:18
-            </div>
+<div class="flex items-center gap-2 md:gap-4">
+<button class="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-error/10 hover:bg-error/20 text-error rounded-lg text-xs font-bold transition-all border border-error/20">
+<span class="material-symbols-outlined text-sm">delete_forever</span>
+            Destroy Room
+        </button>
+<div class="flex items-center gap-1">
+<button class="p-2 rounded-full hover:bg-[#222a3d] transition-colors text-[#dae2fd]/60">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-[#222a3d] transition-colors text-[#dae2fd]/60">
+<span class="material-symbols-outlined">settings</span>
+</button>
 </div>
-<div class="flex items-center gap-6">
-<div class="flex items-center gap-4 text-on-surface-variant">
-<button class="material-symbols-outlined hover:text-on-surface transition-colors" data-icon="timer">timer</button>
-<button class="material-symbols-outlined hover:text-on-surface transition-colors" data-icon="settings">settings</button>
-<button class="material-symbols-outlined hover:text-on-surface transition-colors" data-icon="help_outline">help_outline</button>
-</div>
-<div class="flex gap-3">
-<button class="px-4 py-2 bg-tertiary text-on-tertiary font-bold rounded-lg hover:opacity-90 transition-all">Start Meeting</button>
-<button class="px-4 py-2 border border-error/30 text-error font-bold rounded-lg hover:bg-error/10 transition-all">End Meeting</button>
+<div class="h-8 w-8 rounded-full bg-surface-container-highest border border-primary/20 overflow-hidden">
+<img alt="Chairperson Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCdHG9h9ap_w54JZ1b5hl1OqG1VXMue0ATPQBRX8gOamUQB8RtCWiEVH7m92yACbi7nvItLb5F4Ykz3ngVq4-n-97vKP2y0giao1JzCmAeqDeDpYLZSZqxnla11GF-kK2oBPRgfzKoCqXiE978Ezuo4rHb3htqF6Rmj9LIMuCKvL81-tFnMnT4R_VyDZE9BVnBMyx09rQw86ZVq2ZelPyQdAGvtnnO0OLQlg_X2gNrNMKVgvW8JvWkc0KALHhCS37HL3QunvEx6Q"/>
 </div>
 </div>
 </header>
+<!-- SideNavBar - Collapsed by default -->
+<aside class="fixed left-0 top-0 h-full w-64 collapsed z-[60] bg-[#171f33] shadow-2xl flex flex-col py-8 pt-24" id="sidebar">
+<div class="px-6 mb-4 flex items-center justify-between">
+<div class="sidebar-header-text">
+<h2 class="text-xl font-black text-[#dae2fd] font-headline">The Orchestrator</h2>
+<p class="font-headline uppercase tracking-widest text-[10px] font-bold text-primary/60">Meeting Manager</p>
+</div>
+<button class="p-1 hover:bg-surface-container-high rounded text-[#dae2fd]/60" onclick="document.getElementById('sidebar').classList.toggle('collapsed')">
+<span class="material-symbols-outlined">menu_open</span>
+</button>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="nav-item bg-gradient-to-r from-[#3d5afe]/20 to-transparent border-l-4 border-[#3d5afe] text-[#dae2fd] py-4 px-6 flex items-center gap-4 font-headline uppercase tracking-widest text-[10px] font-bold" href="#">
+<span class="material-symbols-outlined">tune</span>
+<span class="sidebar-text">Meeting Controls</span>
+</a>
+<a class="nav-item text-[#dae2fd]/40 py-4 px-6 flex items-center gap-4 hover:text-[#dae2fd] hover:bg-[#222a3d] transition-all duration-300 font-headline uppercase tracking-widest text-[10px] font-bold" href="#">
+<span class="material-symbols-outlined">format_list_numbered</span>
+<span class="sidebar-text">Speaker Queue</span>
+</a>
+<a class="nav-item text-[#dae2fd]/40 py-4 px-6 flex items-center gap-4 hover:text-[#dae2fd] hover:bg-[#222a3d] transition-all duration-300 font-headline uppercase tracking-widest text-[10px] font-bold" href="#">
+<span class="material-symbols-outlined">ballot</span>
+<span class="sidebar-text">Live Polling</span>
+</a>
+<a class="nav-item text-[#dae2fd]/40 py-4 px-6 flex items-center gap-4 hover:text-[#dae2fd] hover:bg-[#222a3d] transition-all duration-300 font-headline uppercase tracking-widest text-[10px] font-bold" href="#">
+<span class="material-symbols-outlined">event_note</span>
+<span class="sidebar-text">Agenda</span>
+</a>
+</nav>
+<div class="mt-auto px-6 pt-4 space-y-4">
+<div class="pt-4 border-t border-white/5 space-y-2">
+<a class="sidebar-footer-item text-[#dae2fd]/40 flex items-center gap-3 py-2 hover:text-white transition-colors text-[10px] uppercase font-bold tracking-widest" href="#">
+<span class="material-symbols-outlined text-sm">contact_support</span>
+<span class="sidebar-text">Support</span>
+</a>
+<a class="sidebar-footer-item text-error/60 flex items-center gap-3 py-2 hover:text-error transition-colors text-[10px] uppercase font-bold tracking-widest" href="#">
+<span class="material-symbols-outlined text-sm">logout</span>
+<span class="sidebar-text">Logout</span>
+</a>
+</div>
+</div>
+</aside>
 <!-- Main Content Canvas -->
-<main class="ml-64 pt-20 min-h-screen bg-surface p-8">
-<div class="grid grid-cols-12 gap-8 max-w-[1600px] mx-auto">
-<!-- Left Column: Current Speaker & Controls -->
-<div class="col-span-12 lg:col-span-3 space-y-8">
-<!-- Current Speaker Card -->
-<section class="bg-surface-container-high rounded-xl p-6 shadow-2xl">
-<label class="text-[10px] uppercase tracking-widest text-on-surface-variant font-label block mb-4">Currently Speaking</label>
+<main class="pt-20 pb-24 md:pb-12 px-4 md:px-8 lg:px-12 min-h-screen w-full max-w-full overflow-x-hidden" id="main-content">
+<div class="flex flex-col lg:grid lg:grid-cols-12 gap-8 max-w-7xl mx-auto">
+<!-- 1. Left Column: Meeting Controls, Live Poll, Share Access (Desktop) -->
+<div class="lg:col-span-4 order-1 space-y-8 w-full max-w-full">
+<!-- Meeting Controls -->
+<section class="bg-surface-container rounded-xl p-6 shadow-xl border border-white/5 w-full overflow-hidden">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-headline font-bold text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">tune</span>
+                        Meeting Controls
+                    </h3>
+<span class="bg-tertiary/10 text-tertiary text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
+                        Live
+                    </span>
+</div>
 <div class="space-y-6">
-<div class="flex items-center gap-4">
+<div>
+<label class="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant mb-1.5 block">Speaker Name</label>
+<div class="flex flex-wrap sm:flex-nowrap gap-2 mb-2 w-full">
+<input class="flex-1 min-w-0 bg-surface-variant border-none focus:ring-1 focus:ring-primary text-on-surface rounded py-2.5 px-3 transition-all text-sm w-full sm:w-auto" placeholder="Enter name..." type="text"/>
+<div class="flex gap-1 w-full sm:w-auto justify-end sm:justify-start">
+<button class="flex-1 sm:flex-none bg-surface-container-high px-3 py-2.5 rounded hover:bg-surface-bright transition-colors text-on-surface-variant hover:text-white flex items-center justify-center" title="Proxy Request">
+<span class="material-symbols-outlined text-lg">swap_horiz</span>
+</button>
+<button class="flex-1 sm:flex-none bg-surface-container-high px-3 py-2.5 rounded hover:bg-surface-bright transition-colors text-on-surface-variant hover:text-white flex items-center justify-center" title="Withdraw">
+<span class="material-symbols-outlined text-lg">undo</span>
+</button>
+</div>
+</div>
+</div>
+<div class="group">
+<label class="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant mb-1.5 block">Per-speaker limit</label>
 <div class="relative">
-<img alt="Speaker" class="w-16 h-16 rounded-xl object-cover ring-2 ring-primary/20" data-alt="Headshot of the current speaker John Smith" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC8jx34tShoUb1QaSUrmxWx1xQQ6SfFumV4ZVeI63RQkKaz0nNdbexipLQkJ6QYa-1AIeDS1W4_u1ES4qQwVUx4BD8S7okezsBXLWwN4eA6McwYxJkKZ_qgd9OJdF4-MyH3WF-5_qXy6Si35-QJZdI4IFLVEYB7TTPhdxXXW-UfV4nJR2BcS9vqmY9ROtD4srmuM6j5sW4dV0dR2tMMqzTilCFyOuPgwsUHR0u-AebZ1MZ_bipHmGjVezc0xQCipYwlTfhplMBB7A"/>
-<div class="absolute -bottom-1 -right-1 bg-tertiary w-4 h-4 rounded-full border-2 border-surface-container-high"></div>
-</div>
-<div>
-<h3 class="text-xl font-bold font-headline">Johnathan Smith</h3>
-<p class="text-sm text-on-surface-variant">Chief Executive Officer</p>
+<input class="w-full bg-surface-variant border-none focus:ring-1 focus:ring-primary text-on-surface rounded py-2 pr-10 text-sm" type="number" value="5"/>
+<span class="absolute right-3 top-2.5 text-[10px] font-bold text-on-surface-variant">MIN</span>
 </div>
 </div>
-<div class="py-4 border-y border-white/5">
-<div class="flex justify-between items-end mb-2">
-<span class="text-sm text-on-surface-variant font-label uppercase">Time Remaining</span>
-<span class="text-4xl font-bold font-headline tracking-tighter text-primary">02:45</span>
-</div>
-<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
-<div class="bg-primary h-full w-[65%] rounded-full shadow-[0_0_12px_rgba(187,195,255,0.4)]"></div>
-</div>
+<div class="grid grid-cols-4 gap-2 pt-2">
+<button class="bg-tertiary text-on-tertiary font-bold py-4 rounded text-[10px] uppercase tracking-tighter flex flex-col items-center gap-1 hover:brightness-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined">play_arrow</span>
+                            Start
+                        </button>
+<button class="bg-surface-container-highest text-on-surface font-bold py-4 rounded text-[10px] uppercase tracking-tighter flex flex-col items-center gap-1 hover:bg-surface-bright active:scale-95 transition-all">
+<span class="material-symbols-outlined">pause</span>
+                            Pause
+                        </button>
+<button class="bg-primary-container text-on-primary-container font-bold py-4 rounded text-[10px] uppercase tracking-tighter flex flex-col items-center gap-1 hover:brightness-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined">fast_forward</span>
+                            Next
+                        </button>
+<button class="bg-surface-container-highest text-on-surface-variant border border-white/5 font-bold py-4 rounded text-[10px] uppercase tracking-tighter flex flex-col items-center gap-1 hover:bg-surface-bright active:scale-95 transition-all">
+<span class="material-symbols-outlined">history</span>
+                            Reset
+                        </button>
 </div>
 </div>
 </section>
-<!-- Playback Controls -->
-<section class="bg-surface-container rounded-xl p-6">
-<label class="text-[10px] uppercase tracking-widest text-on-surface-variant font-label block mb-6">Orchestration controls</label>
-<div class="grid grid-cols-2 gap-3">
-<button class="flex flex-col items-center justify-center p-4 bg-primary-container text-on-primary-container rounded-lg gap-2 hover:opacity-90 transition-all active:scale-95">
-<span class="material-symbols-outlined" data-icon="skip_next" style="font-variation-settings: 'FILL' 1;">skip_next</span>
-<span class="text-xs font-bold uppercase tracking-tighter">Next Speaker</span>
-</button>
-<button class="flex flex-col items-center justify-center p-4 bg-surface-container-highest text-on-surface rounded-lg gap-2 hover:bg-surface-bright transition-all active:scale-95">
-<span class="material-symbols-outlined" data-icon="pause">pause</span>
-<span class="text-xs font-bold uppercase tracking-tighter">Pause</span>
-</button>
-<button class="flex flex-col items-center justify-center p-4 bg-surface-container-highest text-on-surface rounded-lg gap-2 hover:bg-surface-bright transition-all active:scale-95">
-<span class="material-symbols-outlined" data-icon="play_arrow">play_arrow</span>
-<span class="text-xs font-bold uppercase tracking-tighter">Start</span>
-</button>
-<button class="flex flex-col items-center justify-center p-4 bg-surface-container-highest text-on-surface rounded-lg gap-2 hover:bg-surface-bright transition-all active:scale-95">
-<span class="material-symbols-outlined" data-icon="restart_alt">restart_alt</span>
-<span class="text-xs font-bold uppercase tracking-tighter">Reset</span>
-</button>
+<!-- Live Polling (Now in left column on desktop) -->
+<div class="glass-panel rounded-xl p-6 border border-white/5 shadow-2xl">
+<div class="flex items-center justify-between mb-4">
+<h4 class="font-headline font-bold text-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary">ballot</span>
+                        Live Poll: Amendment 4A
+                    </h4>
+<button class="text-primary text-[10px] font-bold uppercase hover:underline">View Results</button>
 </div>
-</section>
-</div>
-<!-- Center Column: Circular Table Visualization -->
-<div class="col-span-12 lg:col-span-6 flex flex-col items-center justify-center min-h-[600px] relative">
-<div class="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
-<div class="w-[500px] h-[500px] border border-primary/30 rounded-full animate-[pulse_8s_infinite]"></div>
-<div class="absolute w-[400px] h-[400px] border border-primary/20 rounded-full"></div>
-</div>
-<div
-  id="participant-table"
-  class="relative flex items-center justify-center"
-  style="width:480px;height:480px;"
-  role="img"
-  aria-label="Meeting participants around table"
->
-<div class="w-52 h-52 rounded-full bg-surface-container-high shadow-[0_0_100px_rgba(0,0,0,0.5)] flex flex-col items-center justify-center z-10 border border-white/5">
-<span class="text-[10px] uppercase tracking-[0.2em] text-on-surface-variant font-label">Active Session</span>
-<h4 class="text-2xl font-black font-headline mt-1 tracking-tight">Board Room</h4>
-<div id="participant-count-badge" class="mt-4 px-3 py-1 bg-tertiary/10 text-tertiary rounded-full text-[10px] font-bold border border-tertiary/20">12 PARTICIPANTS</div>
-</div>
-</div>
-</div>
-<!-- Right Column: Proxy & Polling -->
-<div class="col-span-12 lg:col-span-3 space-y-8">
-<!-- Proxy Requests Card -->
-<section class="bg-surface-container-high rounded-xl overflow-hidden shadow-2xl">
-<div class="p-6 border-b border-white/5 flex justify-between items-center">
-<label class="text-[10px] uppercase tracking-widest text-on-surface-variant font-label">Proxy Requests</label>
-<span class="bg-error text-on-error text-[10px] font-bold px-2 py-0.5 rounded-full">2 NEW</span>
-</div>
-<div class="divide-y divide-white/5">
-<div class="p-4 hover:bg-white/5 transition-colors cursor-pointer group">
-<div class="flex items-center gap-3">
-<img alt="User" class="w-8 h-8 rounded-lg" data-alt="Small avatar of Helena Braun" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCncQD1hrh6DR7deOj7ViCbP1FBGWfXWF6NVlvGWuOhq4TkmSh8qeciRZKTtcSt7vd3afGAgLz2ljDi0PLcSTGhpO8dmlWTGE4hny7khGRE6CzKWehZX9d21DkeSWV-Atr248OmcySqNX8R5zJLmZLNwttq98emjr3I2SMANHxTohkJFZ59HgSFRXNPBe_Gde22N-QL7wYOl3J4X2wryV7QfR835qrDC3xxYBUwsMsbg9e6j0sobVoEd82Wg0xEBHb0tNhrfdqkeg"/>
-<div class="flex-1">
-<p class="text-sm font-bold">Helena Braun</p>
-<p class="text-[10px] text-on-surface-variant">Requested 2m ago</p>
-</div>
-<div class="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-<button class="w-7 h-7 flex items-center justify-center bg-tertiary text-on-tertiary rounded shadow-sm">
-<span class="material-symbols-outlined text-sm" data-icon="check">check</span>
-</button>
-<button class="w-7 h-7 flex items-center justify-center bg-error/20 text-error rounded shadow-sm">
-<span class="material-symbols-outlined text-sm" data-icon="close">close</span>
-</button>
-</div>
-</div>
-</div>
-<div class="p-4 hover:bg-white/5 transition-colors cursor-pointer group">
-<div class="flex items-center gap-3">
-<img alt="User" class="w-8 h-8 rounded-lg" data-alt="Small avatar of Robert Khan" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwiuw5BQinRExID9TEI2PImVC1D_dK6y42SRJQG8v7F6RprE0buMNp_JrmB_4cKC_WZhDvFCid5WOl0prLYQ1bke3v6pRQq0W8wMtldh_fkiH8F8uK3JH4Ma_OHtr0w9MtYIA2Gq8sIKw22QCM1wcMxRBXGwfdfSdqckT0rGvwP7PN5-ZnseTbLq0Bmzek73hBxToSFUBPKyAk1OuOJv1zRNXqFQZVDdejJYOJtDby69YlHWht9nKkCklHugm29hViGhGMgbxlsw"/>
-<div class="flex-1">
-<p class="text-sm font-bold">Robert Khan</p>
-<p class="text-[10px] text-on-surface-variant">Requested 5m ago</p>
-</div>
-<div class="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-<button class="w-7 h-7 flex items-center justify-center bg-tertiary text-on-tertiary rounded shadow-sm">
-<span class="material-symbols-outlined text-sm" data-icon="check">check</span>
-</button>
-<button class="w-7 h-7 flex items-center justify-center bg-error/20 text-error rounded shadow-sm">
-<span class="material-symbols-outlined text-sm" data-icon="close">close</span>
-</button>
-</div>
-</div>
-</div>
-</div>
-<button class="w-full p-4 text-xs font-bold text-primary hover:bg-primary/5 transition-colors">VIEW ALL REQUESTS</button>
-</section>
-<!-- Live Polling Module -->
-<section class="bg-surface-container-high rounded-xl p-6 shadow-2xl relative overflow-hidden">
-<div class="absolute top-0 right-0 p-4">
-<span class="material-symbols-outlined text-primary/30 text-4xl" data-icon="bar_chart">bar_chart</span>
-</div>
-<label class="text-[10px] uppercase tracking-widest text-on-surface-variant font-label block mb-6">Active Polling</label>
-<div class="space-y-4 mb-8">
-<div>
-<p class="text-sm font-medium mb-3">Q3 Strategic Budget Allocation Approval</p>
 <div class="space-y-3">
-<div class="relative w-full h-8 bg-surface-container rounded-lg overflow-hidden group cursor-pointer">
-<div class="absolute inset-0 bg-tertiary/20 w-[72%]"></div>
-<div class="relative px-3 h-full flex justify-between items-center text-xs">
-<span class="font-bold">IN FAVOR</span>
-<span class="font-bold">72%</span>
+<div class="relative h-8 bg-surface-container-high rounded flex items-center px-3 overflow-hidden">
+<div class="absolute left-0 top-0 h-full bg-tertiary/20 w-[65%]"></div>
+<span class="relative z-10 text-xs font-bold flex-1">Approve</span>
+<span class="relative z-10 text-xs font-black">65%</span>
+</div>
+<div class="relative h-8 bg-surface-container-high rounded flex items-center px-3 overflow-hidden">
+<div class="absolute left-0 top-0 h-full bg-error/20 w-[35%]"></div>
+<span class="relative z-10 text-xs font-bold flex-1">Reject</span>
+<span class="relative z-10 text-xs font-black">35%</span>
 </div>
 </div>
-<div class="relative w-full h-8 bg-surface-container rounded-lg overflow-hidden group cursor-pointer">
-<div class="absolute inset-0 bg-error/20 w-[18%]"></div>
-<div class="relative px-3 h-full flex justify-between items-center text-xs">
-<span class="font-bold">AGAINST</span>
-<span class="font-bold">18%</span>
+<button class="w-full mt-4 bg-surface-container-highest border border-white/10 py-2.5 rounded text-[10px] font-bold uppercase tracking-wider hover:brightness-125 transition-all">
+                    End Poll &amp; Record
+                </button>
+</div>
+<!-- Share Access (Now in left column on desktop) -->
+<section class="bg-surface-container-low rounded-xl p-6 border border-white/5">
+<div class="flex items-center gap-3 mb-6">
+<div class="bg-primary/20 p-2 rounded-lg">
+<span class="material-symbols-outlined text-primary">share</span>
+</div>
+<div>
+<h4 class="font-headline font-bold text-sm">Share Access</h4>
+<p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-tight">ID: 2QGY-X99L-ORC</p>
 </div>
 </div>
-<div class="relative w-full h-8 bg-surface-container rounded-lg overflow-hidden group cursor-pointer">
-<div class="absolute inset-0 bg-on-surface-variant/10 w-[10%]"></div>
-<div class="relative px-3 h-full flex justify-between items-center text-xs">
-<span class="font-bold">ABSTAIN</span>
-<span class="font-bold">10%</span>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="flex gap-2">
-<button class="flex-1 py-3 bg-surface-container-highest text-on-surface font-bold text-xs rounded-lg border border-white/5 hover:bg-surface-bright transition-all">CLOSE POLL</button>
-<button class="w-12 h-12 flex items-center justify-center bg-primary-container text-on-primary-container rounded-lg hover:opacity-90 transition-all">
-<span class="material-symbols-outlined" data-icon="share">share</span>
+<div class="grid grid-cols-1 gap-2">
+<button class="w-full flex items-center justify-between p-3 rounded-lg bg-surface-container-high hover:bg-surface-bright transition-colors text-xs font-semibold group">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-on-surface-variant group-hover:text-primary transition-colors">content_copy</span>
+                            Copy Code
+                        </span>
+<span class="text-[10px] text-primary">2QGY</span>
 </button>
+<button class="w-full flex items-center justify-between p-3 rounded-lg bg-surface-container-high hover:bg-surface-bright transition-colors text-xs font-semibold group">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-on-surface-variant group-hover:text-primary transition-colors">link</span>
+                            Copy Link
+                        </span>
+<span class="text-[10px] text-primary">Copy</span>
+</button>
+</div>
+</section>
+</div>
+<!-- 2. Central Column: Meeting Circle -->
+<div class="lg:col-span-5 flex flex-col items-center justify-center space-y-8 py-8 lg:py-0 order-2 w-full">
+<div class="relative w-full aspect-square max-w-[320px] sm:max-w-[380px] lg:max-w-[450px] flex items-center justify-center mx-auto">
+<div class="absolute inset-0 rounded-full border border-primary/10 animate-[ping_3s_linear_infinite]"></div>
+<div class="absolute inset-4 rounded-full border border-primary/20"></div>
+<div class="absolute inset-8 sm:inset-10 lg:inset-12 rounded-full glass-panel border border-white/5 shadow-2xl flex flex-col items-center justify-center text-center p-6 lg:p-8 z-10">
+<div class="mb-1">
+<span class="text-[10px] uppercase font-bold tracking-[0.2em] text-on-surface-variant">Speaker Remaining</span>
+</div>
+<div class="font-headline text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tighter mb-4">02:45</div>
+<div class="h-1 w-20 sm:w-24 lg:w-32 bg-surface-container-highest rounded-full overflow-hidden mb-6">
+<div class="h-full w-3/4 bg-primary shadow-[0_0_12px_rgba(61,90,254,0.5)]"></div>
+</div>
+<div class="bg-primary/10 px-4 py-1.5 lg:py-2 rounded-full">
+<span class="text-primary font-bold tracking-tight text-xs">ROOM: 2QGY</span>
+</div>
+<div class="mt-6 lg:mt-8">
+<span class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">Total Meeting Time</span>
+<div class="text-base sm:text-lg lg:text-xl font-bold font-headline mt-1">00:48:12</div>
+</div>
+</div>
+<!-- Participants Orbit -->
+<div class="absolute -top-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center">
+<div class="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-full border-4 border-tertiary p-1 bg-background">
+<img alt="Active" class="w-full h-full rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBdpGCfViPfm6vtDn2LT1orMOn-LYX9Wu5P1spcdODC68ri0Zh68_QLAV86repIb795mEbE6MsbnqtH66n8Lpud9ktgvbM1n_DVDdXHq4uCOsnA1X3dL7GkEML4yImMGyyVUfM1oydDB6ExUuulZmwZYl70I2QuAuOaqLyR2YqiI7nRY6J5zxq3xIF1h0QT80d2EwRLBjz5QOaa9dUxgTlpQOwlt-737EZCQt4Ja8eK1xuKRTt1pT7IjInUXOevTXwRRNWVEZheeA"/>
+</div>
+</div>
+</div>
+</div>
+<!-- 3. Right Column: Speaker Queue -->
+<div class="lg:col-span-3 space-y-6 order-3">
+<section class="bg-surface-container rounded-xl flex flex-col h-[500px] lg:h-[700px] border border-white/5">
+<div class="p-6 border-b border-white/5">
+<h3 class="font-headline font-bold text-on-surface flex items-center gap-2 mb-1 text-sm">
+<span class="material-symbols-outlined text-primary">format_list_numbered</span>
+                        Speaker Queue
+                    </h3>
+<p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">5 Pending Speakers</p>
+</div>
+<div class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-3">
+<div class="bg-surface-container-highest p-4 rounded-lg border-l-4 border-tertiary shadow-lg">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-bright p-0.5 border border-tertiary/50">
+<img alt="Current" class="w-full h-full rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOzNm3t26EPsCwySXH8_J_McK8cH0EF8iwZdGiYpN1UXAEHZ8M8kMGqNYCcVd9QloJ8_xIixA9h8fHiEiFpVlfuDSuZOOY0Bmnv471qk9yy1LKMqTyN4Z8mA2Zx82pDgOFBz_BWYJ0oEcQovSAbOp_ah3vaTZyZLcjGuGjEBQnbWTH7xs3PYbsixCG37bqYZoe_kl_SlHDGN461kQA7QHwzOAiV9yjD7WWONyCwA-PIaEmQ6J56Xhdvb3iyrNC-ivemLTBjMnt0w"/>
+</div>
+<div class="flex-1">
+<h5 class="text-xs font-bold text-white">Jonathan Vance</h5>
+<p class="text-[10px] text-tertiary font-bold uppercase">Speaking Now</p>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-lg border border-white/5 hover:bg-surface-container-high transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-bright p-0.5 border border-white/5">
+<img alt="Next" class="w-full h-full rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD99Zd92VjLDsAqjBWuD-vGHBJ5hWgToynh2GD6KBkdN6T1oC7anLDpi-DbjHejBK6PIvEHXSFNgwCDKcz0usM6kMQjZiWA_YLid3Z4YMmWj4Kcp3aQn8ImVzZ0JnQi636PBi3WAo3SRnPXiqK8_MS5yXNeZbIEV6-uVuRqcqNsYaVwuId44KkKezi0y7WczOIHqhAnnKsl2Oizfkqkyt5MY-vZ_29AvR0Pdtf41yNJpoMFv6VKWfMkRzW57OiQCC3HXv8mlHqDLg"/>
+</div>
+<div class="flex-1">
+<h5 class="text-xs font-bold text-white">Sarah Chen</h5>
+<p class="text-[10px] text-on-surface-variant font-bold uppercase">Up Next</p>
+</div>
+</div>
+</div>
+</div>
+<div class="p-6 bg-surface-container-low rounded-b-xl border-t border-white/5">
+<button class="w-full flex items-center justify-center gap-2 p-3 rounded-lg bg-primary-container text-on-primary-container text-[10px] font-bold uppercase tracking-wider hover:brightness-110 transition-all">
+<span class="material-symbols-outlined text-sm">person_add</span>
+                        Force Add Speaker
+                    </button>
 </div>
 </section>
 </div>
 </div>
 </main>
-<!-- Floating UI for Quick Actions (Implicitly needed for Orchestrator feel) -->
-<div class="fixed bottom-8 right-8 flex flex-col gap-4 z-50">
-<button class="w-14 h-14 bg-surface-container-highest text-on-surface rounded-full shadow-2xl flex items-center justify-center border border-white/10 hover:scale-110 transition-transform active:scale-95 glass-panel">
-<span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
+<!-- Mobile Nav Anchor -->
+<nav class="fixed bottom-0 w-full bg-[#0b1326] flex md:hidden justify-around items-center h-16 border-t border-white/5 z-50 px-4">
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined">tune</span>
+<span class="text-[8px] font-bold uppercase">Controls</span>
 </button>
-<button class="w-14 h-14 bg-primary-container text-on-primary-container rounded-full shadow-[0_10px_30px_rgba(61,90,254,0.4)] flex items-center justify-center hover:scale-110 transition-transform active:scale-95">
-<span class="material-symbols-outlined" data-icon="mic_off" style="font-variation-settings: 'FILL' 1;">mic_off</span>
+<button class="flex flex-col items-center gap-1 text-[#dae2fd]/40">
+<span class="material-symbols-outlined">format_list_numbered</span>
+<span class="text-[8px] font-bold uppercase">Queue</span>
 </button>
-</div>
-<script>
-(function () {
-  // ── Participant data ──────────────────────────────────────────────────────
-  const participants = [
-    { id: 1,  name: 'Johnathan Smith',  initials: 'JS', role: 'Chief Executive Officer', isHandRaised: false, hasSpeakRequest: false,
-      avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDUgN5PlcZxEUPF8fVlYuUDwLRWeCE18MFZSoFS0fYJ7uy1JC3Q5MQQs1SW8rt_la3KYG862WIv6_6qGY7s3kJSp8Udue0n05Kmzswr0WfyaCKwmHwUREKA92tcWLxa3y6amz5UKqkIAfVOk90k8OBmHG7dqpZ4Gk5n3CP7_LVXrIiE0xYPOCwpVACNA2-YQgOSD3HgHhVCQeso-hN50ZlNY1lwFQbXklXFNGWe29ecVzr3ES6yb8P0EBdSCfaOq-Nb4pDdPfVsyA' },
-    { id: 2,  name: 'Alice Rogers',     initials: 'AR', role: 'Board Member',             isHandRaised: false, hasSpeakRequest: true,
-      avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuB86E3YyyGF-AxTv3pYQSqLrLw_7RuFDwofIDrXrZp_w7Mde7ujwonIDHaPeIiiqr6ftE-Mv3i1dwVtkq3TCDpu2qniIXCs0Za6mxaCa5vYyu0u7YR0IkNqDfjiu2kRL8sySTbSpMCz7q5EGIVZU7zNX0c4o1iTLzGJ5tpL63PraN0gJ_2Xn4Y343k3Ru29LRgsBFhvWb-LB1QhmRJah7VxiGtg2KOZJxaD8h1s-bwg0QOyEKthry1SdtyGmASUqyTN9GddhSqPfw' },
-    { id: 3,  name: 'Michael King',     initials: 'MK', role: 'Board Member',             isHandRaised: false, hasSpeakRequest: false,
-      avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDeSoK2kHgl-C9z6UVQ-poeKdop0LB93xf6jkAhFtFUBwKrj_KDTghh20T857_6ypHACtoHmgV8TLwjZoOL9wLXCXxyX7wUuH-TMjjDz1rUu-BAz5aKQTSfnnEptyZNve1LkniPWGFkNw_2QPMaTJZHkPVFFQrwLrtEPTqo19h8QTazl_AcjViz0h9EvWI0N2TZpE7aFoAMQU06bhjAq2h7DQPIEY3Pl3VbH7Bqa7V8X0dXO5WnfpLDDSf_whg1OXeytCW7wrmiWw' },
-    { id: 4,  name: 'Sarah Lee',        initials: 'SL', role: 'CFO',                      isHandRaised: false, hasSpeakRequest: false,
-      avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAFGqRROmzE_jegauWbKiUu1g1pK6a_laejO1ZwsaSPjgQfL3g1IHmDSU-JhLmTby6CeYwkks1zrfaM-InVcjXeFRf0-sqzv4qFVmEE265v5jxO5bLqT7vNQYSz7q2fxrMVFdZeKlRJ_KoSrZIewKdXRaQG4hAPuUGAAsMGSQVm0kwYTWtJpgJJ0daacX43f47z_mpbiNiFlcY0XVXulSlk8KTjiWah8LYKvMsG1sT0M9nwkAYl_7Pr1pxiuPOlb6-i61ksCwkxsg' },
-    { id: 5,  name: 'David Vance',      initials: 'DV', role: 'CTO',                      isHandRaised: true,  hasSpeakRequest: true,
-      avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDB-RZh2QqY9ObAvcjR8T9ys67IcehfsaPziM0eddzEHj2fP5tLB5Biwie8XbrfK7oePNIveZAchqPC_ji6_YB61wm04kPEeUdMS92gYTO4jG-WtkItm9jZAFvSswr428of9vdbvW3GwhnSkhA-ee1F4e21j4s9jnlkQLIVWPt73cGX5x645ouRbrXTZmb_NoYZow2UsCeXnDj0VZzSI60CcG7eOyBTVg25TAHRBtMgXohvJOyrNmQ1OiAmum7dsfA8Wg1pNvVTMw' },
-    { id: 6,  name: 'Peter Tang',       initials: 'PT', role: 'VP Operations',            isHandRaised: false, hasSpeakRequest: false,
-      avatarUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDRcx63bCxiMSoZpNX_RvWnmwSf_gq2jEiCwTmKrQ3YhejzvXNf0lN-ads4SPrNh-AryCUrzLt0wP-oevoi4TlCKM8Dq6Jh3m2H9UrYoc2LWL9w7mZVzBiMupT_oJsq5RpfDgHKsmRbqNK8mFrCKCfd-npSBPz3wc7p2RBMIPnEZGzSyQ341yKI-EBsAzssGCcfgFfxu-WquXLSAoGGLd4jJ8lkJLXGtMjhkhZwvbX7Jt8i4pqqNMfy70Gt9wAfkfpSuOkef_Lkbg' },
-    { id: 7,  name: 'Elena Martinez',   initials: 'EM', role: 'Legal Counsel',            isHandRaised: true,  hasSpeakRequest: false, avatarUrl: null },
-    { id: 8,  name: 'James Wilson',     initials: 'JW', role: 'VP Finance',               isHandRaised: false, hasSpeakRequest: false, avatarUrl: null },
-    { id: 9,  name: 'Priya Patel',      initials: 'PP', role: 'Head of Product',          isHandRaised: false, hasSpeakRequest: true,  avatarUrl: null },
-    { id: 10, name: 'Yuki Tanaka',      initials: 'YT', role: 'CMO',                      isHandRaised: false, hasSpeakRequest: false, avatarUrl: null },
-    { id: 11, name: 'Carlos Reyes',     initials: 'CR', role: 'VP Sales',                 isHandRaised: false, hasSpeakRequest: false, avatarUrl: null },
-    { id: 12, name: 'Fatima Al-Hassan', initials: 'FA', role: 'Chief of Staff',           isHandRaised: false, hasSpeakRequest: false, avatarUrl: null },
-  ];
-
-  let currentSpeakerId = 1;
-
-  // ── Config ────────────────────────────────────────────────────────────────
-  const CONTAINER_SIZE = 480;
-  const PALETTE = [
-    '#4f46e5','#0891b2','#059669','#d97706','#7c3aed',
-    '#db2777','#0284c7','#65a30d','#c2410c','#0d9488',
-    '#b45309','#6d28d9'
-  ];
-
-  function getAvatarSize(n) {
-    if (n <= 6)  return 72;
-    if (n <= 10) return 56;
-    if (n <= 15) return 44;
-    return 36;
-  }
-
-  // ── Helpers ───────────────────────────────────────────────────────────────
-  function esc(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  function styleAvatar(el, size, isSpeaker) {
-    const ring = isSpeaker ? '#bbc3ff' : 'rgba(45,52,73,0.85)';
-    const rw   = isSpeaker ? 4 : 2;
-    const glow = isSpeaker ? '0 0 20px rgba(187,195,255,.55),0 0 48px rgba(187,195,255,.2)' : 'none';
-    el.style.width        = size + 'px';
-    el.style.height       = size + 'px';
-    el.style.borderRadius = '50%';
-    el.style.border       = rw + 'px solid ' + ring;
-    el.style.boxShadow    = glow;
-    el.style.flexShrink   = '0';
-  }
-
-  function makeInitialsEl(p, idx, size, isSpeaker) {
-    const el = document.createElement('div');
-    styleAvatar(el, size, isSpeaker);
-    Object.assign(el.style, {
-      background: PALETTE[idx % PALETTE.length],
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontWeight: '700', fontSize: Math.round(size * 0.33) + 'px',
-      color: '#fff', fontFamily: 'Inter,sans-serif', userSelect: 'none'
-    });
-    el.textContent = p.initials;
-    return el;
-  }
-
-  function makeImgEl(p, idx, size, isSpeaker) {
-    const el = document.createElement('img');
-    el.src = p.avatarUrl;
-    el.alt = '';
-    styleAvatar(el, size, isSpeaker);
-    el.style.objectFit = 'cover';
-    el.style.display   = 'block';
-    if (isSpeaker) el.style.animation = 'mic-ring-pulse 3s ease-in-out infinite';
-    el.onerror = function () { this.replaceWith(makeInitialsEl(p, idx, size, isSpeaker)); };
-    return el;
-  }
-
-  function makeMicBadge() {
-    const d = document.createElement('div');
-    Object.assign(d.style, {
-      position: 'absolute', top: '-4px', right: '-4px',
-      background: '#bbc3ff', borderRadius: '50%',
-      width: '22px', height: '22px',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      boxShadow: '0 2px 8px rgba(0,0,0,.5)', zIndex: '5'
-    });
-    d.innerHTML = "<span class='material-symbols-outlined' style=\"font-size:13px;color:#001d93;font-variation-settings:'FILL' 1\">mic</span>";
-    return d;
-  }
-
-  function makeHandBadge() {
-    const d = document.createElement('div');
-    Object.assign(d.style, {
-      position: 'absolute', top: '-4px', left: '-4px',
-      background: '#f59e0b', borderRadius: '50%',
-      width: '22px', height: '22px',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      boxShadow: '0 2px 8px rgba(0,0,0,.5)', zIndex: '5',
-      animation: 'hand-raise-pulse 2s ease-in-out infinite'
-    });
-    d.innerHTML = "<span class='material-symbols-outlined' style=\"font-size:12px;color:#fff;font-variation-settings:'FILL' 1\">pan_tool</span>";
-    return d;
-  }
-
-  function makeTooltip(p, isSpeaker) {
-    const d = document.createElement('div');
-    d.className = 'pt-tooltip';
-    const state = isSpeaker ? '\uD83C\uDF99\uFE0F Speaking'
-      : (p.hasSpeakRequest || p.isHandRaised ? '\u270B Waiting' : 'Listening');
-    Object.assign(d.style, {
-      position: 'absolute', bottom: 'calc(100% + 10px)', left: '50%',
-      transform: 'translateX(-50%)',
-      background: '#141c2f', color: '#dae2fd',
-      border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px',
-      padding: '6px 12px', whiteSpace: 'nowrap',
-      fontSize: '11px', fontFamily: 'Inter,sans-serif', lineHeight: '1.6',
-      pointerEvents: 'none', opacity: '0',
-      transition: 'opacity .15s ease, transform .15s ease',
-      zIndex: '100', boxShadow: '0 4px 16px rgba(0,0,0,.4)'
-    });
-    d.innerHTML = '<strong style="font-size:12px">' + esc(p.name) + '</strong><br>'
-      + '<span style="color:#8e8fa2">' + esc(p.role) + '</span><br>'
-      + '<span style="color:#bbc3ff;font-size:10px">' + state + '</span>';
-    return d;
-  }
-
-  // ── Core render ───────────────────────────────────────────────────────────
-  function renderParticipants(list, speakerId) {
-    const container = document.getElementById('participant-table');
-    if (!container) return;
-
-    container.querySelectorAll('.participant-avatar-wrapper').forEach(function (el) { el.remove(); });
-
-    const n       = list.length;
-    const base    = getAvatarSize(n);
-    const spkSize = Math.round(base * 1.5);
-    const R       = CONTAINER_SIZE / 2 - base / 2 - 8;
-
-    var badge = document.getElementById('participant-count-badge');
-    if (badge) badge.textContent = n + ' PARTICIPANT' + (n !== 1 ? 'S' : '');
-
-    list.forEach(function (p, i) {
-      var angle     = (i / n) * 2 * Math.PI - Math.PI / 2;
-      var isSpeaker = p.id === speakerId;
-      var size      = isSpeaker ? spkSize : base;
-      var x         = Math.round(R * Math.cos(angle));
-      var y         = Math.round(R * Math.sin(angle));
-
-      // Outer wrapper — pin to ring point, centered via translate
-      var wrapper = document.createElement('div');
-      wrapper.className = 'participant-avatar-wrapper';
-      Object.assign(wrapper.style, {
-        position: 'absolute',
-        left: 'calc(50% + ' + x + 'px)',
-        top:  'calc(50% + ' + y + 'px)',
-        transform: 'translate(-50%,-50%)',
-        zIndex: isSpeaker ? '20' : '15',
-        cursor: 'pointer'
-      });
-      var stateLabel = isSpeaker ? 'speaking'
-        : ((p.hasSpeakRequest || p.isHandRaised) ? 'waiting to speak' : 'listening');
-      wrapper.setAttribute('aria-label', p.name + ', ' + p.role + ', ' + stateLabel);
-
-      // Inner — carries enter animation
-      var inner = document.createElement('div');
-      Object.assign(inner.style, { position: 'relative', display: 'inline-block' });
-      inner.style.animation = isSpeaker
-        ? 'speaker-enter .45s cubic-bezier(.34,1.56,.64,1) both'
-        : 'avatar-enter .35s cubic-bezier(.34,1.56,.64,1) both';
-
-      // Avatar element
-      var avatar = p.avatarUrl ? makeImgEl(p, i, size, isSpeaker) : makeInitialsEl(p, i, size, isSpeaker);
-      inner.appendChild(avatar);
-
-      // Badges
-      if (isSpeaker) inner.appendChild(makeMicBadge());
-      if (!isSpeaker && (p.isHandRaised || p.hasSpeakRequest)) inner.appendChild(makeHandBadge());
-
-      // Tooltip
-      var tip = makeTooltip(p, isSpeaker);
-      inner.appendChild(tip);
-
-      inner.addEventListener('mouseenter', function () {
-        tip.style.opacity   = '1';
-        tip.style.transform = 'translateX(-50%) translateY(-4px)';
-      });
-      inner.addEventListener('mouseleave', function () {
-        tip.style.opacity   = '0';
-        tip.style.transform = 'translateX(-50%) translateY(0)';
-      });
-
-      wrapper.appendChild(inner);
-      container.appendChild(wrapper);
-    });
-  }
-
-  // ── Public API ────────────────────────────────────────────────────────────
-  /**
-   * Call this to change the current speaker and re-render.
-   * e.g.  window.meetingTable.setCurrentSpeaker(3)
-   */
-  function setCurrentSpeaker(id) {
-    currentSpeakerId = id;
-    renderParticipants(participants, currentSpeakerId);
-    // Sync left-panel "Currently Speaking" card
-    var p = participants.find(function (x) { return x.id === id; });
-    if (p) {
-      var nameEl = document.querySelector('section h3');
-      var roleEl = document.querySelector('section p.text-sm.text-on-surface-variant');
-      if (nameEl) nameEl.textContent = p.name;
-      if (roleEl) roleEl.textContent = p.role;
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', function () {
-    renderParticipants(participants, currentSpeakerId);
-  });
-
-  window.meetingTable = { participants: participants, setCurrentSpeaker: setCurrentSpeaker, renderParticipants: renderParticipants };
-}());
-</script>
+<button class="flex flex-col items-center gap-1 text-[#dae2fd]/40">
+<span class="material-symbols-outlined">ballot</span>
+<span class="text-[8px] font-bold uppercase">Poll</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-[#dae2fd]/40" onclick="document.getElementById('sidebar').classList.toggle('collapsed')">
+<span class="material-symbols-outlined">menu</span>
+<span class="text-[8px] font-bold uppercase">Menu</span>
+</button>
+</nav>
 </body></html>
