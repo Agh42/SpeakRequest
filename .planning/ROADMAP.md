@@ -45,7 +45,10 @@ Plans:
   2. The main desktop content is arranged in a three-column layout with left utility panels, a center focus area, and a right queue column.
   3. On mobile, the conference table is de-emphasized and bottom navigation tabs move the user to Controls, Queue, Poll, and Menu sections.
   4. Sidebar and navigation behaviors are usable without changing any backend APIs or introducing new routes.
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 02-01-PLAN.md - Build fixed header and desktop three-column shell with anchored section contracts
+- [ ] 02-02-PLAN.md - Implement collapsible sidebar and mobile navigation behaviors with active-section syncing
 **UI hint**: yes
 
 ### Phase 3: Conference Table Experience
