@@ -1,9 +1,9 @@
 ---
-status: complete
+status: diagnosed
 phase: 02-structural-layout-shell
 source: [02-01-SUMMARY.md, 02-02-SUMMARY.md]
 started: 2026-03-24T21:01:17.0987122+01:00
-updated: 2026-03-24T21:15:16.4660199+01:00
+updated: 2026-03-24T21:18:38.7849325+01:00
 ---
 
 ## Current Test
@@ -57,16 +57,24 @@ blocked: 0
   reason: "User reported: fail - tapping menu just dims the screen but no menu appears"
   severity: major
   test: 5
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "The mobile slide-over panel is permanently forced off-screen by an inline transform style, and opening the menu only toggles data-open/backdrop without overriding that inline transform."
+  artifacts:
+    - path: "src/main/resources/static/chair.html"
+      issue: "Inline transform on #mobileMenuPanel overrides CSS open-state transform."
+  missing:
+    - "Remove inline panel transform and let data-open CSS control position."
+    - "Or explicitly update panel transform in open/close handlers."
+  debug_session: ".planning/debug/phase02-menu-dims-no-panel.md"
 - truth: "As you scroll through sections, desktop and mobile navigation active states update to reflect the currently visible section."
   status: failed
   reason: "User reported: fail - highlights do not cleanly change, others stay highlighted. weird effect with both background and a left-side border being highlighted"
   severity: major
   test: 6
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Active section selection is derived from per-callback IntersectionObserver delta entries instead of a deterministic all-sections ranking, causing unstable/sticky highlights in the multi-column layout where multiple sections intersect at once."
+  artifacts:
+    - path: "src/main/resources/static/chair.html"
+      issue: "Observer callback chooses active section from callback entries, not full tracked section state."
+  missing:
+    - "Compute active section deterministically from all tracked sections each update."
+    - "Ensure exactly one active nav target at a time when classes are applied."
+  debug_session: ".planning/debug/phase02-nav-active-state.md"
