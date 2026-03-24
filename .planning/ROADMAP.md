@@ -28,7 +28,10 @@ This milestone refactors the existing chair experience into The Orchestrator des
   1. The chair page renders with the midnight palette, tonal surface layers, and no explicit 1px section borders.
   2. Tailwind CDN drives the chair page styling and the legacy chair-specific styling dependency is removed or bypassed for the redesigned screen.
   3. Manrope is visible in display and headline treatments, Inter is used for body and labels, and Material Symbols Outlined icons render consistently across the page.
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [ ] 01-01-PLAN.md - Bootstrap Tailwind, fonts, and Material Symbols in chair view
+- [ ] 01-02-PLAN.md - Apply Orchestrator tonal foundation and no-line styling baseline
 **UI hint**: yes
 
 ### Phase 2: Structural Layout Shell
