@@ -81,16 +81,35 @@ Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DS-01 through DS-04 | TBD | Pending |
-| LAYOUT-01 through LAYOUT-04 | TBD | Pending |
-| TABLE-01 through TABLE-06 | TBD | Pending |
-| CTRL-01 through CTRL-06 | TBD | Pending |
-| MIG-01 through MIG-04 | TBD | Pending |
+| DS-01 | Phase 1 | Pending |
+| DS-02 | Phase 1 | Pending |
+| DS-03 | Phase 1 | Pending |
+| DS-04 | Phase 1 | Pending |
+| LAYOUT-01 | Phase 2 | Pending |
+| LAYOUT-02 | Phase 2 | Pending |
+| LAYOUT-03 | Phase 2 | Pending |
+| LAYOUT-04 | Phase 2 | Pending |
+| TABLE-01 | Phase 3 | Pending |
+| TABLE-02 | Phase 3 | Pending |
+| TABLE-03 | Phase 3 | Pending |
+| TABLE-04 | Phase 3 | Pending |
+| TABLE-05 | Phase 3 | Pending |
+| TABLE-06 | Phase 3 | Pending |
+| CTRL-01 | Phase 4 | Pending |
+| CTRL-02 | Phase 4 | Pending |
+| CTRL-03 | Phase 4 | Pending |
+| CTRL-04 | Phase 4 | Pending |
+| CTRL-05 | Phase 4 | Pending |
+| CTRL-06 | Phase 4 | Pending |
+| MIG-01 | Phase 5 | Pending |
+| MIG-02 | Phase 5 | Pending |
+| MIG-03 | Phase 5 | Pending |
+| MIG-04 | Phase 5 | Pending |
 
 **Coverage:**
 - v1 requirements: 20 total
-- Mapped to phases: 0 (roadmap pending)
-- Unmapped: 20 ⚠️
+- Mapped to phases: 20
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-24*
