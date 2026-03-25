@@ -14,7 +14,7 @@ This milestone refactors the existing chair experience into The Orchestrator des
 
 - [x] **Phase 1: Design System Foundation** - Establish Tailwind, typography, iconography, and The Orchestrator token system in the chair view. (Completed 2026-03-24)
 - [x] **Phase 2: Structural Layout Shell** - Build the new header, sidebar, desktop grid, and mobile navigation that frame the redesigned experience. (Completed 2026-03-24)
-- [ ] **Phase 3: Conference Table Experience** - Deliver the round-table centerpiece with participant avatars, queue markers, and the central timer display.
+- [x] **Phase 3: Conference Table Experience** - Deliver the round-table centerpiece with participant avatars, queue markers, and the central timer display. (Completed 2026-03-25)
 - [ ] **Phase 4: Functional Control Migration** - Rebuild the chair's control, queue, poll, and sharing panels in the new layout while preserving existing interactions.
 - [ ] **Phase 5: Integration Verification & Completion** - Reconnect every remaining DOM binding, preserve sanitization and metadata displays, and verify end-to-end migration completeness.
 
@@ -65,8 +65,8 @@ Plans:
 **UI hint**: yes
 
 Plans:
-- [ ] 03-01-PLAN.md - Build the desktop conference-table scaffold and mobile hide behavior
-- [ ] 03-02-PLAN.md - Wire participant avatars, speaking highlight, queue badges, and center timing
+- [x] 03-01-PLAN.md - Build the desktop conference-table scaffold and mobile hide behavior
+- [x] 03-02-PLAN.md - Wire participant avatars, speaking highlight, queue badges, and center timing
 
 ### Phase 4: Functional Control Migration
 **Goal**: Every chair-facing control area is rebuilt in the new layout so the redesign is operational, not just visual.
@@ -77,8 +77,12 @@ Plans:
   2. The Speaker Queue panel shows the current speaker distinctly at the top, lists queued speakers below, and exposes a visible Force Add Speaker action.
   3. The Live Poll panel displays active poll content and live results in the new glass-panel treatment and still offers the poll-ending action.
   4. The Share Access area exposes working copy-code and copy-link actions from the redesigned left column.
-**Plans**: TBD
+**Plans**: 2 plans
 **UI hint**: yes
+
+Plans:
+- [ ] 04-01-PLAN.md - Rebuild Meeting Controls and Speaker Queue panels while preserving existing chair action IDs
+- [ ] 04-02-PLAN.md - Migrate Live Poll and Share Access, then verify the full control migration in-browser
 
 ### Phase 5: Integration Verification & Completion
 **Goal**: The redesigned chair view preserves existing behavior end to end, including subscriptions, publishing actions, sanitization, and room metadata visibility.
@@ -101,6 +105,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 |-------|----------------|--------|-----------|
 | 1. Design System Foundation | 4/4 | Complete | 2026-03-24 |
 | 2. Structural Layout Shell | 2/2 | Complete | 2026-03-24 |
-| 3. Conference Table Experience | 0/0 | Not started | - |
-| 4. Functional Control Migration | 0/0 | Not started | - |
+| 3. Conference Table Experience | 2/2 | Complete | 2026-03-25 |
+| 4. Functional Control Migration | 0/2 | Not started | - |
 | 5. Integration Verification & Completion | 0/0 | Not started | - |
