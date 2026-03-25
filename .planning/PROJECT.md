@@ -8,6 +8,16 @@ SpeakRequest is a hybrid meeting manager for discussion moderators and facilitat
 
 The chair can see every participant's status at a glance — who is speaking, who is next, and who is waiting — without leaving the main screen.
 
+## Current State
+
+Milestone v1.0 is shipped and archived. The chair view now uses the Orchestrator layout, the central conference table, the migrated control panels, and the preserved STOMP / sanitization / metadata contract.
+
+## Next Milestone Goals
+
+- Participant view redesign that matches the chair-view visual language.
+- Lightweight motion and state transitions for table and queue updates.
+- Popout view refresh if the next milestone chooses to unify secondary surfaces.
+
 ## Requirements
 
 ### Validated
@@ -26,21 +36,31 @@ The chair can see every participant's status at a glance — who is speaking, wh
 - ✓ Chair view now boots with Tailwind + tokenized Orchestrator base palette — validated in Phase 1
 - ✓ Manrope/Inter typography and Material Symbols icon system baseline in chair view — validated in Phase 1
 - ✓ Tonal no-line styling baseline and consistent text input control language established — validated in Phase 1
+- ✓ Full collapsible sidebar navigation — completed in Phase 2
+- ✓ Full mockup header — completed in Phase 2
+- ✓ Central round conference table — completed in Phase 3
+- ✓ Participant avatars and queue badges — completed in Phase 3
+- ✓ Conference table hidden on mobile — completed in Phase 3
+- ✓ Meeting Controls section reorganized — completed in Phase 4
+- ✓ Speaker Queue right-column panel — completed in Phase 4
+- ✓ Live Poll glass-panel integrated in left column — completed in Phase 4
+- ✓ Share Access section in left column — completed in Phase 4
+- ✓ All existing STOMP/WebSocket event wiring preserved and tested — completed in Phase 5
 
 ### Active
 
-- [ ] Chair view fully reworked to "The Orchestrator" design system (deep-navy dark theme, tonal layering, no explicit borders)
+- [x] Chair view fully reworked to "The Orchestrator" design system (deep-navy dark theme, tonal layering, no explicit borders)
 - [x] Tailwind CSS (CDN) + Manrope/Inter Google Fonts adopted in chair.html
-- [ ] Full collapsible sidebar navigation (Meeting Controls, Speaker Queue, Live Polling, Agenda sections)
-- [ ] Full mockup header: hamburger toggle, room-code badge, copy-code/copy-link, destroy-room, notifications+settings icons
-- [ ] Central round conference table — top-down SVG/CSS abstract view with participant avatars
-- [ ] Participant avatars: colored monogram circles; "speaking now" state (tertiary glow/border); "in-queue" state (numbered badge)
-- [ ] Conference table hidden on mobile; mobile uses bottom nav anchor (Controls / Queue / Poll / Menu)
-- [ ] Meeting Controls section reorganized: speaker-name input, proxy-request, withdraw, per-speaker limit, Start/Pause/Next/Reset action buttons
-- [ ] Speaker Queue right-column panel (scrollable list, current speaker pinned at top, "Force Add Speaker" button)
-- [ ] Live Poll glass-panel integrated in left column on desktop
-- [ ] Share Access section (copy code, copy link) in left column on desktop
-- [ ] All existing STOMP/WebSocket event wiring preserved and tested
+- [x] Full collapsible sidebar navigation (Meeting Controls, Speaker Queue, Live Polling, Agenda sections)
+- [x] Full mockup header: hamburger toggle, room-code badge, copy-code/copy-link, destroy-room, notifications+settings icons
+- [x] Central round conference table — top-down SVG/CSS abstract view with participant avatars
+- [x] Participant avatars: colored monogram circles; "speaking now" state (tertiary glow/border); "in-queue" state (numbered badge)
+- [x] Conference table hidden on mobile; mobile uses bottom nav anchor (Controls / Queue / Poll / Menu)
+- [x] Meeting Controls section reorganized: speaker-name input, proxy-request, withdraw, per-speaker limit, Start/Pause/Next/Reset action buttons
+- [x] Speaker Queue right-column panel (scrollable list, current speaker pinned at top, "Force Add Speaker" button)
+- [x] Live Poll glass-panel integrated in left column on desktop
+- [x] Share Access section (copy code, copy link) in left column on desktop
+- [x] All existing STOMP/WebSocket event wiring preserved and tested
 
 ### Out of Scope
 
@@ -94,3 +114,12 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 *Last updated: 2026-03-24 after Phase 1 completion*
+
+## Archived State
+
+- Milestone v1.0 shipped on 2026-03-25.
+- Remaining v2 ideas stay deferred until the next milestone is started.
+- Phase summaries and milestone archives live under `.planning/milestones/`.
+
+---
+*Last updated: 2026-03-25 after v1.0 milestone completion*
