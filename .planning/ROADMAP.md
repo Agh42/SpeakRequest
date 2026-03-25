@@ -61,8 +61,12 @@ Plans:
   3. The currently speaking participant is visually called out with the specified tertiary highlight treatment, and queued participants show numbered position badges.
   4. The table center shows the active speaker timer and room code together in a way the chair can read at a glance.
   5. On mobile, the table is hidden and the page remains usable through the non-table sections.
-**Plans**: TBD
+**Plans**: 2 plans
 **UI hint**: yes
+
+Plans:
+- [ ] 03-01-PLAN.md - Build the desktop conference-table scaffold and mobile hide behavior
+- [ ] 03-02-PLAN.md - Wire participant avatars, speaking highlight, queue badges, and center timing
 
 ### Phase 4: Functional Control Migration
 **Goal**: Every chair-facing control area is rebuilt in the new layout so the redesign is operational, not just visual.
