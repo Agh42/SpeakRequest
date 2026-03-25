@@ -28,10 +28,10 @@ This milestone refactors the existing chair experience into The Orchestrator des
   1. The chair page renders with the midnight palette, tonal surface layers, and no explicit 1px section borders.
   2. Tailwind CDN drives the chair page styling and the legacy chair-specific styling dependency is removed or bypassed for the redesigned screen.
   3. Manrope is visible in display and headline treatments, Inter is used for body and labels, and Material Symbols Outlined icons render consistently across the page.
-**Plans**: 4 plans
+**Plans**: 2 plans
 Plans:
-- [x] 01-01-PLAN.md - Bootstrap Tailwind, fonts, and Material Symbols in chair view
-- [x] 01-02-PLAN.md - Apply Orchestrator tonal foundation and no-line styling baseline
+- [x] 04-01-PLAN.md - Rebuild Meeting Controls and Speaker Queue panels while preserving existing chair action IDs
+- [x] 04-02-PLAN.md - Migrate Live Poll and Share Access, then verify the full control migration in-browser
 - [x] 01-03-PLAN.md - Gap closure for participant/limit/config control styling consistency
 - [x] 01-04-PLAN.md - Gap closure for remaining poll text input styling consistency
 **UI hint**: yes
@@ -93,8 +93,12 @@ Plans:
   2. All existing chair publish actions still work from the redesigned controls without introducing new STOMP events or backend changes.
   3. Participant names and other user-supplied strings remain sanitized before rendering anywhere in the redesigned interface.
   4. Existing room configuration metadata remains visible in the redesigned settings or sidebar area.
-**Plans**: TBD
+**Plans**: 2 plans
 **UI hint**: yes
+
+Plans:
+- [ ] 05-01-PLAN.md - Reconfirm chair subscriptions, publish actions, sanitization, and metadata visibility in the migrated shell
+- [ ] 05-02-PLAN.md - Human-verify the migrated chair UI on desktop and mobile before closing the phase
 
 ## Progress
 
@@ -106,5 +110,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 1. Design System Foundation | 4/4 | Complete | 2026-03-24 |
 | 2. Structural Layout Shell | 2/2 | Complete | 2026-03-24 |
 | 3. Conference Table Experience | 2/2 | Complete | 2026-03-25 |
-| 4. Functional Control Migration | 0/2 | Not started | - |
-| 5. Integration Verification & Completion | 0/0 | Not started | - |
+| 4. Functional Control Migration | 2/2 | Complete | 2026-03-25 |
+| 5. Integration Verification & Completion | 0/2 | Not started | - |
