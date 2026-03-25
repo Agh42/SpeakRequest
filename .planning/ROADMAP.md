@@ -15,7 +15,7 @@ This milestone refactors the existing chair experience into The Orchestrator des
 - [x] **Phase 1: Design System Foundation** - Establish Tailwind, typography, iconography, and The Orchestrator token system in the chair view. (Completed 2026-03-24)
 - [x] **Phase 2: Structural Layout Shell** - Build the new header, sidebar, desktop grid, and mobile navigation that frame the redesigned experience. (Completed 2026-03-24)
 - [x] **Phase 3: Conference Table Experience** - Deliver the round-table centerpiece with participant avatars, queue markers, and the central timer display. (Completed 2026-03-25)
-- [ ] **Phase 4: Functional Control Migration** - Rebuild the chair's control, queue, poll, and sharing panels in the new layout while preserving existing interactions.
+- [x] **Phase 4: Functional Control Migration** - Rebuild the chair's control, queue, poll, and sharing panels in the new layout while preserving existing interactions. (Completed 2026-03-25)
 - [ ] **Phase 5: Integration Verification & Completion** - Reconnect every remaining DOM binding, preserve sanitization and metadata displays, and verify end-to-end migration completeness.
 
 ## Phase Details

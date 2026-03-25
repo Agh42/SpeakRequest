@@ -14,75 +14,39 @@
   <!-- Twitter -->
   <meta name="twitter:card" content="summary"/>
   <meta name="twitter:title" content="SPEEK.NOW - Join Meeting"/>
+      z-index: 20;
   <meta name="twitter:description" content="Join this meeting on SPEEK.NOW to request speaking time and participate in polls."/>
 
-  <script src="https://cdn.tailwindcss.com"></script>
+    .conference-table-seat-avatar {
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap"/>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
+      width: 100%;
+      height: 100%;
+      border-radius: 9999px;
           colors: {
-            background: '#0b1326',
             surface: '#0b1326',
             'surface-dim': '#0b1326',
-            'surface-bright': '#31394d',
-            'surface-container-lowest': '#060e20',
+      font-family: Manrope, sans-serif;
+      font-size: 0.92rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 12px 26px rgba(0, 0, 0, 0.22);
             'surface-container-low': '#131b2e',
             'surface-container': '#171f33',
-            'surface-container-high': '#222a3d',
-            'surface-container-highest': '#2d3449',
-            'surface-variant': '#2d3449',
-            'surface-tint': '#bbc3ff',
-            primary: '#bbc3ff',
-            'primary-container': '#3d5afe',
-            'primary-fixed': '#dee0ff',
-            'primary-fixed-dim': '#bbc3ff',
+    .conference-table-seat-avatar.current {
+      box-shadow: 0 0 0 3px rgba(0, 228, 117, 0.85), 0 0 0 8px rgba(0, 228, 117, 0.14), 0 12px 26px rgba(0, 0, 0, 0.22);
+    }
+
+    .conference-table-seat-avatar.queue {
+      box-shadow: 0 0 0 2px rgba(141, 143, 162, 0.8), 0 12px 26px rgba(0, 0, 0, 0.22);
+    }
+
+    .conference-table-avatar {
+      width: 4.2rem;
+      height: 4.2rem;
             'on-primary': '#001d93',
             'on-primary-container': '#f1f0ff',
             'on-primary-fixed': '#000f5d',
             'on-primary-fixed-variant': '#002ccd',
-            secondary: '#adcbda',
-            'secondary-container': '#304d5a',
-            'secondary-fixed': '#c9e7f7',
-            'secondary-fixed-dim': '#adcbda',
-            'on-secondary': '#163440',
-            'on-secondary-container': '#9fbdcc',
-            'on-secondary-fixed': '#001f2a',
-            'on-secondary-fixed-variant': '#2e4b57',
-            tertiary: '#00e475',
-            'tertiary-container': '#007f3e',
-            'tertiary-fixed': '#62ff96',
-            'tertiary-fixed-dim': '#00e475',
-            'on-tertiary': '#003918',
-            'on-tertiary-container': '#c8ffcf',
-            'on-tertiary-fixed': '#00210b',
-            'on-tertiary-fixed-variant': '#005226',
-            error: '#ffb4ab',
-            'error-container': '#93000a',
-            'on-error': '#690005',
-            'on-error-container': '#ffdad6',
-            'on-surface': '#dae2fd',
-            'on-surface-variant': '#c5c5d9',
-            'on-background': '#dae2fd',
-            outline: '#8e8fa2',
-            'outline-variant': '#444656',
-            'inverse-surface': '#dae2fd',
-            'inverse-on-surface': '#283044',
-            'inverse-primary': '#2848ee'
-          },
-          fontFamily: {
-            headline: ['Manrope', 'sans-serif'],
-            body: ['Inter', 'sans-serif'],
-            label: ['Inter', 'sans-serif']
-          }
-        }
-      }
-    };
-  </script>
-  <style>
     .material-symbols-outlined {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
       vertical-align: middle;
@@ -156,6 +120,44 @@
 
     #mobileMenuPanel[data-open='true'] {
       transform: translateX(0);
+    }
+
+    .conference-table-shell {
+      aspect-ratio: 1 / 1;
+      width: min(100%, 820px);
+    }
+
+    .conference-table-seat {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform-origin: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+    }
+
+    .conference-table-avatar {
+      width: 4.2rem;
+      height: 4.2rem;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Manrope, sans-serif;
+      font-size: 0.92rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 12px 26px rgba(0, 0, 0, 0.22);
+    }
+
+    .conference-table-seat-avatar.current {
+      box-shadow: 0 0 0 3px rgba(0, 228, 117, 0.85), 0 0 0 8px rgba(0, 228, 117, 0.14), 0 12px 26px rgba(0, 0, 0, 0.22);
+    }
+
+    .conference-table-seat-avatar.queue {
+      box-shadow: 0 0 0 2px rgba(141, 143, 162, 0.8), 0 12px 26px rgba(0, 0, 0, 0.22);
     }
   </style>
   <script src="stomp.min.js"></script>
@@ -276,161 +278,7 @@
             </div>
           </section>
 
-          <section id="section-menu" class="scroll-mt-28 rounded-[28px] bg-surface-container p-5 shadow-[0_28px_80px_rgba(0,0,0,0.24)] md:p-6">
-            <div class="mb-5 flex items-center justify-between gap-3">
-              <div>
-                <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-on-surface-variant">Room menu</p>
-                <h2 class="font-headline text-2xl font-extrabold tracking-tight text-on-surface">Room Information</h2>
-              </div>
-              <div class="rounded-full bg-surface-container-high px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">Visible</div>
-            </div>
-
-            <div class="rounded-[24px] bg-surface-container-high p-4">
-              <div class="text-sm text-on-surface-variant">Share this code with participants to let them join:</div>
-              <div id="roomCodeLarge" class="mt-3 font-headline text-4xl font-extrabold tracking-[0.28em] text-on-surface">----</div>
-              <div class="mt-4 flex flex-wrap gap-2">
-                <button id="btnCopyCode" class="inline-flex items-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container"><span class="material-symbols-outlined">content_copy</span> Copy Code</button>
-                <button id="btnShareLink" class="inline-flex items-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container"><span class="material-symbols-outlined">link</span> Copy Participant Link</button>
-                <button id="btnShareParticipantUrl" class="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-surface transition hover:brightness-110" aria-label="Share participation link"><span class="material-symbols-outlined">share</span> Share</button>
-              </div>
-              <div id="copyStatus" class="mt-3 text-sm text-on-surface-variant"></div>
-            </div>
-
-            <div class="mt-4 rounded-[24px] bg-surface-container-high p-4">
-              <div class="mb-4 flex items-center justify-between gap-3">
-                <h3 class="font-headline text-lg font-bold text-on-surface">Meeting Configuration</h3>
-                <span class="text-[10px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Metadata</span>
-              </div>
-
-              <div class="space-y-3">
-                <div>
-                  <label for="configTopic" class="mb-1 block text-sm font-medium text-on-surface-variant">Topic</label>
-                  <input id="configTopic" class="w-full rounded-2xl bg-background/60 px-4 py-3 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/60" type="text" placeholder="Enter meeting topic" maxlength="100"/>
-                </div>
-
-                <div>
-                  <label for="configParticipationFormat" class="mb-1 block text-sm font-medium text-on-surface-variant">Participation Format</label>
-                  <select id="configParticipationFormat" class="w-full rounded-2xl bg-background/60 px-4 py-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60">
-                    <option value="">-- Select Participation Format --</option>
-                    <option value="OPEN_DISCUSSION">Open Discussion</option>
-                    <option value="STRUCTURED_GO_AROUNDS">Structured Go-Arounds</option>
-                    <option value="PRESENTATIONS_AND_REPORTS">Presentations and Reports</option>
-                    <option value="SMALL_GROUPS">Small Groups</option>
-                    <option value="LISTING_IDEAS">Listing Ideas</option>
-                    <option value="JIGSAW">Jigsaw</option>
-                    <option value="INDIVIDUAL_WRITING">Individual Writing</option>
-                    <option value="MULTI_TASKING">Multi-Tasking</option>
-                    <option value="FISHBOWLS">Fishbowls</option>
-                    <option value="TRADESHOW">Tradeshow</option>
-                    <option value="SCRAMBLER">Scrambler</option>
-                    <option value="ROLEPLAYS">Roleplays</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label for="configMeetingGoal" class="mb-1 block text-sm font-medium text-on-surface-variant">Meeting Goal</label>
-                  <select id="configMeetingGoal" class="w-full rounded-2xl bg-background/60 px-4 py-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60">
-                    <option value="">-- Select Meeting Goal --</option>
-                    <option value="MAKE_DECISIONS">Make Decisions</option>
-                    <option value="ADVANCE_THINKING">Advance the Thinking</option>
-                    <option value="SHARE_INFORMATION">Share Information</option>
-                    <option value="OBTAIN_INPUT">Obtain Input</option>
-                    <option value="IMPROVE_COMMUNICATION">Improve Communication</option>
-                    <option value="BUILD_CAPACITY">Build Capacity</option>
-                    <option value="BUILD_COMMUNITY">Build Community</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label for="configDecisionRule" class="mb-1 block text-sm font-medium text-on-surface-variant">Decision Rule</label>
-                  <select id="configDecisionRule" class="w-full rounded-2xl bg-background/60 px-4 py-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60">
-                    <option value="">-- Select Decision Rule --</option>
-                    <option value="UNANIMITY">Unanimity</option>
-                    <option value="GRADIENTS_OF_AGREEMENT">Gradients of Agreement</option>
-                    <option value="DOT_VOTING">Dot Voting</option>
-                    <option value="SUPERMAJORITY">Supermajority</option>
-                    <option value="MAJORITY">Majority</option>
-                    <option value="PLURALITY">Plurality</option>
-                    <option value="CONSENT">Consent</option>
-                    <option value="PERSON_IN_CHARGE">Person in Charge</option>
-                    <option value="COMMISSION">Commission</option>
-                    <option value="FLIP_A_COIN">Flip a Coin</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label for="configDeliverable" class="mb-1 block text-sm font-medium text-on-surface-variant">A.T. Deliverable</label>
-                  <select id="configDeliverable" class="w-full rounded-2xl bg-background/60 px-4 py-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60">
-                    <option value="">-- Select Deliverable --</option>
-                    <option value="DEFINE_PROBLEM">Define a problem</option>
-                    <option value="CREATE_MILESTONE_MAP">Create a milestone map</option>
-                    <option value="ANALYZE_PROBLEM">Analyze a problem</option>
-                    <option value="CREATE_WORK_BREAKDOWN">Create a work breakdown structure</option>
-                    <option value="IDENTIFY_ROOT_CAUSES">Identify root causes</option>
-                    <option value="CONDUCT_RESOURCE_ANALYSIS">Conduct a resource analysis</option>
-                    <option value="IDENTIFY_PATTERNS">Identify underlying patterns</option>
-                    <option value="CONDUCT_RISK_ASSESSMENT">Conduct a risk assessment</option>
-                    <option value="SORT_IDEAS_INTO_THEMES">Sort a list of ideas into themes</option>
-                    <option value="DEFINE_SELECTION_CRITERIA">Define selection criteria</option>
-                    <option value="REARRANGE_BY_PRIORITY">Rearrange a list of items by priority</option>
-                    <option value="EVALUATE_OPTIONS">Evaluate options</option>
-                    <option value="DRAW_FLOWCHART">Draw a flowchart</option>
-                    <option value="IDENTIFY_SUCCESS_FACTORS">Identify critical success factors</option>
-                    <option value="IDENTIFY_CORE_VALUES">Identify core values</option>
-                    <option value="EDIT_STATEMENT">Edit and/or wordsmith a statement</option>
-                  </select>
-                </div>
-              </div>
-
-              <div id="configDescriptions" class="mt-4 rounded-2xl bg-black/20 p-4 text-sm leading-6" style="display: none;">
-                <div class="mb-2 text-sm font-semibold text-on-surface">Selected Options</div>
-                <div id="configDescriptionText"></div>
-              </div>
-            </div>
-          </section>
-        </div>
-
-        <section id="section-center-shell" class="scroll-mt-28 lg:col-span-5 flex flex-col items-center justify-center space-y-8 py-8 lg:py-0">
-          <div class="relative w-full aspect-square max-w-[320px] sm:max-w-[380px] lg:max-w-[450px] flex items-center justify-center mx-auto">
-            <div class="absolute inset-0 rounded-full border border-primary/10 animate-[ping_3s_linear_infinite]"></div>
-            <div class="absolute inset-4 rounded-full border border-primary/20"></div>
-            <div class="absolute inset-8 sm:inset-10 lg:inset-12 rounded-full glass-panel border border-white/5 shadow-2xl flex flex-col items-center justify-center text-center p-6 lg:p-8 z-10">
-              <div class="mb-1">
-                <span class="text-[10px] uppercase font-bold tracking-[0.2em] text-on-surface-variant">Speaker Remaining</span>
-              </div>
-              <div id="speakTimer" class="font-headline text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tighter mb-1">00:00</div>
-              <div id="remaining" class="mb-4 text-sm text-on-surface-variant">(remaining: 00:00)</div>
-              <div class="h-1 w-20 sm:w-24 lg:w-32 bg-surface-container-highest rounded-full overflow-hidden mb-6">
-                <div class="h-full w-3/4 bg-primary shadow-[0_0_12px_rgba(61,90,254,0.5)]"></div>
-              </div>
-              <div class="bg-primary/10 px-4 py-1.5 lg:py-2 rounded-full">
-                <span id="roomCodeDisplay2" class="text-primary font-bold tracking-tight text-xs">ROOM: ----</span>
-              </div>
-              <div class="mt-6 lg:mt-8">
-                <span class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">Current Speaker</span>
-                <div id="curName" class="text-base sm:text-lg lg:text-xl font-bold font-headline mt-1">--</div>
-              </div>
-              <div class="mt-4">
-                <span class="text-[10px] uppercase font-bold tracking-widest text-on-surface-variant">Total Meeting Time</span>
-                <div id="meetingTimer" class="text-base sm:text-lg lg:text-xl font-bold font-headline mt-1">00:00</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <div class="space-y-6 lg:col-span-3">
-          <section id="section-queue" class="scroll-mt-28 rounded-[28px] bg-surface-container p-5 shadow-[0_28px_80px_rgba(0,0,0,0.26)] md:p-6">
-            <div class="mb-5 flex items-center justify-between gap-3">
-              <div>
-                <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-on-surface-variant">Queue</p>
-                <h2 class="font-headline text-2xl font-extrabold tracking-tight text-on-surface">Speaker Queue</h2>
-              </div>
-              <div class="rounded-full bg-surface-container-high px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant"><span id="qCount">0</span> waiting</div>
-            </div>
-            <ul id="queue" class="space-y-3"></ul>
-          </section>
-
-          <section id="section-poll" class="scroll-mt-28 rounded-[28px] bg-surface-container-high p-5 shadow-[0_28px_80px_rgba(0,0,0,0.28)] md:p-6">
+          <section id="section-poll" class="scroll-mt-28 glass-panel rounded-[28px] border border-white/5 p-5 shadow-[0_28px_80px_rgba(0,0,0,0.28)] md:p-6">
             <div class="mb-5 flex items-center justify-between gap-3">
               <div>
                 <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-on-surface-variant">Polling</p>
@@ -528,6 +376,173 @@
               </div>
             </div>
           </section>
+
+          <section id="section-share" class="scroll-mt-28 glass-panel rounded-[28px] border border-white/5 p-5 shadow-[0_28px_80px_rgba(0,0,0,0.24)] md:p-6">
+            <div class="mb-5 flex items-center justify-between gap-3">
+              <div>
+                <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-on-surface-variant">Share access</p>
+                <h2 class="font-headline text-2xl font-extrabold tracking-tight text-on-surface">Join Link</h2>
+              </div>
+              <div class="rounded-full bg-surface-container-high px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">Live</div>
+            </div>
+
+            <div class="rounded-[24px] bg-surface-container-high p-4">
+              <div class="text-sm text-on-surface-variant">Share this code with participants to let them join:</div>
+              <div id="roomCodeLarge" class="mt-3 font-headline text-4xl font-extrabold tracking-[0.28em] text-on-surface">----</div>
+              <div class="mt-4 flex flex-wrap gap-2">
+                <button id="btnCopyCode" class="inline-flex items-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container"><span class="material-symbols-outlined">content_copy</span> Copy Code</button>
+                <button id="btnShareLink" class="inline-flex items-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container"><span class="material-symbols-outlined">link</span> Copy Participant Link</button>
+                <button id="btnShareParticipantUrl" class="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-surface transition hover:brightness-110" aria-label="Share participation link"><span class="material-symbols-outlined">share</span> Share</button>
+              </div>
+              <div id="copyStatus" class="mt-3 text-sm text-on-surface-variant"></div>
+            </div>
+          </section>
+
+          <section id="section-menu" class="scroll-mt-28 rounded-[28px] bg-surface-container p-5 shadow-[0_28px_80px_rgba(0,0,0,0.24)] md:p-6">
+            <div class="mb-5 flex items-center justify-between gap-3">
+              <div>
+                <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-on-surface-variant">Room menu</p>
+                <h2 class="font-headline text-2xl font-extrabold tracking-tight text-on-surface">Room Information</h2>
+              </div>
+              <div class="rounded-full bg-surface-container-high px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">Visible</div>
+            </div>
+
+            <div class="mt-4 rounded-[24px] bg-surface-container-high p-4">
+              <div class="mb-4 flex items-center justify-between gap-3">
+                <h3 class="font-headline text-lg font-bold text-on-surface">Meeting Configuration</h3>
+                <span class="text-[10px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Metadata</span>
+              </div>
+
+              <div class="space-y-3">
+                <div>
+                  <label for="configTopic" class="mb-1 block text-sm font-medium text-on-surface-variant">Topic</label>
+                  <input id="configTopic" class="w-full rounded-2xl bg-background/60 px-4 py-3 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/60" type="text" placeholder="Enter meeting topic" maxlength="100"/>
+                </div>
+
+                <div>
+                  <label for="configParticipationFormat" class="mb-1 block text-sm font-medium text-on-surface-variant">Participation Format</label>
+                  <select id="configParticipationFormat" class="w-full rounded-2xl bg-background/60 px-4 py-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60">
+                    <option value="">-- Select Participation Format --</option>
+                    <option value="OPEN_DISCUSSION">Open Discussion</option>
+                    <option value="STRUCTURED_GO_AROUNDS">Structured Go-Arounds</option>
+                    <option value="PRESENTATIONS_AND_REPORTS">Presentations and Reports</option>
+                    <option value="SMALL_GROUPS">Small Groups</option>
+                    <option value="LISTING_IDEAS">Listing Ideas</option>
+                    <option value="JIGSAW">Jigsaw</option>
+                    <option value="INDIVIDUAL_WRITING">Individual Writing</option>
+                    <option value="MULTI_TASKING">Multi-Tasking</option>
+                    <option value="FISHBOWLS">Fishbowls</option>
+                    <option value="TRADESHOW">Tradeshow</option>
+                    <option value="SCRAMBLER">Scrambler</option>
+                    <option value="ROLEPLAYS">Roleplays</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label for="configMeetingGoal" class="mb-1 block text-sm font-medium text-on-surface-variant">Meeting Goal</label>
+                  <select id="configMeetingGoal" class="w-full rounded-2xl bg-background/60 px-4 py-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60">
+                    <option value="">-- Select Meeting Goal --</option>
+                    <option value="MAKE_DECISIONS">Make Decisions</option>
+                    <option value="ADVANCE_THINKING">Advance the Thinking</option>
+                    <option value="SHARE_INFORMATION">Share Information</option>
+                    <option value="OBTAIN_INPUT">Obtain Input</option>
+                    <option value="IMPROVE_COMMUNICATION">Improve Communication</option>
+                    <option value="BUILD_CAPACITY">Build Capacity</option>
+                    <option value="BUILD_COMMUNITY">Build Community</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label for="configDecisionRule" class="mb-1 block text-sm font-medium text-on-surface-variant">Decision Rule</label>
+                  <select id="configDecisionRule" class="w-full rounded-2xl bg-background/60 px-4 py-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60">
+                    <option value="">-- Select Decision Rule --</option>
+                    <option value="UNANIMITY">Unanimity</option>
+                    <option value="GRADIENTS_OF_AGREEMENT">Gradients of Agreement</option>
+                    <option value="DOT_VOTING">Dot Voting</option>
+                    <option value="SUPERMAJORITY">Supermajority</option>
+                    <option value="MAJORITY">Majority</option>
+                    <option value="PLURALITY">Plurality</option>
+                    <option value="CONSENT">Consent</option>
+                    <option value="PERSON_IN_CHARGE">Person in Charge</option>
+                    <option value="COMMISSION">Commission</option>
+                    <option value="FLIP_A_COIN">Flip a Coin</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label for="configDeliverable" class="mb-1 block text-sm font-medium text-on-surface-variant">A.T. Deliverable</label>
+                  <select id="configDeliverable" class="w-full rounded-2xl bg-background/60 px-4 py-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60">
+                    <option value="">-- Select Deliverable --</option>
+                    <option value="DEFINE_PROBLEM">Define a problem</option>
+                    <option value="CREATE_MILESTONE_MAP">Create a milestone map</option>
+                    <option value="ANALYZE_PROBLEM">Analyze a problem</option>
+                    <option value="CREATE_WORK_BREAKDOWN">Create a work breakdown structure</option>
+                    <option value="IDENTIFY_ROOT_CAUSES">Identify root causes</option>
+                    <option value="CONDUCT_RESOURCE_ANALYSIS">Conduct a resource analysis</option>
+                    <option value="IDENTIFY_PATTERNS">Identify underlying patterns</option>
+                    <option value="CONDUCT_RISK_ASSESSMENT">Conduct a risk assessment</option>
+                    <option value="SORT_IDEAS_INTO_THEMES">Sort a list of ideas into themes</option>
+                    <option value="DEFINE_SELECTION_CRITERIA">Define selection criteria</option>
+                    <option value="REARRANGE_BY_PRIORITY">Rearrange a list of items by priority</option>
+                    <option value="EVALUATE_OPTIONS">Evaluate options</option>
+                    <option value="DRAW_FLOWCHART">Draw a flowchart</option>
+                    <option value="IDENTIFY_SUCCESS_FACTORS">Identify critical success factors</option>
+                    <option value="IDENTIFY_CORE_VALUES">Identify core values</option>
+                    <option value="EDIT_STATEMENT">Edit and/or wordsmith a statement</option>
+                  </select>
+                </div>
+              </div>
+
+              <div id="configDescriptions" class="mt-4 rounded-2xl bg-black/20 p-4 text-sm leading-6" style="display: none;">
+                <div class="mb-2 text-sm font-semibold text-on-surface">Selected Options</div>
+                <div id="configDescriptionText"></div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <section id="section-center-shell" class="scroll-mt-28 hidden lg:flex lg:col-span-5 flex-col items-center justify-center py-8 lg:py-0">
+          <div class="conference-table-shell relative mx-auto flex items-center justify-center">
+            <div class="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,rgba(61,90,254,0.18)_0%,rgba(23,31,51,0.9)_43%,rgba(6,14,32,0.98)_76%)] shadow-[0_32px_90px_rgba(0,0,0,0.36)]"></div>
+            <div class="absolute inset-6 rounded-full bg-surface-container-low/80"></div>
+            <div class="absolute inset-10 rounded-full border border-white/5 bg-surface-container-low/60"></div>
+            <div id="conferenceTableSeats" class="absolute inset-0 z-20"></div>
+            <div class="absolute inset-[18%] rounded-full glass-panel shadow-[0_18px_50px_rgba(0,0,0,0.28)] flex flex-col items-center justify-center text-center px-6 py-8 sm:px-8 sm:py-10 z-10">
+              <div id="conferenceTableTopic" class="max-w-[18rem] font-headline text-2xl sm:text-3xl font-black tracking-tight text-on-surface">[No Agendum]</div>
+              <div class="mt-5 text-[10px] uppercase font-bold tracking-[0.24em] text-on-surface-variant">Current Speaker Countdown</div>
+              <div id="speakTimer" class="mt-1 font-headline text-5xl sm:text-6xl lg:text-7xl font-black text-white tracking-tighter">00:00</div>
+              <div id="remaining" class="mt-2 text-sm text-on-surface-variant">(remaining: 00:00)</div>
+              <div class="mt-5 flex flex-wrap items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em]">
+                <span class="rounded-full bg-surface-container-high px-3 py-1.5 text-on-surface-variant"><span id="meetingTimer">00:00</span> total</span>
+              </div>
+              <div class="mt-5 flex items-center gap-3 rounded-full bg-surface-container-high px-4 py-2.5">
+                <div id="curInitials" class="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-[0.8rem] font-black uppercase tracking-[0.16em] text-on-primary">--</div>
+                <div class="text-left">
+                  <div class="text-[10px] uppercase font-bold tracking-[0.22em] text-on-surface-variant">Current Speaker</div>
+                  <div id="curName" class="font-headline text-lg sm:text-xl font-bold text-on-surface">--</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="space-y-6 lg:col-span-3">
+          <section id="section-queue" class="scroll-mt-28 glass-panel rounded-[28px] border border-white/5 p-5 shadow-[0_28px_80px_rgba(0,0,0,0.26)] md:p-6">
+            <div class="mb-5 flex items-center justify-between gap-3">
+              <div>
+                <p class="text-[11px] font-bold uppercase tracking-[0.24em] text-on-surface-variant">Queue</p>
+                <h2 class="font-headline text-2xl font-extrabold tracking-tight text-on-surface">Speaker Queue</h2>
+              </div>
+              <div class="rounded-full bg-surface-container-high px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant"><span id="qCount">0</span> waiting</div>
+            </div>
+            <div id="queueCurrentSpeaker" class="mb-4 rounded-[24px] bg-surface-container-high p-4"></div>
+            <ul id="queue" class="space-y-3"></ul>
+            <div class="mt-4 rounded-[24px] bg-surface-container-high p-4">
+              <div class="text-[11px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Force add speaker</div>
+              <p class="mt-2 text-sm text-on-surface-variant">Use the chair proxy name field to push a participant onto the queue immediately.</p>
+              <button id="btnForceAddSpeaker" class="mt-4 inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-surface transition hover:brightness-110"><span class="material-symbols-outlined">playlist_add</span> Force Add Speaker</button>
+            </div>
+          </section>
         </div>
       </div>
 
@@ -623,7 +638,6 @@
 
     // Display room code
     document.getElementById('roomCodeDisplay').textContent = roomCode;
-    document.getElementById('roomCodeDisplay2').textContent = 'ROOM: ' + roomCode;
     document.getElementById('roomCodeLarge').textContent = roomCode;
 
     // Connect as participant first, then try to assume chair role
@@ -653,12 +667,172 @@
       if (danger) el.classList.add('danger'); else if (warn) el.classList.add('warn'); else el.classList.add('ok');
     };
 
+    const tableAccentPalette = ['#62ff96', '#bbc3ff', '#00e475', '#c9e7f7', '#3d5afe', '#adcbda', '#7dd3fc', '#f9a8d4', '#f59e0b', '#fca5a5'];
+    const tableFallbackAccent = '#2d3449';
+
+    function hashString(value) {
+      let hash = 0;
+      for (const character of String(value || '').trim().toLowerCase()) {
+        hash = ((hash << 5) - hash) + character.charCodeAt(0);
+        hash |= 0;
+      }
+      return Math.abs(hash);
+    }
+
+    function getParticipantInitials(name) {
+      const cleaned = String(name || '').trim().replace(/\s+/g, ' ');
+      if (!cleaned) return '--';
+      const parts = cleaned.split(' ');
+      if (parts.length === 1) {
+        return parts[0].slice(0, 2).toUpperCase();
+      }
+      return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+    }
+
+    function getParticipantAccent(name) {
+      return tableAccentPalette[hashString(name) % tableAccentPalette.length] || tableFallbackAccent;
+    }
+
+    function getReadableInkColor(hexColor) {
+      const normalized = String(hexColor || '').replace('#', '');
+      if (normalized.length !== 6) return '#060e20';
+      const red = parseInt(normalized.slice(0, 2), 16);
+      const green = parseInt(normalized.slice(2, 4), 16);
+      const blue = parseInt(normalized.slice(4, 6), 16);
+      const luminance = (0.2126 * red) + (0.7152 * green) + (0.0722 * blue);
+      return luminance > 170 ? '#060e20' : '#f1f4ff';
+    }
+
+    function getConferenceParticipants(state) {
+      const participants = [];
+
+      if (state.current?.entry?.name) {
+        participants.push({
+          name: state.current.entry.name,
+          kind: 'current',
+          position: 0,
+        });
+      }
+
+      state.queue.forEach((participant, index) => {
+        participants.push({
+          name: participant.name,
+          kind: 'queue',
+          position: index + 1,
+        });
+      });
+
+      return participants;
+    }
+
+    function renderConferenceTable(state) {
+      if (!elConferenceTableSeats) {
+        return;
+      }
+
+      const participants = getConferenceParticipants(state);
+      if (participants.length === 0) {
+        elConferenceTableSeats.innerHTML = '';
+        return;
+      }
+
+      const seatCount = participants.length;
+      const radius = Math.max(138, Math.min(228, 148 + (seatCount * 4)));
+      const seatWidth = Math.max(92, Math.min(130, 126 - Math.max(0, seatCount - 6) * 3));
+      const angleStep = 360 / seatCount;
+      const startAngle = -90;
+
+      elConferenceTableSeats.innerHTML = participants.map((participant, index) => {
+        const angle = startAngle + (index * angleStep);
+        const accent = getParticipantAccent(participant.name);
+        const ink = getReadableInkColor(accent);
+        const initials = DOMPurify.sanitize(getParticipantInitials(participant.name));
+        const safeName = DOMPurify.sanitize(participant.name);
+        const seatTransform = `translate(-50%, -50%) rotate(${angle}deg) translate(${radius}px) rotate(${-angle}deg)`;
+        const seatStateClass = participant.kind === 'current' ? 'current' : 'queue';
+
+        return `
+          <div class="conference-table-seat" style="width:${seatWidth}px; height:${seatWidth}px; transform:${seatTransform};">
+            <div class="conference-table-avatar conference-table-seat-avatar ${seatStateClass}" style="background:${accent}; color:${ink};" aria-label="${safeName}">${initials}</div>
+          </div>`;
+      }).join('');
+    }
+
+    function renderQueuePanel(state) {
+      if (!elQueueCurrentSpeaker || !elQueue || !elQCount) {
+        return;
+      }
+
+      elQCount.textContent = state.queue.length;
+
+      if (state.current?.entry?.name) {
+        const currentName = state.current.entry.name;
+        const accent = getParticipantAccent(currentName);
+        const ink = getReadableInkColor(accent);
+        const initials = DOMPurify.sanitize(getParticipantInitials(currentName));
+        const safeName = DOMPurify.sanitize(currentName);
+
+        elQueueCurrentSpeaker.innerHTML = `
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <div class="text-[11px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Current speaker</div>
+              <div class="mt-2 flex items-center gap-3">
+                <div class="flex h-12 w-12 items-center justify-center rounded-full font-headline text-sm font-extrabold tracking-[0.16em]" style="background:${accent}; color:${ink};">${initials}</div>
+                <div>
+                  <div class="font-headline text-lg font-bold text-on-surface">${safeName}</div>
+                  <div class="text-sm text-on-surface-variant">Pinned above the waiting queue</div>
+                </div>
+              </div>
+            </div>
+            <div class="rounded-full bg-tertiary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-tertiary">Speaking now</div>
+          </div>`;
+      } else {
+        elQueueCurrentSpeaker.innerHTML = `
+          <div class="rounded-2xl border border-dashed border-white/10 bg-background/30 p-4 text-sm text-on-surface-variant">
+            No current speaker is active right now.
+          </div>`;
+      }
+
+      if (state.queue.length === 0) {
+        elQueue.innerHTML = `
+          <li class="rounded-2xl border border-dashed border-white/10 bg-background/30 p-4 text-sm text-on-surface-variant">
+            The queue is empty.
+          </li>`;
+        return;
+      }
+
+      elQueue.innerHTML = state.queue.map((participant, index) => {
+        const accent = getParticipantAccent(participant.name);
+        const ink = getReadableInkColor(accent);
+        const initials = DOMPurify.sanitize(getParticipantInitials(participant.name));
+        const safeName = DOMPurify.sanitize(participant.name);
+
+        return `
+          <li class="rounded-2xl bg-surface-container p-4 shadow-[0_16px_40px_rgba(0,0,0,0.18)]">
+            <div class="flex items-center gap-3">
+              <div class="flex h-11 w-11 items-center justify-center rounded-full font-headline text-sm font-extrabold tracking-[0.16em]" style="background:${accent}; color:${ink};">${initials}</div>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="truncate font-semibold text-on-surface">${safeName}</div>
+                  <div class="rounded-full bg-surface-container-high px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-on-surface-variant">#${index + 1}</div>
+                </div>
+                <div class="mt-1 text-sm text-on-surface-variant">Waiting for the next speaking slot</div>
+              </div>
+            </div>
+          </li>`;
+      }).join('');
+    }
+
     // --- DOM refs ---
     const elConn = $('#conn');
     const elQueue = $('#queue'); const elQCount = $('#qCount');
+    const elQueueCurrentSpeaker = $('#queueCurrentSpeaker');
     const elCurName = $('#curName');
+    const elCurInitials = $('#curInitials');
     const elSpeakTimer = $('#speakTimer'); const elRemaining = $('#remaining');
     const elMeeting = $('#meetingTimer'); const elLimit = $('#limit');
+    const elConferenceTableTopic = $('#conferenceTableTopic');
+    const elConferenceTableSeats = $('#conferenceTableSeats');
     
     // Participant controls
     const elParticipantName = $('#participantName');
@@ -795,23 +969,27 @@
       meetingStart = state.meetingStartSec;
       currentState = state; // Store the current state
       elLimit.value = state.defaultLimitSec;
+      elConferenceTableTopic.textContent = DOMPurify.sanitize((state.roomConfig?.topic || '').trim() || '[No Agendum]');
 
-      // Queue
-      elQCount.textContent = state.queue.length;
-      elQueue.innerHTML = '';
-      state.queue.forEach((p, i) => {
-        const li = document.createElement('li');
-        li.innerHTML = `<span class="name">${DOMPurify.sanitize(p.name)}</span>`;
-        elQueue.appendChild(li);
-      });
+      renderQueuePanel(state);
 
       // Current speaker
       if (state.current) {
         const c = state.current;
         elCurName.textContent = DOMPurify.sanitize(c.entry.name);
+        const accent = getParticipantAccent(c.entry.name);
+        const ink = getReadableInkColor(accent);
+        elCurInitials.textContent = DOMPurify.sanitize(getParticipantInitials(c.entry.name));
+        elCurInitials.style.backgroundColor = accent;
+        elCurInitials.style.color = ink;
       } else {
         elCurName.textContent = '--';
+        elCurInitials.textContent = '--';
+        elCurInitials.style.backgroundColor = '#2d3449';
+        elCurInitials.style.color = '#dae2fd';
       }
+
+      renderConferenceTable(state);
 
       updateTimers(state);
       updatePollUI(state);
@@ -1075,6 +1253,10 @@
         }
       }
     });
+
+    $('#btnForceAddSpeaker').onclick = () => {
+      $('#btnParticipantRequest').click();
+    };
 
     // Select all text when clicking in the input
     elParticipantName.addEventListener('click', () => {
