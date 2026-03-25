@@ -551,12 +551,9 @@
               <div class="mt-5 flex flex-wrap items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em]">
                 <span class="rounded-full bg-surface-container-high px-3 py-1.5 text-on-surface-variant"><span id="meetingTimer">00:00</span> total</span>
               </div>
-              <div class="mt-5 flex items-center gap-3 rounded-full bg-surface-container-high px-4 py-2.5">
-                <div id="curInitials" class="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-[0.8rem] font-black uppercase tracking-[0.16em] text-on-primary">--</div>
-                <div class="text-left">
-                  <div class="text-[10px] uppercase font-bold tracking-[0.22em] text-on-surface-variant">Current Speaker</div>
-                  <div id="curName" class="font-headline text-lg sm:text-xl font-bold text-on-surface">--</div>
-                </div>
+              <div class="mt-5 rounded-full bg-surface-container-high px-5 py-3 text-center">
+                <div class="text-[10px] uppercase font-bold tracking-[0.22em] text-on-surface-variant">Current Speaker</div>
+                <div id="curName" class="mt-1 font-headline text-lg sm:text-xl font-bold text-on-surface">--</div>
               </div>
             </div>
           </div>
@@ -769,8 +766,15 @@
       }
 
       const seatCount = participants.length;
-      const radius = Math.max(276, Math.min(332, 282 + (Math.max(0, seatCount - 5) * 10)));
-      const seatWidth = Math.max(74, Math.min(92, 90 - Math.max(0, seatCount - 6) * 2));
+      const shell = elConferenceTableSeats.closest('.conference-table-shell');
+      const shellSize = shell ? shell.getBoundingClientRect().width : 820;
+      const outerInsetPx = 40;
+      const innerInsetPx = shellSize * 0.18;
+      const outerEdgeRadius = (shellSize / 2) - outerInsetPx;
+      const innerEdgeRadius = (shellSize / 2) - innerInsetPx;
+      const radius = (outerEdgeRadius + innerEdgeRadius) / 2;
+      const laneWidth = Math.max(0, outerEdgeRadius - innerEdgeRadius);
+      const seatWidth = Math.max(62, Math.min(82, Math.round(laneWidth * 0.72)));
       const angleStep = 360 / seatCount;
       const startAngle = -90;
 
@@ -851,7 +855,6 @@
     const elQueue = $('#queue'); const elQCount = $('#qCount');
     const elQueueCurrentSpeaker = $('#queueCurrentSpeaker');
     const elCurName = $('#curName');
-    const elCurInitials = $('#curInitials');
     const elSpeakTimer = $('#speakTimer'); const elRemaining = $('#remaining');
     const elMeeting = $('#meetingTimer'); const elLimit = $('#limit');
     const elConferenceTableTopic = $('#conferenceTableTopic');
@@ -1000,16 +1003,8 @@
       if (state.current) {
         const c = state.current;
         elCurName.textContent = DOMPurify.sanitize(c.entry.name);
-        const accent = getParticipantAccent(c.entry.name);
-        const ink = getReadableInkColor(accent);
-        elCurInitials.textContent = DOMPurify.sanitize(getParticipantInitials(c.entry.name));
-        elCurInitials.style.backgroundColor = accent;
-        elCurInitials.style.color = ink;
       } else {
         elCurName.textContent = '--';
-        elCurInitials.textContent = '--';
-        elCurInitials.style.backgroundColor = '#2d3449';
-        elCurInitials.style.color = '#dae2fd';
       }
 
       renderConferenceTable(state);
