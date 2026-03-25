@@ -27,12 +27,12 @@ class RoomLimitIntegrationTest {
         ConcurrentHashMap<String, Room> roomsByCode = 
             (ConcurrentHashMap<String, Room>) roomsByCodeField.get(repository);
         
-        Field maxRoomsField = RoomRepository.class.getDeclaredField("MAX_ROOMS");
+        Field maxRoomsField = RoomRepository.class.getDeclaredField("maxRooms");
         maxRoomsField.setAccessible(true);
-        int maxRooms = maxRoomsField.getInt(null);
+        int maxRooms = maxRoomsField.getInt(repository);
         
-        // To test without creating 500,000 rooms, we'll manually set the MAX_ROOMS
-        // by filling the map and then testing the eviction logic
+        // To test without creating lots of rooms, we'll manually fill
+        // the map and then test the eviction logic
         
         // Create first room (oldest)
         Room oldestRoom = repository.createRoom("OLDEST");
@@ -83,11 +83,11 @@ class RoomLimitIntegrationTest {
 
     @Test
     void testRoomLimit_verifyMaxRoomsValue() throws Exception {
-        Field maxRoomsField = RoomRepository.class.getDeclaredField("MAX_ROOMS");
+        Field maxRoomsField = RoomRepository.class.getDeclaredField("maxRooms");
         maxRoomsField.setAccessible(true);
-        int maxRooms = maxRoomsField.getInt(null);
+        int maxRooms = maxRoomsField.getInt(new RoomRepository());
         
-        assertEquals(500000, maxRooms, "MAX_ROOMS should be exactly 500,000");
+        assertEquals(100, maxRooms, "maxRooms default should be 100 for non-Spring instantiation");
     }
 
     @Test

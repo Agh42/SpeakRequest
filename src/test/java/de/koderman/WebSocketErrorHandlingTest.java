@@ -14,9 +14,9 @@ public class WebSocketErrorHandlingTest {
 
     @Test
     void testJoinMethodThrowsExceptionForNonExistentRoom() {
-        // Create a controller with a mock messaging template
         SimpMessagingTemplate mockTemplate = mock(SimpMessagingTemplate.class);
-        MeetingController controller = new MeetingController(mockTemplate);
+        RoomRepository repository = new RoomRepository();
+        MeetingController controller = new MeetingController(mockTemplate, repository);
         Join joinMessage = new Join("TestUser");
         
         // Mock StompHeaderAccessor
@@ -36,7 +36,8 @@ public class WebSocketErrorHandlingTest {
     @Test
     void testRequestMethodThrowsExceptionForNonExistentRoom() {
         SimpMessagingTemplate mockTemplate = mock(SimpMessagingTemplate.class);
-        MeetingController controller = new MeetingController(mockTemplate);
+        RoomRepository repository = new RoomRepository();
+        MeetingController controller = new MeetingController(mockTemplate, repository);
         RequestSpeak requestMessage = new RequestSpeak("TestSpeaker");
         
         // Should throw RoomNotFoundException for non-existent room
@@ -52,7 +53,8 @@ public class WebSocketErrorHandlingTest {
     @Test
     void testWithdrawMethodThrowsExceptionForNonExistentRoom() {
         SimpMessagingTemplate mockTemplate = mock(SimpMessagingTemplate.class);
-        MeetingController controller = new MeetingController(mockTemplate);
+        RoomRepository repository = new RoomRepository();
+        MeetingController controller = new MeetingController(mockTemplate, repository);
         Withdraw withdrawMessage = new Withdraw("TestUser");
         
         // Should throw RoomNotFoundException for non-existent room

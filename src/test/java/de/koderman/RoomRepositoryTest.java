@@ -80,9 +80,9 @@ class RoomRepositoryTest {
     @Test
     void testRoomLimit_removesOldestRoomWhenLimitReached() throws Exception {
         // Get access to the MAX_ROOMS constant and roomsByCode field
-        Field maxRoomsField = RoomRepository.class.getDeclaredField("MAX_ROOMS");
+        Field maxRoomsField = RoomRepository.class.getDeclaredField("maxRooms");
         maxRoomsField.setAccessible(true);
-        int maxRooms = maxRoomsField.getInt(null);
+        int maxRooms = maxRoomsField.getInt(repository);
         
         Field roomsByCodeField = RoomRepository.class.getDeclaredField("roomsByCode");
         roomsByCodeField.setAccessible(true);
@@ -152,11 +152,11 @@ class RoomRepositoryTest {
 
     @Test
     void testMaxRoomsConstant() throws Exception {
-        Field maxRoomsField = RoomRepository.class.getDeclaredField("MAX_ROOMS");
+        Field maxRoomsField = RoomRepository.class.getDeclaredField("maxRooms");
         maxRoomsField.setAccessible(true);
-        int maxRooms = maxRoomsField.getInt(null);
+        int maxRooms = maxRoomsField.getInt(repository);
         
-        assertEquals(500000, maxRooms, "MAX_ROOMS should be set to 500000");
+        assertEquals(100, maxRooms, "maxRooms default should be 100 for non-Spring instantiation");
     }
 
     @Test

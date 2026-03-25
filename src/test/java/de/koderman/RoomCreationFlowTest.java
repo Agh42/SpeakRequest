@@ -21,18 +21,9 @@ class RoomCreationFlowTest {
 
     @BeforeEach
     void setUp() {
-        // Create a mock SimpMessagingTemplate since we don't need actual messaging
         SimpMessagingTemplate mockBroker = mock(SimpMessagingTemplate.class);
-        controller = new MeetingController(mockBroker);
-        
-        // Access the repository through reflection to test it directly
-        try {
-            var field = MeetingController.class.getDeclaredField("roomRepository");
-            field.setAccessible(true);
-            repository = (RoomRepository) field.get(controller);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to access roomRepository", e);
-        }
+        repository = new RoomRepository();
+        controller = new MeetingController(mockBroker, repository);
     }
 
     @Test

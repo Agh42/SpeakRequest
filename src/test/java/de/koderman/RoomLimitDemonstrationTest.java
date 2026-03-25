@@ -65,16 +65,9 @@ class RoomLimitDemonstrationTest {
         
         // Now manually fill the repository to just below the MAX_ROOMS limit
         // Then create one more room to trigger eviction
-        Field maxRoomsField = RoomRepository.class.getDeclaredField("MAX_ROOMS");
+        Field maxRoomsField = RoomRepository.class.getDeclaredField("maxRooms");
         maxRoomsField.setAccessible(true);
-        int maxRooms = maxRoomsField.getInt(null);
-        
-        // Fill up to MAX_ROOMS - 1 (we already have 2 rooms)
-        int roomsToCreate = maxRooms - 2;
-        
-        // For testing purposes, we'll create a smaller number to verify the logic
-        // In production, this would actually fill to 500,000
-        // Let's just verify that the logic would work by manually triggering removeOldestRoom
+        int maxRooms = maxRoomsField.getInt(repository);
         
         // Manually fill to capacity (simulate being at max)
         for (int i = 0; i < maxRooms - 2; i++) {
@@ -114,12 +107,12 @@ class RoomLimitDemonstrationTest {
 
     @Test
     void verifyMaxRoomsConfiguration() throws Exception {
-        Field maxRoomsField = RoomRepository.class.getDeclaredField("MAX_ROOMS");
+        Field maxRoomsField = RoomRepository.class.getDeclaredField("maxRooms");
         maxRoomsField.setAccessible(true);
-        int maxRooms = maxRoomsField.getInt(null);
+        int maxRooms = maxRoomsField.getInt(new RoomRepository());
         
-        assertEquals(500000, maxRooms, 
-            "MAX_ROOMS should be configured to 500,000 as per requirements");
+        assertEquals(100, maxRooms, 
+            "maxRooms default should be 100 for non-Spring instantiation");
     }
 
     @Test
