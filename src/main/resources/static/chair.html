@@ -740,23 +740,19 @@
     }
 
     function getConferenceParticipants(state) {
-      const participants = [];
+      const participants = state.queue.map((participant, index) => ({
+        name: participant.name,
+        kind: 'queue',
+        position: index + 1,
+      }));
 
       if (state.current?.entry?.name) {
         participants.push({
           name: state.current.entry.name,
           kind: 'current',
-          position: 0,
+          position: participants.length + 1,
         });
       }
-
-      state.queue.forEach((participant, index) => {
-        participants.push({
-          name: participant.name,
-          kind: 'queue',
-          position: index + 1,
-        });
-      });
 
       return participants;
     }
@@ -773,8 +769,8 @@
       }
 
       const seatCount = participants.length;
-      const radius = Math.max(138, Math.min(228, 148 + (seatCount * 4)));
-      const seatWidth = Math.max(92, Math.min(130, 126 - Math.max(0, seatCount - 6) * 3));
+      const radius = Math.max(276, Math.min(332, 282 + (Math.max(0, seatCount - 5) * 10)));
+      const seatWidth = Math.max(74, Math.min(92, 90 - Math.max(0, seatCount - 6) * 2));
       const angleStep = 360 / seatCount;
       const startAngle = -90;
 
@@ -802,25 +798,16 @@
       elQCount.textContent = state.queue.length;
 
       if (state.current?.entry?.name) {
-        const currentName = state.current.entry.name;
-        const accent = getParticipantAccent(currentName);
-        const ink = getReadableInkColor(accent);
-        const initials = DOMPurify.sanitize(getParticipantInitials(currentName));
-        const safeName = DOMPurify.sanitize(currentName);
+        const safeName = DOMPurify.sanitize(state.current.entry.name);
 
         elQueueCurrentSpeaker.innerHTML = `
           <div class="flex items-start justify-between gap-3">
             <div>
               <div class="text-[11px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Current speaker</div>
-              <div class="mt-2 flex items-center gap-3">
-                <div class="flex h-12 w-12 items-center justify-center rounded-full font-headline text-sm font-extrabold tracking-[0.16em]" style="background:${accent}; color:${ink};">${initials}</div>
-                <div>
-                  <div class="font-headline text-lg font-bold text-on-surface">${safeName}</div>
-                  <div class="text-sm text-on-surface-variant">Pinned above the waiting queue</div>
-                </div>
-              </div>
+              <div class="mt-2 font-headline text-lg font-bold text-on-surface">${safeName}</div>
+              <div class="mt-1 text-sm text-on-surface-variant">Speaking now</div>
             </div>
-            <div class="rounded-full bg-tertiary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-tertiary">Speaking now</div>
+            <div class="rounded-full bg-tertiary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-tertiary">Live</div>
           </div>`;
       } else {
         elQueueCurrentSpeaker.innerHTML = `
