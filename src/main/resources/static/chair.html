@@ -14,39 +14,75 @@
   <!-- Twitter -->
   <meta name="twitter:card" content="summary"/>
   <meta name="twitter:title" content="SPEEK.NOW - Join Meeting"/>
-      z-index: 20;
   <meta name="twitter:description" content="Join this meeting on SPEEK.NOW to request speaking time and participate in polls."/>
 
-    .conference-table-seat-avatar {
+  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
-      width: 100%;
-      height: 100%;
-      border-radius: 9999px;
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap"/>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
           colors: {
+            background: '#0b1326',
             surface: '#0b1326',
             'surface-dim': '#0b1326',
-      font-family: Manrope, sans-serif;
-      font-size: 0.92rem;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 12px 26px rgba(0, 0, 0, 0.22);
+            'surface-bright': '#31394d',
+            'surface-container-lowest': '#060e20',
             'surface-container-low': '#131b2e',
             'surface-container': '#171f33',
-    .conference-table-seat-avatar.current {
-      box-shadow: 0 0 0 3px rgba(0, 228, 117, 0.85), 0 0 0 8px rgba(0, 228, 117, 0.14), 0 12px 26px rgba(0, 0, 0, 0.22);
-    }
-
-    .conference-table-seat-avatar.queue {
-      box-shadow: 0 0 0 2px rgba(141, 143, 162, 0.8), 0 12px 26px rgba(0, 0, 0, 0.22);
-    }
-
-    .conference-table-avatar {
-      width: 4.2rem;
-      height: 4.2rem;
+            'surface-container-high': '#222a3d',
+            'surface-container-highest': '#2d3449',
+            'surface-variant': '#2d3449',
+            'surface-tint': '#bbc3ff',
+            primary: '#bbc3ff',
+            'primary-container': '#3d5afe',
+            'primary-fixed': '#dee0ff',
+            'primary-fixed-dim': '#bbc3ff',
             'on-primary': '#001d93',
             'on-primary-container': '#f1f0ff',
             'on-primary-fixed': '#000f5d',
             'on-primary-fixed-variant': '#002ccd',
+            secondary: '#adcbda',
+            'secondary-container': '#304d5a',
+            'secondary-fixed': '#c9e7f7',
+            'secondary-fixed-dim': '#adcbda',
+            'on-secondary': '#163440',
+            'on-secondary-container': '#9fbdcc',
+            'on-secondary-fixed': '#001f2a',
+            'on-secondary-fixed-variant': '#2e4b57',
+            tertiary: '#00e475',
+            'tertiary-container': '#007f3e',
+            'tertiary-fixed': '#62ff96',
+            'tertiary-fixed-dim': '#00e475',
+            'on-tertiary': '#003918',
+            'on-tertiary-container': '#c8ffcf',
+            'on-tertiary-fixed': '#00210b',
+            'on-tertiary-fixed-variant': '#005226',
+            error: '#ffb4ab',
+            'error-container': '#93000a',
+            'on-error': '#690005',
+            'on-error-container': '#ffdad6',
+            'on-surface': '#dae2fd',
+            'on-surface-variant': '#c5c5d9',
+            'on-background': '#dae2fd',
+            outline: '#8e8fa2',
+            'outline-variant': '#444656',
+            'inverse-surface': '#dae2fd',
+            'inverse-on-surface': '#283044',
+            'inverse-primary': '#2848ee'
+          },
+          fontFamily: {
+            headline: ['Manrope', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+            label: ['Inter', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
     .material-symbols-outlined {
       font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
       vertical-align: middle;
