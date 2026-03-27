@@ -1,11 +1,11 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: Milestone v1.0 archived
+milestone: v1.1
+milestone_name: ui-improvements
+status: Defining requirements for milestone v1.1
 stopped_at: Phase 5 completed
-last_updated: "2026-03-25T20:15:29.126Z"
-last_activity: 2026-03-25
+last_updated: "2026-03-28T00:00:00.000Z"
+last_activity: 2026-03-28
 progress:
   total_phases: 5
   completed_phases: 5
@@ -17,15 +17,17 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-24)
+See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** The chair can see every participant's status at a glance - who is speaking, who is next, and who is waiting - without leaving the main screen.
-**Current focus:** Milestone v1.0 archived; ready for next milestone setup
+**Current focus:** Milestone v1.1 defining requirements
 
 ## Current Position
 
-Phase: 5 (Integration Verification & Completion) — COMPLETE
-Plan: 2 of 2
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-28 — Milestone v1.1 started
 
 ## Performance Metrics
 
@@ -86,10 +88,10 @@ None yet.
 
 Last session: 2026-03-25T10:16:00.000Z
 Stopped at: Phase 4 completed
-Last activity: 2026-03-25
+Last activity: 2026-03-28
 Resume file: .planning/phases/05-integration-verification-completion/05-CONTEXT.md
 
 ## Milestone Archive
 
 - v1.0 archived to `.planning/milestones/v1.0-ROADMAP.md` and `.planning/milestones/v1.0-REQUIREMENTS.md`.
-- Next milestone setup has not started yet.
+- Next milestone setup is in progress for v1.1.
