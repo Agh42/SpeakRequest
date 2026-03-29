@@ -29,7 +29,8 @@ This milestone extends the shipped chair surface without changing the existing S
 	2. If the same session requests to speak again with a different name, the stored member entry is replaced rather than duplicated.
 	3. When a client session disconnects, that session's member entry is removed from room state.
 	4. Speaker avatars remain visible in the room circle from room state until the session disconnects or is replaced.
-**Plans**: TBD
+**Plans**: 1 plan
+- [ ] 06-01-PLAN.md — Add session-keyed room-member state, wire lifecycle cleanup, and keep the chair avatars snapshot-driven
 **UI hint**: yes
 
 ### Phase 7: Chair Surface Readability
@@ -70,7 +71,7 @@ This milestone extends the shipped chair surface without changing the existing S
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 6. Session-Keyed Room Presence | 0/TBD | Not started | - |
+| 6. Session-Keyed Room Presence | 0/1 | Not started | - |
 | 7. Chair Surface Readability | 0/TBD | Not started | - |
 | 8. Timer Urgency and Topic Editing | 0/TBD | Not started | - |
 | 9. Integration Verification and Closeout | 0/TBD | Not started | - |
