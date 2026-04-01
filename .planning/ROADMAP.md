@@ -14,9 +14,9 @@ This milestone extends the shipped chair surface without changing the existing S
 ## Phases
 
 - [x] **Phase 6: Session-Keyed Room Presence** - Persist speaker membership by session and keep avatars stable until disconnect or replacement.
-- [ ] **Phase 7: Chair Surface Readability** - Keep the room title and presence rendering readable inside the avatar circle.
-- [ ] **Phase 8: Timer Urgency and Topic Editing** - Add timer warning colors and make the topic label jump to the room menu section.
-- [ ] **Phase 9: Integration Verification and Closeout** - Verify the combined chair experience and close the milestone.
+- [x] **Phase 7: Chair Surface Readability** - Keep the room title and presence rendering readable inside the avatar circle.
+- [x] **Phase 8: Timer Urgency and Topic Editing** - Add timer warning colors and make the topic label jump to the room menu section.
+- [x] **Phase 9: Integration Verification and Closeout** - Verify the combined chair experience and close the milestone.
 
 ## Phase Details
 
@@ -73,9 +73,9 @@ This milestone extends the shipped chair surface without changing the existing S
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 6. Session-Keyed Room Presence | 2/2 | Complete | 2026-04-01 |
-| 7. Chair Surface Readability | 0/TBD | Not started | - |
-| 8. Timer Urgency and Topic Editing | 0/TBD | Not started | - |
-| 9. Integration Verification and Closeout | 0/TBD | Not started | - |
+| 7. Chair Surface Readability | 1/1 | Complete | 2026-04-01 |
+| 8. Timer Urgency and Topic Editing | 1/1 | Complete | 2026-04-01 |
+| 9. Integration Verification and Closeout | 1/1 | Complete | 2026-04-01 |
 
 ## Traceability
 
@@ -85,13 +85,13 @@ This milestone extends the shipped chair surface without changing the existing S
 | PRES-02 | Phase 6 | Complete |
 | PRES-03 | Phase 6 | Complete |
 | PRES-04 | Phase 6 | Complete |
-| VIEW-01 | Phase 7 | Planned |
-| VIEW-02 | Phase 7 | Planned |
-| VIEW-03 | Phase 7 | Planned |
-| TIME-01 | Phase 8 | Planned |
-| TIME-02 | Phase 8 | Planned |
-| TIME-03 | Phase 8 | Planned |
-| META-01 | Phase 8 | Planned |
+| VIEW-01 | Phase 7 | Complete |
+| VIEW-02 | Phase 7 | Complete |
+| VIEW-03 | Phase 7 | Complete |
+| TIME-01 | Phase 8 | Complete |
+| TIME-02 | Phase 8 | Complete |
+| TIME-03 | Phase 8 | Complete |
+| META-01 | Phase 8 | Complete |
 
 **Coverage:**
 - v1 requirements: 11 total

@@ -16,19 +16,19 @@ Requirements for the UI Improvements milestone. Each maps to roadmap phases.
 
 ### Display
 
-- [ ] **VIEW-01**: The room title inside the avatar circle is limited to two lines.
-- [ ] **VIEW-02**: Long room titles are truncated with an ellipsis so they fit inside the circle without overflowing adjacent content.
-- [ ] **VIEW-03**: The avatar circle rendering keeps participant names readable even when the room title is long.
+- [x] **VIEW-01**: The room title inside the avatar circle is limited to two lines.
+- [x] **VIEW-02**: Long room titles are truncated with an ellipsis so they fit inside the circle without overflowing adjacent content.
+- [x] **VIEW-03**: The avatar circle rendering keeps participant names readable even when the room title is long.
 
 ### Timer
 
-- [ ] **TIME-01**: The large speaking timer turns yellow when 25% of the allotted time remains.
-- [ ] **TIME-02**: The large speaking timer turns red when 10% of the allotted time remains.
-- [ ] **TIME-03**: When the allotted time is reached, the remaining-time display stays at 00:00 while the elapsed timer continues increasing and the large timer remains red.
+- [x] **TIME-01**: The large speaking timer turns yellow when 25% of the allotted time remains.
+- [x] **TIME-02**: The large speaking timer turns red when 10% of the allotted time remains.
+- [x] **TIME-03**: When the allotted time is reached, the remaining-time display stays at 00:00 while the elapsed timer continues increasing and the large timer remains red.
 
 ### Metadata Navigation
 
-- [ ] **META-01**: The chair can click the topic label to jump to the existing room menu section for editing.
+- [x] **META-01**: The chair can click the topic label to jump to the existing room menu section for editing.
 
 ## v2 Requirements
 
@@ -70,18 +70,18 @@ Updated during roadmap creation.
 | PRES-02 | Pending | Pending |
 | PRES-03 | Pending | Pending |
 | PRES-04 | Pending | Pending |
-| VIEW-01 | Pending | Pending |
-| VIEW-02 | Pending | Pending |
-| VIEW-03 | Pending | Pending |
-| TIME-01 | Pending | Pending |
-| TIME-02 | Pending | Pending |
-| TIME-03 | Pending | Pending |
-| META-01 | Pending | Pending |
+| VIEW-01 | Complete | Complete |
+| VIEW-02 | Complete | Complete |
+| VIEW-03 | Complete | Complete |
+| TIME-01 | Complete | Complete |
+| TIME-02 | Complete | Complete |
+| TIME-03 | Complete | Complete |
+| META-01 | Complete | Complete |
 
 **Coverage:**
 - v1 requirements: 11 total
-- Mapped to phases: 0
-- Unmapped: 11 ⚠
+- Mapped to phases: 11
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-28*

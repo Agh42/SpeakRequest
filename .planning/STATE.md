@@ -2,8 +2,8 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: ui-improvements
-status: Phase 6 completed
-stopped_at: Phase 6 completed
+status: Milestone v1.1 complete
+stopped_at: Milestone complete
 last_updated: "2026-04-01T00:00:00.000Z"
 last_activity: 2026-04-01
 progress:
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** The chair can see every participant's status at a glance - who is speaking, who is next, and who is waiting - without leaving the main screen.
-**Current focus:** Milestone v1.1 phase 6 completed; phase 7 ready for planning
+**Current focus:** Milestone v1.1 completed and ready for archival
 
 ## Current Position
 
-Phase: 6 complete
-Plan: 06-02
-Status: Phase 6 completed
-Last activity: 2026-04-01 — Phase 6 gap closure completed
+Phase: 9 complete
+Plan: 09-01
+Status: Milestone v1.1 complete
+Last activity: 2026-04-01 — Phase 9 integration verification and closeout completed
 
 ## Performance Metrics
 
