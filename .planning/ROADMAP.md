@@ -13,7 +13,7 @@ This milestone extends the shipped chair surface without changing the existing S
 
 ## Phases
 
-- [ ] **Phase 6: Session-Keyed Room Presence** - Persist speaker membership by session and keep avatars stable until disconnect or replacement.
+- [x] **Phase 6: Session-Keyed Room Presence** - Persist speaker membership by session and keep avatars stable until disconnect or replacement.
 - [ ] **Phase 7: Chair Surface Readability** - Keep the room title and presence rendering readable inside the avatar circle.
 - [ ] **Phase 8: Timer Urgency and Topic Editing** - Add timer warning colors and make the topic label jump to the room menu section.
 - [ ] **Phase 9: Integration Verification and Closeout** - Verify the combined chair experience and close the milestone.
@@ -29,8 +29,9 @@ This milestone extends the shipped chair surface without changing the existing S
 	2. If the same session requests to speak again with a different name, the stored member entry is replaced rather than duplicated.
 	3. When a client session disconnects, that session's member entry is removed from room state.
 	4. Speaker avatars remain visible in the room circle from room state until the session disconnects or is replaced.
-**Plans**: 1 plan
-- [ ] 06-01-PLAN.md — Add session-keyed room-member state, wire lifecycle cleanup, and keep the chair avatars snapshot-driven
+**Plans**: 2 plans
+- [x] 06-01-PLAN.md — Add session-keyed room-member state, wire lifecycle cleanup, and keep the chair avatars snapshot-driven
+- [x] 06-02-PLAN.md — Close the chair-proxy presence gap and tighten avatar label rendering
 **UI hint**: yes
 
 ### Phase 7: Chair Surface Readability
@@ -71,7 +72,7 @@ This milestone extends the shipped chair surface without changing the existing S
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 6. Session-Keyed Room Presence | 0/1 | Not started | - |
+| 6. Session-Keyed Room Presence | 2/2 | Complete | 2026-04-01 |
 | 7. Chair Surface Readability | 0/TBD | Not started | - |
 | 8. Timer Urgency and Topic Editing | 0/TBD | Not started | - |
 | 9. Integration Verification and Closeout | 0/TBD | Not started | - |
@@ -80,10 +81,10 @@ This milestone extends the shipped chair surface without changing the existing S
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PRES-01 | Phase 6 | Planned |
-| PRES-02 | Phase 6 | Planned |
-| PRES-03 | Phase 6 | Planned |
-| PRES-04 | Phase 6 | Planned |
+| PRES-01 | Phase 6 | Complete |
+| PRES-02 | Phase 6 | Complete |
+| PRES-03 | Phase 6 | Complete |
+| PRES-04 | Phase 6 | Complete |
 | VIEW-01 | Phase 7 | Planned |
 | VIEW-02 | Phase 7 | Planned |
 | VIEW-03 | Phase 7 | Planned |

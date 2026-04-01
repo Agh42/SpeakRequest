@@ -10,6 +10,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Room {
     private final String roomCode;
     private final List<Participant> queue = new ArrayList<>();
+    private final List<RoomMember> members = new ArrayList<>();
     private Current current = null;
     private final long meetingStartSec = Instant.now().getEpochSecond();
     private int defaultLimitSec = 180; // per-speaker
@@ -77,10 +78,120 @@ public class Room {
             RoomConfig roomConfig = new RoomConfig(topic, meetingGoal, participationFormat, decisionRule, deliverable);
 
             return new State(List.copyOf(queue), current, meetingStartSec, defaultLimitSec, roomCode,
-                    chairSessionId != null, pollState, roomConfig);
+                    chairSessionId != null, pollState, roomConfig, List.copyOf(members));
         } finally {
             lock.unlock();
         }
+    }
+
+    public void upsertMember(String sessionId, String name) {
+        lock.lock();
+        try {
+            if (sessionId == null || name == null) {
+                return;
+            }
+
+            String trimmedName = name.trim();
+            if (trimmedName.isEmpty()) {
+                return;
+            }
+
+            int existingIndex = findIndexBySessionIdUnsafe(sessionId);
+            if (existingIndex < 0) {
+                members.add(new RoomMember(sessionId, trimmedName, Instant.now().getEpochSecond()));
+                log.info("Room[{}] upsertMember: Added member {} for session {}", roomCode, trimmedName, sessionId);
+                return;
+            }
+
+            RoomMember existing = members.get(existingIndex);
+            if (!existing.name().equals(trimmedName)) {
+                members.set(existingIndex, new RoomMember(sessionId, trimmedName, existing.joinedAtSec()));
+                log.info("Room[{}] upsertMember: Replaced member name for session {} from {} to {}", roomCode, sessionId, existing.name(), trimmedName);
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void addProxyMember(String sessionId, String name) {
+        lock.lock();
+        try {
+            if (sessionId == null || name == null) {
+                return;
+            }
+
+            String trimmedName = name.trim();
+            if (trimmedName.isEmpty()) {
+                return;
+            }
+
+            members.add(new RoomMember(sessionId, trimmedName, Instant.now().getEpochSecond()));
+            log.info("Room[{}] addProxyMember: Added proxy member {} for session {}", roomCode, trimmedName, sessionId);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void removeMember(String sessionId) {
+        lock.lock();
+        try {
+            if (sessionId == null) {
+                return;
+            }
+
+            int removedCount = 0;
+            for (Iterator<RoomMember> iterator = members.iterator(); iterator.hasNext(); ) {
+                RoomMember member = iterator.next();
+                if (sessionId.equals(member.sessionId())) {
+                    iterator.remove();
+                    removedCount++;
+                }
+            }
+
+            if (removedCount > 0) {
+                log.info("Room[{}] removeMember: Removed {} member(s) for session {}", roomCode, removedCount, sessionId);
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void removeMemberByName(String name) {
+        lock.lock();
+        try {
+            if (name == null) {
+                return;
+            }
+
+            String trimmedName = name.trim();
+            if (trimmedName.isEmpty()) {
+                return;
+            }
+
+            int removedCount = 0;
+            for (Iterator<RoomMember> iterator = members.iterator(); iterator.hasNext(); ) {
+                RoomMember member = iterator.next();
+                if (member.name().equalsIgnoreCase(trimmedName)) {
+                    iterator.remove();
+                    removedCount++;
+                }
+            }
+
+            if (removedCount > 0) {
+                log.info("Room[{}] removeMemberByName: Removed {} member(s) named {}", roomCode, removedCount, trimmedName);
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private int findIndexBySessionIdUnsafe(String sessionId) {
+        for (int i = 0; i < members.size(); i++) {
+            if (members.get(i).sessionId().equals(sessionId)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     public boolean isChairSession(String sessionId) {
@@ -160,6 +271,14 @@ public class Room {
     private int findIndexByNameUnsafe(String name) {
         for (int i = 0; i < queue.size(); i++) {
             if (queue.get(i).name().equalsIgnoreCase(name))
+                return i;
+        }
+        return -1;
+    }
+
+    private int findIndexByIdUnsafe(String id) {
+        for (int i = 0; i < queue.size(); i++) {
+            if (queue.get(i).id().equals(id))
                 return i;
         }
         return -1;
@@ -275,6 +394,13 @@ public class Room {
     public void addParticipantToQueue(Participant participant) {
         lock.lock();
         try {
+            int existingById = findIndexByIdUnsafe(participant.id());
+            if (existingById >= 0) {
+                queue.set(existingById, participant);
+                log.info("Room[{}] addParticipantToQueue: Updated {} for session {}", 
+                         roomCode, participant.name(), participant.id());
+                return;
+            }
             if (current != null && current.entry().name().equalsIgnoreCase(participant.name())) {
                 log.debug("Room[{}] addParticipantToQueue: {} is already the current speaker, not adding to queue", 
                          roomCode, participant.name());

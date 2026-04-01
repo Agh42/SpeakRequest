@@ -712,6 +712,15 @@
       return Math.abs(hash);
     }
 
+    function getParticipantAvatarLabel(name) {
+      const cleaned = String(name || '').trim().replace(/\s+/g, ' ');
+      if (!cleaned) return '??';
+      if (cleaned.length <= 8) {
+        return cleaned;
+      }
+      return `${cleaned.slice(0, 7)}…`;
+    }
+
     function getParticipantInitials(name) {
       const cleaned = String(name || '').trim().replace(/\s+/g, ' ');
       if (!cleaned) return '--';
@@ -737,21 +746,15 @@
     }
 
     function getConferenceParticipants(state) {
-      const participants = state.queue.map((participant, index) => ({
-        name: participant.name,
-        kind: 'queue',
+      const queueIds = new Set((state.queue || []).map((participant) => participant.id));
+      const currentId = state.current?.entry?.id || null;
+
+      return (state.members || []).map((member, index) => ({
+        sessionId: member.sessionId,
+        name: member.name,
+        kind: member.sessionId === currentId ? 'current' : (queueIds.has(member.sessionId) ? 'queue' : 'member'),
         position: index + 1,
       }));
-
-      if (state.current?.entry?.name) {
-        participants.push({
-          name: state.current.entry.name,
-          kind: 'current',
-          position: participants.length + 1,
-        });
-      }
-
-      return participants;
     }
 
     function renderConferenceTable(state) {
@@ -782,7 +785,7 @@
         const angle = startAngle + (index * angleStep);
         const accent = getParticipantAccent(participant.name);
         const ink = getReadableInkColor(accent);
-        const initials = DOMPurify.sanitize(getParticipantInitials(participant.name));
+        const initials = DOMPurify.sanitize(getParticipantAvatarLabel(participant.name));
         const safeName = DOMPurify.sanitize(participant.name);
         const seatTransform = `translate(-50%, -50%) rotate(${angle}deg) translate(${radius}px) rotate(${-angle}deg)`;
         const seatStateClass = participant.kind === 'current' ? 'current' : 'queue';

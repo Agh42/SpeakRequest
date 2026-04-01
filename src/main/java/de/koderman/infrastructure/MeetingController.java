@@ -165,8 +165,6 @@ public class MeetingController {
         return Map.of("version", "1.0", "data", deliverables);
     }
 
-    private String uid() { return Long.toString(System.nanoTime(), 36); }
-
     private void broadcast(String roomCode) {
         try {
             Room room = roomRepository.getByCodeOrThrow(roomCode);
@@ -193,6 +191,7 @@ public class MeetingController {
         Room room = roomRepository.getByCodeOrThrow(normalizedRoomCode);
         
         roomRepository.trackSession(sessionId, normalizedRoomCode);
+        room.upsertMember(sessionId, msg.name());
         
         // Check if this is a chair joining (by checking the name)
         if ("Chair".equals(msg.name())) {
@@ -203,13 +202,24 @@ public class MeetingController {
     }
 
     @MessageMapping("/room/{roomCode}/request")
-    public void request(@DestinationVariable String roomCode, @Valid @Payload RequestSpeak msg) {
+    public void request(@DestinationVariable String roomCode, @Valid @Payload RequestSpeak msg, StompHeaderAccessor headerAccessor) {
         if (msg == null || msg.name() == null || msg.name().isBlank()) return;
 
         String normalizedRoomCode = normalizeRoomCode(roomCode);
         Room room = roomRepository.getByCodeOrThrow(normalizedRoomCode);
+        String sessionId = headerAccessor.getSessionId();
+        String participantName = msg.name().trim();
+        boolean chairSession = room.isChairSession(sessionId);
         
-        room.addParticipantToQueue(new Participant(uid(), msg.name().trim(), Instant.now().getEpochSecond()));
+        if (chairSession) {
+            room.addProxyMember(sessionId, participantName);
+        } else {
+            room.upsertMember(sessionId, participantName);
+        }
+        String participantId = chairSession
+                ? sessionId + ":proxy:" + Instant.now().toEpochMilli() + ":" + UUID.randomUUID()
+                : sessionId;
+        room.addParticipantToQueue(new Participant(participantId, participantName, Instant.now().getEpochSecond()));
         broadcast(normalizedRoomCode);
     }
 
@@ -219,6 +229,7 @@ public class MeetingController {
         String normalizedRoomCode = normalizeRoomCode(roomCode);
         
         Room room = roomRepository.getByCodeOrThrow(normalizedRoomCode);
+        room.removeMemberByName(msg.name());
         room.withdrawParticipant(msg.name());
         broadcast(normalizedRoomCode);
     }
@@ -396,9 +407,13 @@ public class MeetingController {
         String sessionId = event.getSessionId();
         
         roomRepository.getBySessionId(sessionId)
-                .filter(room -> room.isChairSession(sessionId))
                 .ifPresent(room -> {
-                    room.releaseChairRole(sessionId);
+                    room.removeMember(sessionId);
+
+                    if (room.isChairSession(sessionId)) {
+                        room.releaseChairRole(sessionId);
+                    }
+
                     broadcast(room.getRoomCode());
                 });
         

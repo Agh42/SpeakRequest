@@ -39,11 +39,13 @@ public class WebSocketErrorHandlingTest {
         RoomRepository repository = new RoomRepository();
         MeetingController controller = new MeetingController(mockTemplate, repository);
         RequestSpeak requestMessage = new RequestSpeak("TestSpeaker");
+        StompHeaderAccessor headerAccessor = mock(StompHeaderAccessor.class);
+        when(headerAccessor.getSessionId()).thenReturn("test-session");
         
         // Should throw RoomNotFoundException for non-existent room
         RoomNotFoundException exception = assertThrows(
             RoomNotFoundException.class,
-            () -> controller.request("NONEXIST", requestMessage)
+            () -> controller.request("NONEXIST", requestMessage, headerAccessor)
         );
         
         assertEquals("Room not found: NONEXIST", exception.getMessage());
