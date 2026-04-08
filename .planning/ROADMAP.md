@@ -2,7 +2,7 @@
 
 ## Overview
 
-This milestone extends the shipped chair surface without changing the existing STOMP contract or static-page architecture. The work is organized around four delivery boundaries: session-keyed room presence, chair-surface readability, timer urgency and topic navigation, then final integration verification. Phase numbering continues from the previous milestone, so v1.1 starts at Phase 6.
+This milestone extends the shipped chair surface without changing the existing STOMP contract or static-page architecture. The work is organized around five delivery boundaries: session-keyed room presence, chair-surface readability, timer urgency and topic navigation, avatar label truncation, then final integration verification. Phase numbering continues from the previous milestone, so v1.1 starts at Phase 6.
 
 ## Milestone Constraints
 
@@ -17,6 +17,7 @@ This milestone extends the shipped chair surface without changing the existing S
 - [x] **Phase 7: Chair Surface Readability** - Keep the room title and presence rendering readable inside the avatar circle.
 - [x] **Phase 8: Timer Urgency and Topic Editing** - Add timer warning colors and make the topic label jump to the room menu section.
 - [x] **Phase 9: Integration Verification and Closeout** - Verify the combined chair experience and close the milestone.
+- [x] **Phase 10: Avatar name truncation and chair label simplification** - Keep avatar names inside the circle by truncating long labels and shorten the chair label to a plain `chair` value.
 
 ## Phase Details
 
@@ -68,6 +69,20 @@ This milestone extends the shipped chair surface without changing the existing S
 **Plans**: TBD
 **UI hint**: yes
 
+### Phase 10: Avatar name truncation and chair label simplification
+**Goal**: The avatar circle keeps long names inside its bounds by truncating labels to a short prefix plus ellipsis, and the chair uses a plain `chair` label instead of the current `Chair-C...` text.
+**Depends on**: Phase 9
+**Requirements**: TBD
+**Success Criteria** (what must be TRUE):
+	1. Participant names in the avatar circle truncate to a short prefix plus `...` when they would otherwise overflow.
+	2. The chair label displays as `chair` instead of the current longer form.
+	3. The avatar circle remains visually balanced after the name truncation change.
+**Plans**: 1 plan
+
+Plans:
+- [x] 10-01-PLAN.md — Truncate avatar labels to a three-character prefix plus ellipsis and replace the chair bootstrap label with plain `chair`
+**UI hint**: yes
+
 ## Progress
 
 | Phase | Plans Complete | Status | Completed |
@@ -76,6 +91,7 @@ This milestone extends the shipped chair surface without changing the existing S
 | 7. Chair Surface Readability | 1/1 | Complete | 2026-04-01 |
 | 8. Timer Urgency and Topic Editing | 1/1 | Complete | 2026-04-01 |
 | 9. Integration Verification and Closeout | 1/1 | Complete | 2026-04-01 |
+| 10. Avatar name truncation and chair label simplification | 1/1 | Complete | 2026-04-08 |
 
 ## Traceability
 
@@ -92,11 +108,6 @@ This milestone extends the shipped chair surface without changing the existing S
 | TIME-02 | Phase 8 | Complete |
 | TIME-03 | Phase 8 | Complete |
 | META-01 | Phase 8 | Complete |
-
-**Coverage:**
-- v1 requirements: 11 total
-- Mapped to phases: 11
-- Unmapped: 0 ✓
 
 ---
 *Roadmap created: 2026-03-28*

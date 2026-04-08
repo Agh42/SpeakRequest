@@ -125,6 +125,13 @@ public class Room {
                 return;
             }
 
+            boolean alreadyPresent = members.stream()
+                    .anyMatch(m -> m.name().equalsIgnoreCase(trimmedName));
+            if (alreadyPresent) {
+                log.debug("Room[{}] addProxyMember: Member {} already in circle, skipping add", roomCode, trimmedName);
+                return;
+            }
+
             members.add(new RoomMember(sessionId, trimmedName, Instant.now().getEpochSecond()));
             log.info("Room[{}] addProxyMember: Added proxy member {} for session {}", roomCode, trimmedName, sessionId);
         } finally {

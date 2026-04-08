@@ -199,7 +199,7 @@
     }
 
     .conference-table-seat-avatar.current {
-      box-shadow: 0 0 0 3px rgba(0, 228, 117, 0.85), 0 0 0 8px rgba(0, 228, 117, 0.14), 0 12px 26px rgba(0, 0, 0, 0.22);
+      box-shadow: 0 0 0 3px rgba(0, 228, 117, 0.95), 0 0 0 8px rgba(0, 228, 117, 0.22), 0 0 18px 6px rgba(0, 228, 117, 0.40), 0 12px 26px rgba(0, 0, 0, 0.22);
     }
 
     .conference-table-seat-avatar.queue {
@@ -580,11 +580,7 @@
             </div>
             <div id="queueCurrentSpeaker" class="mb-4 rounded-[24px] bg-surface-container-high p-4"></div>
             <ul id="queue" class="space-y-3"></ul>
-            <div class="mt-4 rounded-[24px] bg-surface-container-high p-4">
-              <div class="text-[11px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Force add speaker</div>
-              <p class="mt-2 text-sm text-on-surface-variant">Use the chair proxy name field to push a participant onto the queue immediately.</p>
-              <button id="btnForceAddSpeaker" class="mt-4 inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-surface transition hover:brightness-110"><span class="material-symbols-outlined">playlist_add</span> Force Add Speaker</button>
-            </div>
+
           </section>
         </div>
       </div>
@@ -725,10 +721,10 @@
     function getParticipantAvatarLabel(name) {
       const cleaned = String(name || '').trim().replace(/\s+/g, ' ');
       if (!cleaned) return '??';
-      if (cleaned.length <= 8) {
+      if (cleaned.length <= 5) {
         return cleaned;
       }
-      return `${cleaned.slice(0, 7)}…`;
+      return `${cleaned.slice(0, 3)}\u2026`;
     }
 
     function getParticipantInitials(name) {
@@ -758,13 +754,21 @@
     function getConferenceParticipants(state) {
       const queueIds = new Set((state.queue || []).map((participant) => participant.id));
       const currentId = state.current?.entry?.id || null;
+      const currentName = state.current?.entry?.name || null;
+      const queueNames = new Set((state.queue || []).map((participant) => participant.name));
 
-      return (state.members || []).map((member, index) => ({
-        sessionId: member.sessionId,
-        name: member.name,
-        kind: member.sessionId === currentId ? 'current' : (queueIds.has(member.sessionId) ? 'queue' : 'member'),
-        position: index + 1,
-      }));
+      return (state.members || []).map((member, index) => {
+        const isCurrentById = currentId && member.sessionId === currentId;
+        const isCurrentByName = !isCurrentById && currentName && member.name === currentName;
+        const isCurrent = isCurrentById || isCurrentByName;
+        const isInQueue = !isCurrent && (queueIds.has(member.sessionId) || queueNames.has(member.name));
+        return {
+          sessionId: member.sessionId,
+          name: member.name,
+          kind: isCurrent ? 'current' : (isInQueue ? 'queue' : 'member'),
+          position: index + 1,
+        };
+      });
     }
 
     function renderConferenceTable(state) {
@@ -981,13 +985,13 @@
         });
 
         // Join as participant first, then try to assume chair role
-        client.send(`/app/room/${roomCode}/join`, {}, JSON.stringify({name:'Chair-Candidate'}));
+        client.send(`/app/room/${roomCode}/join`, {}, JSON.stringify({name:'chair'}));
         
         // Try to assume chair role after connecting as participant
         setTimeout(() => {
           elConn.textContent = 'Assuming chair role...';
           client.send(`/app/room/${roomCode}/assumeChair`, {}, JSON.stringify({
-            participantName: 'Chair-Candidate',
+            participantName: 'chair',
             requestId: 'chair-access-' + Date.now()
           }));
         }, 500); // Small delay to ensure connection is established
@@ -1284,10 +1288,6 @@
         }
       }
     });
-
-    $('#btnForceAddSpeaker').onclick = () => {
-      $('#btnParticipantRequest').click();
-    };
 
     // Select all text when clicking in the input
     elParticipantName.addEventListener('click', () => {

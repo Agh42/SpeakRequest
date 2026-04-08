@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: ui-improvements
-status: Milestone v1.1 complete
-stopped_at: Milestone complete
-last_updated: "2026-04-01T00:00:00.000Z"
-last_activity: 2026-04-01
+status: Phase 10 complete
+stopped_at: Phase 10 complete
+last_updated: "2026-04-08T00:00:00.000Z"
+last_activity: 2026-04-08
 progress:
-  total_phases: 5
-  completed_phases: 5
-  total_plans: 13
-  completed_plans: 13
+  total_phases: 6
+  completed_phases: 6
+  total_plans: 14
+  completed_plans: 14
 ---
 
 # Project State
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-28)
 
 **Core value:** The chair can see every participant's status at a glance - who is speaking, who is next, and who is waiting - without leaving the main screen.
-**Current focus:** Milestone v1.1 completed and ready for archival
+**Current focus:** Phase 10 complete — avatar labels truncate to 3+… for names over 5 chars; chair bootstrap uses plain `chair`
 
 ## Current Position
 
-Phase: 9 complete
-Plan: 09-01
-Status: Milestone v1.1 complete
-Last activity: 2026-04-01 — Phase 9 integration verification and closeout completed
+Phase: 10 complete
+Plan: 10-01
+Status: Phase 10 complete
+Last activity: 2026-04-08 — Phase 10 avatar label truncation and chair bootstrap simplification completed
 
 ## Performance Metrics
 
@@ -71,6 +71,10 @@ Recent decisions affecting current work:
 ### Pending Todos
 
 None yet.
+
+### Roadmap Evolution
+
+- Phase 10 added: Avatar name truncation and chair label simplification
 
 ### Blockers/Concerns
 

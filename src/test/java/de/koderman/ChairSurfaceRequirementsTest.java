@@ -1,6 +1,7 @@
 package de.koderman;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -59,6 +60,29 @@ class ChairSurfaceRequirementsTest {
             () -> assertTrue(html.contains("/topic/room/${roomCode}/destroyed"), "destroyed topic remains intact"),
             () -> assertTrue(html.contains("/user/queue/error"), "chair error queue remains intact"),
             () -> assertTrue(html.contains("elConferenceTableTopic.textContent = DOMPurify.sanitize((state.roomConfig?.topic || '').trim() || '[No Agendum]');"), "conference table topic still renders from room state")
+        );
+    }
+
+    @Test
+    void avatarLabelTruncatesToThreeCharacterPrefixForLongNames() throws IOException {
+        String html = chairHtml();
+
+        // names up to 5 chars show fully; longer names (e.g. 'annemarie') truncate to 'ann…'
+        assertAll(
+            () -> assertTrue(html.contains("cleaned.length <= 5"), "avatar label helper shows names up to 5 characters fully"),
+            () -> assertTrue(html.contains("cleaned.slice(0, 3)"), "avatar label helper uses three-character prefix plus ellipsis"),
+            () -> assertFalse(html.contains("cleaned.slice(0, 7)"), "old seven-character truncation is removed")
+        );
+    }
+
+    @Test
+    void chairBootstrapUsesPlainChairLabel() throws IOException {
+        String html = chairHtml();
+
+        assertAll(
+            () -> assertTrue(html.contains("name:'chair'"), "join payload uses plain 'chair' label"),
+            () -> assertTrue(html.contains("participantName: 'chair'"), "assume-chair payload uses plain 'chair' label"),
+            () -> assertFalse(html.contains("Chair-Candidate"), "old Chair-Candidate label is removed")
         );
     }
 }
