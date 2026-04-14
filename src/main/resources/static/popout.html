@@ -349,7 +349,7 @@
         });
 
         // Join to get initial state
-        client.send(`/app/room/${roomCode}/join`, {}, JSON.stringify({name:'Display', role:'Observer'}));
+        client.send(`/app/room/${roomCode}/join`, {}, JSON.stringify({name:'Popout', role:'Observer'}));
       }, () => {
         elConn.textContent = 'Disconnected';
         elConn.classList.remove('ok');

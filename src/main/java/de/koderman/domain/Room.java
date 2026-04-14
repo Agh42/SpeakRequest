@@ -96,6 +96,11 @@ public class Room {
                 return;
             }
 
+            if ("Popout".equalsIgnoreCase(trimmedName)) {
+                log.debug("Room[{}] upsertMember: Skipping popout observer session {}", roomCode, sessionId);
+                return;
+            }
+
             int existingIndex = findIndexBySessionIdUnsafe(sessionId);
             if (existingIndex < 0) {
                 members.add(new RoomMember(sessionId, trimmedName, Instant.now().getEpochSecond()));

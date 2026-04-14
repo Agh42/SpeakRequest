@@ -80,8 +80,8 @@ class ChairSurfaceRequirementsTest {
         String html = chairHtml();
 
         assertAll(
-            () -> assertTrue(html.contains("name:'chair'"), "join payload uses plain 'chair' label"),
-            () -> assertTrue(html.contains("participantName: 'chair'"), "assume-chair payload uses plain 'chair' label"),
+            () -> assertTrue(html.contains("name:'Chair'"), "join payload uses plain 'chair' label"),
+            () -> assertTrue(html.contains("participantName: 'Chair'"), "assume-chair payload uses plain 'chair' label"),
             () -> assertFalse(html.contains("Chair-Candidate"), "old Chair-Candidate label is removed")
         );
     }

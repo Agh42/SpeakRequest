@@ -3,7 +3,7 @@
 
 **SpeakRequest — Chair View Redesign**
 
-SpeakRequest is a hybrid meeting manager for discussion moderators and facilitators. It manages speaking turns with a transparent queue, tracks speech timers, and conducts realtime polls. The Chair View ("The Orchestrator") redesign replaces the current functional-but-plain chair.html with a high-end, editorial-inspired command center that introduces a central round conference table showing all participant avatars.
+SpeakRequest is a hybrid meeting manager for discussion moderators and facilitators. It manages speaking turns with a transparent queue, tracks speech timers, and conducts realtime polls. The Chair View redesign replaces the current functional-but-plain chair.html with a high-end, editorial-inspired command center that introduces a central round conference table showing all participant avatars.
 
 **Core Value:** The chair can see every participant's status at a glance — who is speaking, who is next, and who is waiting — without leaving the main screen.
 
