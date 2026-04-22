@@ -15,6 +15,10 @@
   <meta name="twitter:card" content="summary"/>
   <meta name="twitter:title" content="SPEEK.NOW - Join Meeting"/>
   <meta name="twitter:description" content="Join this meeting on SPEEK.NOW to request speaking time and participate in polls."/>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&display=swap"/>
   
   <link rel="stylesheet" href="styles.css"/>
   <link rel="stylesheet" href="fontawesome/all.min.css"/>
@@ -131,6 +135,511 @@
       font-size: 1.5rem;
       white-space: nowrap;
     }
+
+    :root {
+      color-scheme: dark;
+      --participant-bg: #0b1326;
+      --participant-surface: rgba(45, 52, 73, 0.6);
+      --participant-surface-high: #222a3d;
+      --participant-surface-highest: #2d3449;
+      --participant-text: #dae2fd;
+      --participant-muted: #c5c5d9;
+      --participant-accent: #bbc3ff;
+      --participant-accent-strong: #3d5afe;
+      --participant-success: #00e475;
+      --participant-danger: #ffb4ab;
+    }
+
+    html, body {
+      min-height: 100%;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at top left, rgba(61, 90, 254, 0.18), transparent 30%),
+        radial-gradient(circle at top right, rgba(0, 228, 117, 0.08), transparent 26%),
+        linear-gradient(180deg, #09111f 0%, #0b1326 100%);
+      color: var(--participant-text);
+      font-family: "Inter", sans-serif;
+      overflow-x: hidden;
+    }
+
+    .wrap {
+      max-width: 1500px;
+      padding: 24px 20px 32px;
+    }
+
+    .header,
+    .card,
+    .poll-overlay .panel,
+    .modal-content,
+    footer {
+      border: none;
+      border-radius: 28px;
+      background: var(--participant-surface);
+      backdrop-filter: blur(24px);
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.24);
+    }
+
+    .header {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px 18px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding: 18px 22px;
+    }
+
+    .header h1,
+    .card h2,
+    .modal-content h3 {
+      margin: 0;
+      font-family: "Manrope", sans-serif;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .header h1 {
+      font-size: 1.65rem;
+    }
+
+    .header a {
+      color: var(--participant-text);
+      text-decoration: none;
+    }
+
+    .header .pill,
+    .header .primary,
+    .header .ghost,
+    .floating-assume-chair,
+    .room-code,
+    .room-code-big,
+    .queue-position,
+    button {
+      font-family: "Inter", sans-serif;
+    }
+
+    .header .pill,
+    .header .primary {
+      height: auto;
+      line-height: 1.2;
+      font-size: 0.9rem;
+      padding: 8px 14px;
+    }
+
+    .pill {
+      background: rgba(34, 42, 61, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--participant-muted);
+    }
+
+    .pill.ok {
+      color: #bbf7d0;
+      border-color: rgba(16, 185, 129, 0.45);
+    }
+
+    .pill.warn {
+      color: #fde68a;
+      border-color: rgba(245, 158, 11, 0.45);
+    }
+
+    .card,
+    .poll-box {
+      background: rgba(45, 52, 73, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 28px;
+      padding: 22px;
+      backdrop-filter: blur(24px);
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.24);
+    }
+
+    .card h2 {
+      font-size: 1.35rem;
+      margin-bottom: 14px;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 0.7rem 0;
+    }
+
+    .row input {
+      flex: 1;
+      min-width: 0;
+    }
+
+    input,
+    select,
+    button {
+      background: rgba(17, 23, 38, 0.92);
+      color: var(--participant-text);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 9999px;
+      padding: 12px 14px;
+      font-size: 16px;
+    }
+
+    input {
+      background: rgba(17, 23, 38, 0.9);
+      color: var(--participant-text);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: rgba(187, 195, 255, 0.75);
+      box-shadow: 0 0 0 3px rgba(187, 195, 255, 0.12);
+      background: rgba(11, 19, 38, 0.96);
+    }
+
+    button {
+      cursor: pointer;
+      transition: transform 0.15s ease, filter 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+
+    button:hover {
+      filter: brightness(1.06);
+    }
+
+    button:active {
+      transform: translateY(1px) scale(0.99);
+      filter: brightness(0.95);
+    }
+
+    .primary {
+      background: linear-gradient(180deg, #4d69ff 0%, #3d5afe 100%);
+      border: none;
+      color: #f1f0ff;
+      box-shadow: 0 16px 32px rgba(61, 90, 254, 0.28);
+    }
+
+    .ghost {
+      background: rgba(34, 42, 61, 0.9);
+      color: var(--participant-text);
+    }
+
+    .floating-assume-chair {
+      background: rgba(0, 228, 117, 0.12);
+      border: 1px solid rgba(0, 228, 117, 0.42);
+      color: #c8ffcf;
+      font-weight: 700;
+      border-radius: 9999px;
+      padding: 10px 16px;
+      box-shadow: 0 18px 36px rgba(0, 0, 0, 0.22);
+    }
+
+    .floating-assume-chair:hover {
+      background: rgba(0, 228, 117, 0.18);
+    }
+
+    .room-code {
+      background: rgba(34, 42, 61, 0.95);
+      border: 1px solid rgba(187, 195, 255, 0.28);
+      color: var(--participant-accent);
+      font-weight: 800;
+      font-size: 1.05rem;
+      padding: 8px 14px;
+      border-radius: 9999px;
+      letter-spacing: 0.18em;
+    }
+
+    .room-code-big {
+      background: rgba(34, 42, 61, 0.95);
+      border: 1px solid rgba(187, 195, 255, 0.28);
+      color: var(--participant-accent);
+      font-weight: 800;
+      font-size: 2.4rem;
+      padding: 16px 24px;
+      border-radius: 24px;
+      letter-spacing: 0.28em;
+      text-align: center;
+    }
+
+    .room-info {
+      text-align: left;
+    }
+
+    .muted {
+      color: var(--participant-muted);
+    }
+
+    .small {
+      font-size: 0.92rem;
+    }
+
+    .big {
+      font-family: "Manrope", sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .two {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin: 8px 0;
+    }
+
+    @media (max-width: 600px) {
+      .two {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .queue-table-shell {
+      position: relative;
+      width: min(100%, 820px);
+      margin: 12px auto 0;
+      aspect-ratio: 1 / 1;
+      min-height: 440px;
+    }
+
+    .queue-table-shell::before {
+      content: '';
+      position: absolute;
+      inset: 9%;
+      border-radius: 9999px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01) 58%, rgba(255, 255, 255, 0));
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02), 0 24px 60px rgba(0, 0, 0, 0.16);
+    }
+
+    .queue-table-core {
+      position: absolute;
+      inset: 28%;
+      border-radius: 9999px;
+      background: rgba(34, 42, 61, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 6px;
+      text-align: center;
+      padding: 18px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.2);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .queue-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+    }
+
+    .queue-item {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      margin: 0;
+      transform-origin: center;
+      width: 150px;
+      min-height: 0;
+      padding: 0;
+      background: transparent;
+      box-shadow: none;
+      border-radius: 0;
+      display: block;
+    }
+
+    .queue-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 12px;
+      border-radius: 24px;
+      background: rgba(17, 23, 38, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+      backdrop-filter: blur(18px);
+    }
+
+    .queue-item.current .queue-card {
+      background: rgba(19, 27, 46, 0.9);
+      box-shadow: 0 0 0 2px rgba(0, 228, 117, 0.22), 0 16px 40px rgba(0, 0, 0, 0.22);
+    }
+
+    .queue-avatar {
+      width: 58px;
+      height: 58px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "Manrope", sans-serif;
+      font-size: 0.92rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 12px 26px rgba(0, 0, 0, 0.22);
+      flex: 0 0 auto;
+    }
+
+    .queue-details {
+      min-width: 0;
+      flex: 1;
+      text-align: center;
+    }
+
+    .queue-name {
+      font-family: "Manrope", sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--participant-text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .queue-subtext {
+      margin-top: 4px;
+      color: var(--participant-muted);
+      font-size: 0.82rem;
+    }
+
+    .queue-position {
+      flex: 0 0 auto;
+      padding: 6px 10px;
+      border-radius: 9999px;
+      background: rgba(34, 42, 61, 0.9);
+      color: var(--participant-muted);
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+    }
+
+    .queue-empty {
+      position: absolute;
+      inset: 50% auto auto 50%;
+      transform: translate(-50%, -50%);
+      width: min(260px, 50vw);
+      text-align: center;
+      color: var(--participant-muted);
+      font-size: 0.92rem;
+      line-height: 1.5;
+      padding: 14px 18px;
+      border-radius: 22px;
+      background: rgba(17, 23, 38, 0.7);
+      border: 1px dashed rgba(255, 255, 255, 0.08);
+    }
+
+    .timer {
+      font-family: "Manrope", sans-serif;
+      font-variant-numeric: tabular-nums;
+      font-weight: 800;
+      font-size: 1.9rem;
+    }
+
+    .timer.ok {
+      color: #bbf7d0;
+    }
+
+    .timer.warn {
+      color: #fde68a;
+    }
+
+    .timer.danger {
+      color: #fecaca;
+    }
+
+    .poll-overlay .panel {
+      width: 100%;
+      max-width: 780px;
+      height: calc(var(--vh, 1vh) * 100);
+      background: rgba(45, 52, 73, 0.84);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      color: var(--participant-text);
+      box-sizing: border-box;
+      padding: calc(env(safe-area-inset-top, 16px) + 16px) 18px calc(env(safe-area-inset-bottom, 16px) + 16px);
+      overflow: auto;
+      border-radius: 28px;
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.34);
+    }
+
+    #pollSection {
+      min-height: 100%;
+    }
+
+    #pollOverlay button.vote-selected {
+      background: linear-gradient(180deg, rgba(96, 165, 250, 0.26), rgba(96, 165, 250, 0.16));
+      border: 1px solid rgba(96, 165, 250, 0.8);
+      box-shadow: 0 0 12px rgba(96, 165, 250, 0.35);
+    }
+
+    footer {
+      margin-top: 28px;
+      padding: 18px 22px;
+      background: rgba(23, 31, 51, 0.92);
+      text-align: left;
+    }
+
+    footer .footer-links {
+      display: flex;
+      justify-content: flex-start;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    footer a {
+      color: var(--participant-muted);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    footer a:hover {
+      color: var(--participant-text);
+    }
+
+    @media (max-width: 768px) {
+      .wrap {
+        padding: 12px;
+      }
+
+      .header {
+        padding: 16px;
+      }
+
+      .header h1 {
+        font-size: 1.2rem;
+      }
+
+      .card,
+      .poll-box,
+      footer,
+      .poll-overlay .panel {
+        border-radius: 24px;
+      }
+
+      button {
+        min-height: 44px;
+      }
+
+      .room-code-big {
+        font-size: 2rem;
+        letter-spacing: 0.22em;
+        padding: 14px 18px;
+      }
+
+      .queue-table-shell {
+        min-height: 360px;
+      }
+
+      .queue-item {
+        width: 130px;
+      }
+
+      .queue-card {
+        padding: 12px 10px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -140,7 +649,7 @@
       <div class="room-code-display">
         <span class="muted small">Room Code:</span>
         <span id="roomCodeDisplay" class="room-code">----</span>
-        <button id="btnShareParticipantUrlHeader" class="primary" style="padding: 6px 12px; border-radius: 8px; font-size: 1.1rem; margin-right: 8px;" aria-label="Share participation link"><i class="fa-solid fa-share-nodes"></i> Share</button>
+        <button id="btnShareParticipantUrlHeader" class="primary" style="padding: 6px 12px; border-radius: 9999px; font-size: 1.1rem; margin-right: 8px;" aria-label="Share participation link"><i class="fa-solid fa-share-nodes"></i> Share</button>
       </div>
       <div id="conn" class="pill">Connecting…</div>
       <div id="chairStatus" class="pill">Chair: Checking…</div>
@@ -184,7 +693,14 @@
         </div>
 
         <div class="muted small">Speaking Queue (<span id="qCount">0</span>)</div>
-        <ul id="queue" class="list"></ul>
+        <div class="queue-table-shell">
+          <div class="queue-table-core">
+            <div class="small muted">Speaking Queue</div>
+            <div class="big">Circular table</div>
+            <div class="small muted">Participants are arranged around the shared surface.</div>
+          </div>
+          <ul id="queue" class="queue-list"></ul>
+        </div>
       </section>
 
       <!-- Room Info -->
@@ -217,7 +733,7 @@
       </section>
 
       <!-- Poll Section (always visible for participants) -->
-      <section class="card" id="pollSection">
+      <section class="card poll-box" id="pollSection">
         <!-- Empty/default poll view shown when no active or previous poll exists -->
           <div id="pollEmpty">
             <h2>Poll View</h2>
@@ -545,19 +1061,53 @@
       elQCount.textContent = state.queue.length;
       elQueue.innerHTML = '';
       let myPosition = -1;
-      state.queue.forEach((p, i) => {
+      if (state.queue.length === 0) {
+        elQueue.innerHTML = '<li class="queue-empty">No one is waiting to speak yet.</li>';
+      } else {
+        const shell = elQueue.closest('.queue-table-shell');
+        const shellSize = shell ? shell.getBoundingClientRect().width : 820;
+        const outerInsetPx = 44;
+        const innerInsetPx = shellSize * 0.27;
+        const outerEdgeRadius = (shellSize / 2) - outerInsetPx;
+        const innerEdgeRadius = (shellSize / 2) - innerInsetPx;
+        const radius = (outerEdgeRadius + innerEdgeRadius) / 2;
+        const laneWidth = Math.max(0, outerEdgeRadius - innerEdgeRadius);
+        const seatWidth = Math.max(130, Math.min(176, Math.round(laneWidth * 0.84)));
+        const angleStep = 360 / state.queue.length;
+        const startAngle = -90;
+
+        state.queue.forEach((p, i) => {
         const li = document.createElement('li');
-        li.innerHTML = `<span class="name">${DOMPurify.sanitize(p.name)}</span>`;
+        const accent = getParticipantAccent(p.name);
+        const ink = getReadableInkColor(accent);
+        const initials = DOMPurify.sanitize(getParticipantInitials(p.name));
+        const safeName = DOMPurify.sanitize(p.name);
+        const isMine = p.name.toLowerCase() === myName.toLowerCase();
+        const angle = startAngle + (i * angleStep);
+        const seatTransform = `translate(-50%, -50%) rotate(${angle}deg) translate(${radius}px) rotate(${-angle}deg)`;
+
+        li.className = `queue-item${isMine ? ' current' : ''}`;
+        li.style.width = `${seatWidth}px`;
+        li.style.transform = seatTransform;
+        li.innerHTML = `
+          <div class="queue-card">
+            <div class="queue-avatar" style="background:${accent}; color:${ink};">${initials}</div>
+            <div class="queue-details">
+              <div class="queue-name">${safeName}</div>
+              <div class="queue-subtext">${isMine ? 'You are waiting to speak' : 'Waiting to speak'}</div>
+            </div>
+            <div class="queue-position">#${i + 1}</div>
+          </div>
+        `;
 
         // Highlight my entry
-        if (p.name.toLowerCase() === myName.toLowerCase()) {
-          li.style.backgroundColor = '#8991c7';
-          li.style.fontWeight = 'bold';
+        if (isMine) {
           myPosition = i + 1;
         }
 
         elQueue.appendChild(li);
-      });
+        });
+      }
 
       // Update status based on my position
       if (myName) {
