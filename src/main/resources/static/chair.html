@@ -216,6 +216,7 @@
   <script src="share.js"></script>
 </head>
 <body class="min-h-screen bg-background font-body text-on-surface">
+  <div id="toastContainer" class="fixed top-4 left-1/2 z-[9999] flex -translate-x-1/2 flex-col items-center gap-2 pointer-events-none"></div>
   <div id="chairShell" class="relative min-h-screen overflow-x-hidden bg-surface md:pl-[calc(var(--sidebar-width))]">
     <header class="fixed inset-x-0 top-0 z-40 border-b border-white/5 bg-background/90 backdrop-blur-xl">
       <div class="mx-auto flex max-w-[1500px] items-center justify-between gap-3 px-4 py-3 md:px-6 lg:px-8">
@@ -289,11 +290,10 @@
               <div class="rounded-full bg-tertiary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-tertiary">Live</div>
             </div>
 
-            <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+            <div class="grid gap-2 sm:grid-cols-3">
               <button id="btnNext" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-4 text-sm font-semibold text-surface shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] transition hover:brightness-110 active:scale-95 active:brightness-90"><span class="material-symbols-outlined">mic</span> Next</button>
-              <button id="btnPause" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-4 text-sm font-semibold text-on-surface transition hover:bg-surface-container-high active:scale-95 active:brightness-75"><span class="material-symbols-outlined">pause</span> Pause</button>
-              <button id="btnStart" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-tertiary px-4 py-4 text-sm font-semibold text-[#042112] transition hover:brightness-110 active:scale-95 active:brightness-90"><span class="material-symbols-outlined">play_arrow</span> Start</button>
-              <button id="btnReset" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-4 text-sm font-semibold text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface active:scale-95 active:brightness-75"><span class="material-symbols-outlined">history</span> Reset</button>
+              <button id="btnPlayPause" disabled class="inline-flex items-center justify-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-4 text-sm font-semibold text-on-surface-variant/40 transition cursor-not-allowed opacity-50"><span class="material-symbols-outlined">pause</span> Pause</button>
+              <button id="btnReset" disabled class="inline-flex items-center justify-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-4 text-sm font-semibold text-on-surface-variant/40 transition cursor-not-allowed opacity-50"><span class="material-symbols-outlined">history</span> Reset</button>
             </div>
 
             <div class="mt-4 flex flex-wrap items-center gap-2">
@@ -532,10 +532,9 @@
             <div class="absolute inset-6 rounded-full bg-surface-container-low/80"></div>
             <div class="absolute inset-10 rounded-full border border-white/5 bg-surface-container-low/60"></div>
             <div id="conferenceTableSeats" class="absolute inset-0 z-20"></div>
-            <div class="absolute inset-[18%] rounded-full glass-panel shadow-[0_18px_50px_rgba(0,0,0,0.28)] flex flex-col items-center justify-center text-center px-6 py-8 sm:px-8 sm:py-10 z-10">
-              <button id="conferenceTableTopic" type="button" data-menu-anchor="section-menu" class="conference-table-topic-button max-w-[16rem] font-headline text-2xl sm:text-3xl font-black tracking-tight text-on-surface transition hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/60 sm:max-w-[18rem]">[No Agendum]</button>
-              <div class="mt-5 text-[10px] uppercase font-bold tracking-[0.24em] text-on-surface-variant">Current Speaker Countdown</div>
-              <div id="speakTimer" class="mt-1 font-headline text-5xl sm:text-6xl lg:text-7xl font-black tracking-tighter ok">00:00</div>
+            <div class="absolute inset-[18%] rounded-full glass-panel shadow-[0_18px_50px_rgba(0,0,0,0.28)] flex flex-col items-center justify-center text-center lg:px-4 lg:py-6 xl:px-6 xl:py-8 z-10">
+              <button id="conferenceTableTopic" type="button" data-menu-anchor="section-menu" class="conference-table-topic-button w-full font-headline lg:text-sm xl:text-base font-black leading-tight tracking-tight text-on-surface transition hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary/60">[No Agendum]</button>
+              <div id="speakTimer" class="mt-2 font-headline lg:text-3xl xl:text-4xl 2xl:text-5xl font-black tracking-tighter ok">00:00</div>
               <div id="remaining" class="mt-2 text-sm text-on-surface-variant">(remaining: 00:00)</div>
               <div class="mt-5 flex flex-wrap items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em]">
                 <span class="rounded-full bg-surface-container-high px-3 py-1.5 text-on-surface-variant"><span id="meetingTimer">00:00</span> total</span>
@@ -899,6 +898,20 @@
     const elBtnCancelPaste = $('#btnCancelPaste');
     const elBtnCreateOptions = $('#btnCreateOptions');
 
+    function showToast(message) {
+      const container = $('#toastContainer');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.textContent = message;
+      toast.className = 'rounded-2xl bg-surface-container-highest px-5 py-3 text-sm font-semibold text-on-surface shadow-lg pointer-events-auto opacity-0 transition-opacity duration-300';
+      container.appendChild(toast);
+      requestAnimationFrame(() => { toast.classList.remove('opacity-0'); toast.classList.add('opacity-100'); });
+      setTimeout(() => {
+        toast.classList.remove('opacity-100'); toast.classList.add('opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
     // --- State ---
     let client = null;
     let meetingStart = 0;
@@ -1019,6 +1032,7 @@
       renderConferenceTable(state);
 
       updateTimers(state);
+      updatePlayPauseButton(state);
       updatePollUI(state);
       updateRoomConfigUI(state);
     }
@@ -1206,6 +1220,48 @@
       return html;
     }
 
+    function updatePlayPauseButton(state) {
+      const btn = $('#btnPlayPause');
+      const btnReset = $('#btnReset');
+      if (!btn) return;
+      const c = state.current;
+      const disabledClass = 'inline-flex items-center justify-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-4 text-sm font-semibold text-on-surface-variant/40 transition cursor-not-allowed opacity-50';
+      const pauseClass = 'inline-flex items-center justify-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-4 text-sm font-semibold text-on-surface transition hover:bg-surface-container-high active:scale-95 active:brightness-75';
+      const resumeClass = 'inline-flex items-center justify-center gap-2 rounded-2xl bg-tertiary px-4 py-4 text-sm font-semibold text-[#042112] transition hover:brightness-110 active:scale-95 active:brightness-90';
+
+      const btnNext = $('#btnNext');
+      if (btnNext) {
+        btnNext.innerHTML = c
+          ? '<span class="material-symbols-outlined">mic</span> Next'
+          : '<span class="material-symbols-outlined">play_arrow</span> Start';
+      }
+
+      if (!c) {
+        btn.innerHTML = '<span class="material-symbols-outlined">pause</span> Pause';
+        btn.className = disabledClass;
+        btn.disabled = true;
+        btn.onclick = null;
+      } else if (c.running) {
+        btn.innerHTML = '<span class="material-symbols-outlined">pause</span> Pause';
+        btn.className = pauseClass;
+        btn.disabled = false;
+        btn.onclick = () => client?.send(`/app/room/${roomCode}/timer`, {}, JSON.stringify({action:'pause'}));
+      } else {
+        btn.innerHTML = '<span class="material-symbols-outlined">play_arrow</span> Resume';
+        btn.className = resumeClass;
+        btn.disabled = false;
+        btn.onclick = () => client?.send(`/app/room/${roomCode}/timer`, {}, JSON.stringify({action:'start'}));
+      }
+
+      if (btnReset) {
+        const timerActive = c && (c.running || c.elapsedMs > 0);
+        btnReset.disabled = !timerActive;
+        btnReset.className = timerActive
+          ? 'inline-flex items-center justify-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-4 text-sm font-semibold text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface active:scale-95 active:brightness-75'
+          : disabledClass;
+      }
+    }
+
     function updateTimers(state) {
       const nowSec = Math.floor(Date.now() / 1000);
 
@@ -1292,9 +1348,13 @@
     });
 
     // Meeting controls
-    $('#btnNext').onclick = () => client?.send(`/app/room/${roomCode}/next`, {}, '{}');
-    $('#btnPause').onclick = () => client?.send(`/app/room/${roomCode}/timer`, {}, JSON.stringify({action:'pause'}));
-    $('#btnStart').onclick = () => client?.send(`/app/room/${roomCode}/timer`, {}, JSON.stringify({action:'start'}));
+    $('#btnNext').onclick = () => {
+      if (!currentState?.queue?.length && !currentState?.current) {
+        showToast('Cannot start, no one requested to speak yet.');
+        return;
+      }
+      client?.send(`/app/room/${roomCode}/next`, {}, '{}');
+    };
     $('#btnReset').onclick = () => client?.send(`/app/room/${roomCode}/timer`, {}, JSON.stringify({action:'reset'}));
     $('#btnSetLimit').onclick = () => {
       const sec = parseInt(elLimit.value, 10);
