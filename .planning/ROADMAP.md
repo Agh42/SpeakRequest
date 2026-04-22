@@ -109,5 +109,18 @@ Plans:
 | TIME-03 | Phase 8 | Complete |
 | META-01 | Phase 8 | Complete |
 
+### Phase 11: Participant View Style Sync
+**Goal**: The participant view adopts the chair-view visual language for shared presentation surfaces - circular avatar table styling, card and panel surfaces, typography, and button treatments - while preserving participant-only behavior such as request, withdraw, and the existing poll box.
+**Depends on**: Phase 10
+**Requirements**: PART-01, PART-02
+**Success Criteria** (what must be TRUE):
+	1. The participant queue, room cards, and poll container share the same tonal surfaces, fonts, roundedness, and button styling as the updated chair view.
+	2. The participant view keeps its own behavior intact, including request/withdraw actions and the existing poll box, and does not inherit chair-only controls such as start poll.
+	3. The participant queue uses the same circular avatar presentation style as the chair table display while remaining participant-specific in data and interactions.
+**Plans**: 1 plan
+
+Plans:
+- [x] 11-01-PLAN.md — Restyle participant.html with the chair-view surface language, full circular avatar table presentation, and participant-only behavior boundaries
+
 ---
 *Roadmap created: 2026-03-28*

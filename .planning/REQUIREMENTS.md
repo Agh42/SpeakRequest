@@ -32,12 +32,12 @@ Requirements for the UI Improvements milestone. Each maps to roadmap phases.
 
 ## v2 Requirements
 
-Deferred to future release.
+Delivered by Phase 11.
 
 ### Participant View Redesign
 
-- **PART-01**: Participant view (participant.html) redesigned to match the updated chair surface.
-- **PART-02**: Participant view mirrors the room-member presence model in a read-only layout.
+[x] **PART-01**: Participant view (participant.html) redesigned to match the updated chair surface.
+[x] **PART-02**: Participant view mirrors the room-member presence model in a read-only layout.
 
 ### Popout View
 
@@ -66,10 +66,10 @@ Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PRES-01 | Pending | Pending |
-| PRES-02 | Pending | Pending |
-| PRES-03 | Pending | Pending |
-| PRES-04 | Pending | Pending |
+| PRES-01 | Complete | Complete |
+| PRES-02 | Complete | Complete |
+| PRES-03 | Complete | Complete |
+| PRES-04 | Complete | Complete |
 | VIEW-01 | Complete | Complete |
 | VIEW-02 | Complete | Complete |
 | VIEW-03 | Complete | Complete |
@@ -85,4 +85,4 @@ Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-03-28*
-*Last updated: 2026-03-28 after v1.1 milestone start*
+*Last updated: 2026-04-22 after Phase 11 completion*

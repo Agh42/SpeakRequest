@@ -17,6 +17,7 @@ The chair can see every participant's status at a glance - who is speaking, who 
 - Avatar circle and room title presentation fixes, including a two-line maximum for the room title with ellipsis truncation.
 - Large speaking timer warning colors at 25% and 10% remaining, then staying red while the elapsed timer continues past zero and the remaining timer stays at 00:00.
 - Clickable room topic label for the chair that jumps to the room menu section for editing.
+- Participant view style sync so participant.html picks up the chair-view visual language on shared surfaces while keeping participant-only actions and the existing poll box.
 
 ## Current State
 
@@ -65,7 +66,6 @@ Milestone v1.0 is shipped and archived. The next milestone is being defined for 
 
 <!-- Explicit boundaries. Includes reasoning to prevent re-adding. -->
 
-- Participant view redesign - deferred to a later milestone because this milestone is focused on chair/room-state behavior.
 - Popout view changes - keep existing surface stable while the room-state and chair improvements land.
 - New routes or API surfaces - this milestone is limited to existing surfaces plus the Room entity/state contract.
 - Timer overrun counting past zero on the remaining-time display - the remaining timer stays at 00:00 as requested.
