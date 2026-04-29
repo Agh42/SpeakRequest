@@ -664,6 +664,7 @@
     let dotVotes = {}; // Map of optionKey -> vote count for dot voting polls
     let currentPollType = null; // Track current poll type
     let maxVotesPerParticipant = 1; // Max votes for multiple selection
+    let currentPollKey = null; // Unique key for the active poll — used to detect poll changes and reset vote state
 
     function openOverlay() {
       // prevent background scroll
@@ -1008,15 +1009,27 @@
         // Reset vote tracking
         currentVote = null;
         currentPollType = null;
-        selectedVotes.clear();
+        selectedVotes = new Set();
         dotVotes = {};
         maxVotesPerParticipant = 1;
+        currentPollKey = null;
         return;
       }
 
       // If poll is ACTIVE, open overlay and disable background controls
       if (pollState.status === 'ACTIVE') {
         elPollEmpty.style.display = 'none';
+
+        // Detect a new poll and reset all vote state before rendering
+        const incomingPollKey = (pollState.pollType || '') + '::' + (pollState.question || '') + '::' + (pollState.options ? pollState.options.join(',') : '');
+        if (incomingPollKey !== currentPollKey) {
+          currentVote = null;
+          selectedVotes = new Set();
+          dotVotes = {};
+          maxVotesPerParticipant = 1;
+          currentPollKey = incomingPollKey;
+        }
+
         currentPollType = pollState.pollType;
         
         // Show overlay with voting section
@@ -1123,9 +1136,10 @@
         // Reset vote tracking for next poll
         currentVote = null;
         currentPollType = null;
-        selectedVotes.clear();
+        selectedVotes = new Set();
         dotVotes = {};
         maxVotesPerParticipant = 1;
+        currentPollKey = null;
 
         const results = pollState.lastResults;
         elPollResultsQuestionParticipant.textContent = DOMPurify.sanitize(results.question);
