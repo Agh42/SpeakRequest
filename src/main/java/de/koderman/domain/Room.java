@@ -34,6 +34,8 @@ public class Room {
     private final Map<String, Set<String>> sessionMultiVotes = new HashMap<>(); // Track each session's votes (allows
                                                                                 // vote changes) - for multiple
                                                                                 // selection
+    private final Map<String, Map<String, Integer>> sessionDotVotes = new HashMap<>(); // Track per-session dot counts
+                                                                                       // per option for DOT_VOTING
     private PollResults lastPollResults = null;
     private List<String> pollOptions = null; // For MULTISELECT polls - list of option labels
     private Integer votesPerParticipant = 1; // For MULTISELECT_MULTIPLE polls - number of votes each participant can
@@ -443,6 +445,7 @@ public class Room {
             this.pollResults.clear();
             this.sessionVotes.clear();
             this.sessionMultiVotes.clear();
+            this.sessionDotVotes.clear();
             this.pollOptions = null;
             this.votesPerParticipant = votesPerParticipant != null ? votesPerParticipant : 1;
 
@@ -460,8 +463,9 @@ public class Room {
                 this.pollResults.put("OPT_6", 0);
                 this.pollResults.put("OPT_7", 0);
                 this.pollResults.put("OPT_8", 0);
-            } else if ("MULTISELECT".equals(pollType) || "MULTISELECT_MULTIPLE".equals(pollType)) {
-                // Initialize options for multiselect poll (both single and multiple selection)
+            } else if ("MULTISELECT".equals(pollType) || "MULTISELECT_MULTIPLE".equals(pollType)
+                    || "DOT_VOTING".equals(pollType)) {
+                // Initialize options for multiselect poll (single selection, multiple selection, dot voting)
                 if (options != null && !options.isEmpty()) {
                     this.pollOptions = new ArrayList<>(options);
                     for (int i = 0; i < options.size(); i++) {
@@ -482,7 +486,32 @@ public class Room {
                 return false;
             }
 
-            // Check if vote is valid
+            // Handle dot voting: supports stacking multiple votes on the same option
+            // Vote key is "OPT_N" to add a dot, or "OPT_N_DOWN" to remove one
+            if ("DOT_VOTING".equals(pollType)) {
+                boolean isDown = vote.endsWith("_DOWN");
+                String baseKey = isDown ? vote.substring(0, vote.length() - 5) : vote;
+                if (!pollResults.containsKey(baseKey)) return false;
+
+                Map<String, Integer> dotVotesForSession =
+                        sessionDotVotes.computeIfAbsent(sessionId, k -> new HashMap<>());
+                int currentCount = dotVotesForSession.getOrDefault(baseKey, 0);
+                int totalVotesForSession =
+                        dotVotesForSession.values().stream().mapToInt(Integer::intValue).sum();
+
+                if (isDown) {
+                    if (currentCount <= 0) return false;
+                    dotVotesForSession.put(baseKey, currentCount - 1);
+                    pollResults.put(baseKey, pollResults.get(baseKey) - 1);
+                } else {
+                    if (totalVotesForSession >= votesPerParticipant) return false;
+                    dotVotesForSession.put(baseKey, currentCount + 1);
+                    pollResults.put(baseKey, pollResults.get(baseKey) + 1);
+                }
+                return true;
+            }
+
+            // Check if vote is valid (for non-DOT_VOTING poll types)
             if (!pollResults.containsKey(vote)) {
                 return false;
             }
@@ -556,6 +585,8 @@ public class Room {
                 pollStatus = "CLOSED";
                 pollResults.clear();
                 sessionVotes.clear();
+                sessionMultiVotes.clear();
+                sessionDotVotes.clear();
                 pollOptions = null;
             }
         } finally {
@@ -573,6 +604,8 @@ public class Room {
             pollStatus = null;
             pollResults.clear();
             sessionVotes.clear();
+            sessionMultiVotes.clear();
+            sessionDotVotes.clear();
             pollOptions = null;
         } finally {
             lock.unlock();

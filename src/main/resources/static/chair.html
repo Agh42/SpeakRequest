@@ -341,6 +341,7 @@
               <div class="mt-2 flex flex-wrap gap-2">
                 <button id="btnSingleSelectionPoll" class="inline-flex items-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container"><span class="material-symbols-outlined">bar_chart</span> Single Selection</button>
                 <button id="btnMultipleSelectionPoll" class="inline-flex items-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container"><span class="material-symbols-outlined">bar_chart</span> Multiple Selection</button>
+                <button id="btnDotVotingPoll" class="inline-flex items-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container"><span class="material-symbols-outlined">scatter_plot</span> Dot Voting</button>
               </div>
             </div>
 
@@ -372,7 +373,7 @@
               <div id="votingConfiguration" class="mt-3 rounded-2xl bg-surface-container p-3" style="display: none;">
                 <div class="mb-2 text-sm text-on-surface-variant">Voting Configuration:</div>
                 <div class="row">
-                  <label class="mr-2 text-sm text-on-surface-variant" style="flex: 0 0 auto;">Select up to X options:</label>
+                  <label id="votingConfigLabel" class="mr-2 text-sm text-on-surface-variant" style="flex: 0 0 auto;">Votes per participant:</label>
                   <select id="multiselectVotesPerParticipant" class="flex-1 rounded-2xl bg-background/60 px-4 py-3 text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/60">
                     <option value="1">1</option>
                     <option value="2">2</option>
@@ -1077,8 +1078,10 @@
         if (poll.pollType === 'GRADIENTS') {
           // Display Gradients of Agreement results as horizontal number line
           resultsHTML += renderGradientsResults(poll.results, poll.totalVotes);
-        } else if (poll.pollType === 'MULTISELECT' || poll.pollType === 'MULTISELECT_MULTIPLE' || (poll.options && poll.options.length > 0)) {
-          // Display Multiselect results as horizontal bar chart
+        } else if (poll.pollType === 'MULTISELECT' || poll.pollType === 'MULTISELECT_MULTIPLE'
+            || poll.pollType === 'DOT_VOTING'
+            || (poll.options && poll.options.length > 0)) {
+          // Display Multiselect / Dot Voting results as horizontal bar chart
           resultsHTML += renderMultiselectResults(poll.results, poll.totalVotes, poll.options);
         } else if (poll.pollType === 'YES_NO') {
           // Display Yes/No results as horizontal bar chart
@@ -1511,6 +1514,29 @@
       
       // Show voting configuration for multiple selection
       $('#votingConfiguration').style.display = 'block';
+      const lbl = $('#votingConfigLabel');
+      if (lbl) lbl.textContent = 'Votes per participant:';
+      
+      // Initialize with 2 default options
+      multiselectOptions = ['', ''];
+      renderMultiselectOptions();
+      
+      // Focus on question input
+      elMultiselectPollQuestion.focus();
+    };
+    
+    // Dot voting poll event handler
+    $('#btnDotVotingPoll').onclick = () => {
+      selectedPollType = 'DOT_VOTING';
+      isMultipleSelection = true;
+      elPollSelection.style.display = 'none';
+      elMultiselectPollCreation.style.display = 'block';
+      elMultiselectPollQuestion.value = '';
+      
+      // Show voting configuration (votes = dots per participant)
+      $('#votingConfiguration').style.display = 'block';
+      const lbl = $('#votingConfigLabel');
+      if (lbl) lbl.textContent = 'Dots per participant:';
       
       // Initialize with 2 default options
       multiselectOptions = ['', ''];

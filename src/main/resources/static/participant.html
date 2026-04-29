@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
@@ -16,382 +16,86 @@
   <meta name="twitter:title" content="SPEEK.NOW - Join Meeting"/>
   <meta name="twitter:description" content="Join this meeting on SPEEK.NOW to request speaking time and participate in polls."/>
 
+  <script src="/vendor/tailwind.cdn.js"></script>
   <link rel="stylesheet" href="/vendor/google-fonts.css"/>
-  
-  <link rel="stylesheet" href="styles.css"/>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            background: '#0b1326',
+            surface: '#0b1326',
+            'surface-dim': '#0b1326',
+            'surface-bright': '#31394d',
+            'surface-container-lowest': '#060e20',
+            'surface-container-low': '#131b2e',
+            'surface-container': '#171f33',
+            'surface-container-high': '#222a3d',
+            'surface-container-highest': '#2d3449',
+            'surface-variant': '#2d3449',
+            'surface-tint': '#bbc3ff',
+            primary: '#bbc3ff',
+            'primary-container': '#3d5afe',
+            'primary-fixed': '#dee0ff',
+            'primary-fixed-dim': '#bbc3ff',
+            'on-primary': '#001d93',
+            'on-primary-container': '#f1f0ff',
+            'on-primary-fixed': '#000f5d',
+            'on-primary-fixed-variant': '#002ccd',
+            secondary: '#adcbda',
+            'secondary-container': '#304d5a',
+            'secondary-fixed': '#c9e7f7',
+            'secondary-fixed-dim': '#adcbda',
+            'on-secondary': '#163440',
+            'on-secondary-container': '#9fbdcc',
+            'on-secondary-fixed': '#001f2a',
+            'on-secondary-fixed-variant': '#2e4b57',
+            tertiary: '#00e475',
+            'tertiary-container': '#007f3e',
+            'tertiary-fixed': '#62ff96',
+            'tertiary-fixed-dim': '#00e475',
+            'on-tertiary': '#003918',
+            'on-tertiary-container': '#c8ffcf',
+            'on-tertiary-fixed': '#00210b',
+            'on-tertiary-fixed-variant': '#005226',
+            error: '#ffb4ab',
+            'error-container': '#93000a',
+            'on-error': '#690005',
+            'on-error-container': '#ffdad6',
+            'on-surface': '#dae2fd',
+            'on-surface-variant': '#c5c5d9',
+            'on-background': '#dae2fd',
+            outline: '#8e8fa2',
+            'outline-variant': '#444656',
+            'inverse-surface': '#dae2fd',
+            'inverse-on-surface': '#283044',
+            'inverse-primary': '#2848ee'
+          },
+          fontFamily: {
+            headline: ['Manrope', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+            label: ['Inter', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
   <link rel="stylesheet" href="fontawesome/all.min.css"/>
   <script src="stomp.min.js"></script>
   <script src="purify.min.js"></script>
   <script src="metadata-loader.js"></script>
   <script src="share.js"></script>
   <style>
-    /* Poll overlay styles (mobile-friendly) */
-    .poll-overlay {
-      position: fixed;
-      inset: 0;
-      display: none; /* shown via JS */
-      align-items: center;
-      justify-content: center;
-      background: rgba(15,23,42,0.95); /* Dark background matching main theme */
-      z-index: 9999;
-    }
-
-    .poll-overlay .panel {
-      width: 100%;
-      max-width: 720px;
-      height: calc(var(--vh, 1vh) * 100);
-      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0));
-      border: 1px solid rgba(255,255,255,.12);
-      color: #e5e7eb; /* Light text for dark background */
-      box-sizing: border-box;
-      padding: calc(env(safe-area-inset-top, 16px) + 16px) 16px calc(env(safe-area-inset-bottom, 16px) + 16px);
-      overflow: auto;
-      border-radius: 14px;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-    }
-
-    /* Ensure buttons stretch nicely inside the overlay */
-    .poll-overlay .row { display:flex; gap:8px; }
-    .poll-overlay .row button { flex:1; }
-    
-    /* Selected vote button styling */
-    .poll-overlay button.vote-selected {
-      background: linear-gradient(180deg, rgba(96,165,250,.25), rgba(96,165,250,.15));
-      border: 2px solid rgba(96,165,250,.8);
-      box-shadow: 0 0 12px rgba(96,165,250,.4);
-    }
-    
-    /* Gradients of Agreement button styles */
-    .gradient-btn {
-      width: 100%;
-      padding: 12px 16px;
-      text-align: left;
-      border-radius: 8px;
-      border: 2px solid rgba(255,255,255,.12);
-      cursor: pointer;
-      transition: all 0.2s;
-      font-size: 0.95rem;
-    }
-    
-    .gradient-btn:hover {
-      transform: translateX(4px);
-      border-color: rgba(255,255,255,.3);
-    }
-    
-    .gradient-btn strong {
-      display: block;
-      margin-bottom: 4px;
-    }
-    
-    .gradient-desc {
-      font-size: 0.8rem;
-      font-weight: normal;
-      opacity: 0.8;
-      font-style: italic;
-    }
-    
-    .gradient-btn-green {
-      background: linear-gradient(180deg, rgba(144,238,144,.25), rgba(144,238,144,.15));
-    }
-    
-    .gradient-btn-blue {
-      background: linear-gradient(180deg, rgba(173,216,230,.25), rgba(173,216,230,.15));
-    }
-    
-    .gradient-btn-red {
-      background: linear-gradient(180deg, rgba(255,182,193,.25), rgba(255,182,193,.15));
-    }
-    
-    .gradient-btn.vote-selected {
-      border: 2px solid rgba(96,165,250,.8);
-      box-shadow: 0 0 12px rgba(96,165,250,.4);
-    }
-    
-    /* Assume chair button positioning */
-    .floating-assume-chair {
-      position: absolute;
-      top: 100%;
-      right: 0;
-      margin-top: 8px;
-      z-index: 100;
-    }
-    
-    .header {
-      position: relative;
-    }
-    
-    /* Ensure consistent header element sizing and alignment */
-    .header .pill, 
-    .header .primary {
-      height: auto;
-      line-height: 1.2;
-      font-size: 0.9rem;
-      padding: 6px 12px;
-    }
-    
-    .header h1 {
-      font-size: 1.5rem;
-      white-space: nowrap;
-    }
-
-    :root {
-      color-scheme: dark;
-      --participant-bg: #0b1326;
-      --participant-surface: rgba(45, 52, 73, 0.6);
-      --participant-surface-high: #222a3d;
-      --participant-surface-highest: #2d3449;
-      --participant-text: #dae2fd;
-      --participant-muted: #c5c5d9;
-      --participant-accent: #bbc3ff;
-      --participant-accent-strong: #3d5afe;
-      --participant-success: #00e475;
-      --participant-danger: #ffb4ab;
-    }
-
-    html, body {
-      min-height: 100%;
-    }
-
-    body {
-      background:
-        radial-gradient(circle at top left, rgba(61, 90, 254, 0.18), transparent 30%),
-        radial-gradient(circle at top right, rgba(0, 228, 117, 0.08), transparent 26%),
-        linear-gradient(180deg, #09111f 0%, #0b1326 100%);
-      color: var(--participant-text);
-      font-family: "Inter", sans-serif;
-      overflow-x: hidden;
-    }
-
-    .wrap {
-      max-width: 1500px;
-      padding: 24px 20px 32px;
-    }
-
-    .header,
-    .card,
-    .poll-overlay .panel,
-    .modal-content,
-    footer {
-      border: none;
-      border-radius: 28px;
-      background: var(--participant-surface);
-      backdrop-filter: blur(24px);
-      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.24);
-    }
-
-    .header {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px 18px;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
-      padding: 18px 22px;
-    }
-
-    .header h1,
-    .card h2,
-    .modal-content h3 {
-      margin: 0;
-      font-family: "Manrope", sans-serif;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-    }
-
-    .header h1 {
-      font-size: 1.65rem;
-    }
-
-    .header a {
-      color: var(--participant-text);
-      text-decoration: none;
-    }
-
-    .header .pill,
-    .header .primary,
-    .header .ghost,
-    .floating-assume-chair,
-    .room-code,
-    .room-code-big,
-    .queue-position,
-    button {
-      font-family: "Inter", sans-serif;
-    }
-
-    .header .pill,
-    .header .primary {
-      height: auto;
-      line-height: 1.2;
-      font-size: 0.9rem;
-      padding: 8px 14px;
-    }
-
-    .pill {
-      background: rgba(34, 42, 61, 0.95);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      color: var(--participant-muted);
-    }
-
-    .pill.ok {
-      color: #bbf7d0;
-      border-color: rgba(16, 185, 129, 0.45);
-    }
-
-    .pill.warn {
-      color: #fde68a;
-      border-color: rgba(245, 158, 11, 0.45);
-    }
-
-    .card,
-    .poll-box {
+    /* Queue circle layout — used by circular-positioning JS */
+    .glass-panel {
       background: rgba(45, 52, 73, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      border-radius: 28px;
-      padding: 22px;
       backdrop-filter: blur(24px);
-      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.24);
-    }
-
-    .card h2 {
-      font-size: 1.35rem;
-      margin-bottom: 14px;
-    }
-
-    .row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin: 0.7rem 0;
-    }
-
-    .row input {
-      flex: 1;
-      min-width: 0;
-    }
-
-    input,
-    select,
-    button {
-      background: rgba(17, 23, 38, 0.92);
-      color: var(--participant-text);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 9999px;
-      padding: 12px 14px;
-      font-size: 16px;
-    }
-
-    input {
-      background: rgba(17, 23, 38, 0.9);
-      color: var(--participant-text);
-      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-    }
-
-    input:focus {
-      outline: none;
-      border-color: rgba(187, 195, 255, 0.75);
-      box-shadow: 0 0 0 3px rgba(187, 195, 255, 0.12);
-      background: rgba(11, 19, 38, 0.96);
-    }
-
-    button {
-      cursor: pointer;
-      transition: transform 0.15s ease, filter 0.15s ease, background 0.15s ease, border-color 0.15s ease;
-    }
-
-    button:hover {
-      filter: brightness(1.06);
-    }
-
-    button:active {
-      transform: translateY(1px) scale(0.99);
-      filter: brightness(0.95);
-    }
-
-    .primary {
-      background: linear-gradient(180deg, #4d69ff 0%, #3d5afe 100%);
-      border: none;
-      color: #f1f0ff;
-      box-shadow: 0 16px 32px rgba(61, 90, 254, 0.28);
-    }
-
-    .ghost {
-      background: rgba(34, 42, 61, 0.9);
-      color: var(--participant-text);
-    }
-
-    .floating-assume-chair {
-      background: rgba(0, 228, 117, 0.12);
-      border: 1px solid rgba(0, 228, 117, 0.42);
-      color: #c8ffcf;
-      font-weight: 700;
-      border-radius: 9999px;
-      padding: 10px 16px;
-      box-shadow: 0 18px 36px rgba(0, 0, 0, 0.22);
-    }
-
-    .floating-assume-chair:hover {
-      background: rgba(0, 228, 117, 0.18);
-    }
-
-    .room-code {
-      background: rgba(34, 42, 61, 0.95);
-      border: 1px solid rgba(187, 195, 255, 0.28);
-      color: var(--participant-accent);
-      font-weight: 800;
-      font-size: 1.05rem;
-      padding: 8px 14px;
-      border-radius: 9999px;
-      letter-spacing: 0.18em;
-    }
-
-    .room-code-big {
-      background: rgba(34, 42, 61, 0.95);
-      border: 1px solid rgba(187, 195, 255, 0.28);
-      color: var(--participant-accent);
-      font-weight: 800;
-      font-size: 2.4rem;
-      padding: 16px 24px;
-      border-radius: 24px;
-      letter-spacing: 0.28em;
-      text-align: center;
-    }
-
-    .room-info {
-      text-align: left;
-    }
-
-    .muted {
-      color: var(--participant-muted);
-    }
-
-    .small {
-      font-size: 0.92rem;
-    }
-
-    .big {
-      font-family: "Manrope", sans-serif;
-      font-size: 1.4rem;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-    }
-
-    .two {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-      margin: 8px 0;
-    }
-
-    @media (max-width: 600px) {
-      .two {
-        grid-template-columns: 1fr;
-      }
     }
 
     .queue-table-shell {
       position: relative;
       width: min(100%, 820px);
-      margin: 12px auto 0;
+      margin: 0 auto;
       aspect-ratio: 1 / 1;
       min-height: 440px;
     }
@@ -491,7 +195,7 @@
       font-family: "Manrope", sans-serif;
       font-size: 1rem;
       font-weight: 800;
-      color: var(--participant-text);
+      color: #dae2fd;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -499,7 +203,7 @@
 
     .queue-subtext {
       margin-top: 4px;
-      color: var(--participant-muted);
+      color: #c5c5d9;
       font-size: 0.82rem;
     }
 
@@ -508,7 +212,7 @@
       padding: 6px 10px;
       border-radius: 9999px;
       background: rgba(34, 42, 61, 0.9);
-      color: var(--participant-muted);
+      color: #c5c5d9;
       font-size: 0.75rem;
       font-weight: 800;
       letter-spacing: 0.18em;
@@ -520,7 +224,7 @@
       transform: translate(-50%, -50%);
       width: min(260px, 50vw);
       text-align: center;
-      color: var(--participant-muted);
+      color: #c5c5d9;
       font-size: 0.92rem;
       line-height: 1.5;
       padding: 14px 18px;
@@ -529,23 +233,19 @@
       border: 1px dashed rgba(255, 255, 255, 0.08);
     }
 
-    .timer {
-      font-family: "Manrope", sans-serif;
-      font-variant-numeric: tabular-nums;
-      font-weight: 800;
-      font-size: 1.9rem;
-    }
+    #speakTimer.ok     { color: #bbf7d0; }
+    #speakTimer.warn   { color: #fde68a; }
+    #speakTimer.danger { color: #fecaca; }
 
-    .timer.ok {
-      color: #bbf7d0;
-    }
-
-    .timer.warn {
-      color: #fde68a;
-    }
-
-    .timer.danger {
-      color: #fecaca;
+    /* Poll overlay */
+    .poll-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15,23,42,0.95);
+      z-index: 9999;
     }
 
     .poll-overlay .panel {
@@ -554,7 +254,7 @@
       height: calc(var(--vh, 1vh) * 100);
       background: rgba(45, 52, 73, 0.84);
       border: 1px solid rgba(255, 255, 255, 0.05);
-      color: var(--participant-text);
+      color: #dae2fd;
       box-sizing: border-box;
       padding: calc(env(safe-area-inset-top, 16px) + 16px) 18px calc(env(safe-area-inset-bottom, 16px) + 16px);
       overflow: auto;
@@ -562,9 +262,8 @@
       box-shadow: 0 28px 80px rgba(0, 0, 0, 0.34);
     }
 
-    #pollSection {
-      min-height: 100%;
-    }
+    .poll-overlay .row { display: flex; gap: 8px; }
+    .poll-overlay .row button { flex: 1; }
 
     #pollOverlay button.vote-selected {
       background: linear-gradient(180deg, rgba(96, 165, 250, 0.26), rgba(96, 165, 250, 0.16));
@@ -572,191 +271,212 @@
       box-shadow: 0 0 12px rgba(96, 165, 250, 0.35);
     }
 
-    footer {
-      margin-top: 28px;
-      padding: 18px 22px;
-      background: rgba(23, 31, 51, 0.92);
+    /* Gradient-of-agreement buttons in poll overlay */
+    .gradient-btn {
+      width: 100%;
+      padding: 12px 16px;
       text-align: left;
+      border-radius: 8px;
+      border: 2px solid rgba(255,255,255,.12);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.95rem;
+      background: rgba(17, 23, 38, 0.92);
+      color: #dae2fd;
+      font-family: 'Inter', sans-serif;
+    }
+    .gradient-btn:hover { transform: translateX(4px); border-color: rgba(255,255,255,.3); }
+    .gradient-btn strong { display: block; margin-bottom: 4px; }
+    .gradient-desc { font-size: 0.8rem; font-weight: normal; opacity: 0.8; font-style: italic; }
+    .gradient-btn-green { background: linear-gradient(180deg, rgba(144,238,144,.25), rgba(144,238,144,.15)); }
+    .gradient-btn-blue  { background: linear-gradient(180deg, rgba(173,216,230,.25), rgba(173,216,230,.15)); }
+    .gradient-btn-red   { background: linear-gradient(180deg, rgba(255,182,193,.25), rgba(255,182,193,.15)); }
+    .gradient-btn.vote-selected { border: 2px solid rgba(96,165,250,.8); box-shadow: 0 0 12px rgba(96,165,250,.4); }
+
+    /* Utility classes used by JS-injected status messages */
+    .ok    { color: #bbf7d0; }
+    .warn  { color: #fde68a; }
+    .muted { color: #c5c5d9; }
+    .small { font-size: 0.92rem; }
+    .accent {
+      background: rgba(34,42,61,0.9);
+      color: #dae2fd;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 9999px;
+      padding: 12px 14px;
+      cursor: pointer;
+      font-size: 16px;
+      font-family: 'Inter', sans-serif;
     }
 
-    footer .footer-links {
-      display: flex;
-      justify-content: flex-start;
-      gap: 18px;
-      flex-wrap: wrap;
-    }
-
-    footer a {
-      color: var(--participant-muted);
-      text-decoration: none;
-      transition: color 0.15s ease;
-    }
-
-    footer a:hover {
-      color: var(--participant-text);
-    }
+    /* Viewport height workaround (used by poll overlay) */
+    :root { color-scheme: dark; }
 
     @media (max-width: 768px) {
-      .wrap {
-        padding: 12px;
-      }
-
-      .header {
-        padding: 16px;
-      }
-
-      .header h1 {
-        font-size: 1.2rem;
-      }
-
-      .card,
-      .poll-box,
-      footer,
-      .poll-overlay .panel {
-        border-radius: 24px;
-      }
-
-      button {
-        min-height: 44px;
-      }
-
-      .room-code-big {
-        font-size: 2rem;
-        letter-spacing: 0.22em;
-        padding: 14px 18px;
-      }
-
-      .queue-table-shell {
-        min-height: 360px;
-      }
-
-      .queue-item {
-        width: 130px;
-      }
-
-      .queue-card {
-        padding: 12px 10px;
-      }
+      .queue-table-shell { min-height: 360px; }
+      .queue-item { width: 130px; }
+      .queue-card { padding: 12px 10px; }
     }
   </style>
 </head>
-<body>
-  <div class="wrap">
-    <header class="header">
-      <h1><a href="/landing.html" style="text-decoration: none; color: inherit;">SPEEK.NOW</a> - Participant</h1>
-      <div class="room-code-display">
-        <span class="muted small">Room Code:</span>
-        <span id="roomCodeDisplay" class="room-code">----</span>
-        <button id="btnShareParticipantUrlHeader" class="primary" style="padding: 6px 12px; border-radius: 9999px; font-size: 1.1rem; margin-right: 8px;" aria-label="Share participation link"><i class="fa-solid fa-share-nodes"></i> Share</button>
+<body class="min-h-screen bg-background font-body text-on-surface">
+  <div id="toastContainer" class="fixed top-4 left-1/2 z-[9999] flex -translate-x-1/2 flex-col items-center gap-2 pointer-events-none"></div>
+
+  <!-- Fixed top header -->
+  <header class="fixed inset-x-0 top-0 z-40 border-b border-white/5 bg-background/90 backdrop-blur-xl">
+    <div class="mx-auto flex max-w-[1500px] items-center justify-between gap-3 px-4 py-3 md:px-6 lg:px-8">
+      <div class="flex min-w-0 items-center gap-3 md:gap-4">
+        <a href="/landing.html" class="font-headline text-lg font-extrabold tracking-tight text-on-surface no-underline md:text-xl">SPEEK.NOW</a>
+        <div class="hidden h-8 w-px bg-white/10 sm:block"></div>
+        <div class="min-w-0 rounded-full bg-surface-container-high px-3 py-2 text-sm font-semibold text-on-surface shadow-[0_10px_30px_rgba(0,0,0,0.18)]">
+          <span class="mr-2 text-[10px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Room</span>
+          <span id="roomCodeDisplay" class="font-headline text-base font-extrabold tracking-[0.2em]">----</span>
+        </div>
+        <button id="btnShareParticipantUrlHeader" class="inline-flex items-center gap-2 rounded-full bg-surface-container px-3 py-2 text-sm font-medium text-on-surface transition hover:bg-surface-container-high" aria-label="Share participation link">
+          <i class="fa-solid fa-share-nodes"></i>
+          <span class="hidden sm:inline">Share</span>
+        </button>
       </div>
-      <div id="conn" class="pill">Connecting…</div>
-      <div id="chairStatus" class="pill">Chair: Checking…</div>
-      <button id="btnAssumeChair" class="floating-assume-chair" style="display: none;"><i class="fa-solid fa-user"></i> Assume Chair</button>
-    </header>
+      <div class="flex items-center gap-2 md:gap-3">
+        <div id="conn" class="rounded-full bg-surface-container px-3 py-2 text-xs font-semibold text-on-surface-variant md:text-sm">Connecting…</div>
+        <div id="chairStatus" class="hidden rounded-full bg-surface-container-high px-3 py-2 text-xs font-semibold text-on-surface-variant sm:block md:text-sm">Chair: Checking…</div>
+        <button id="btnAssumeChair" class="inline-flex items-center gap-2 rounded-full border border-tertiary/40 bg-tertiary/10 px-3 py-2 text-sm font-bold text-on-tertiary-container transition hover:bg-tertiary/20" style="display: none;" aria-label="Assume chair role">
+          <i class="fa-solid fa-user"></i> Assume Chair
+        </button>
+      </div>
+    </div>
+  </header>
 
-    <div id="assumeChairStatus" class="muted small assume-chair-status"></div>
+  <div id="assumeChairStatus" class="fixed left-1/2 top-[72px] z-30 -translate-x-1/2 text-sm font-medium"></div>
 
-    <main class="grid">
-      <!-- Participant Controls -->
-      <section class="card">
-        <h2>Request to Speak</h2>
-        <div class="row">
-          <input id="name" placeholder="Your initials or name" maxlength="30"/>
-        </div>
-        <div class="row">
-          <button id="btnRequest" class="primary"><i class="fa-solid fa-hand"></i> Request to Speak</button>
-          <button id="btnWithdraw" class="ghost">Withdraw Request</button>
-        </div>
-        <div id="status" class="muted small">Enter your initials and click Request to Speak.</div>
-      </section>
+  <!-- Three-column main layout -->
+  <main class="participant-main px-4 pb-24 pt-24 md:px-6 lg:px-8 lg:pt-28">
+    <div class="mx-auto flex max-w-[1500px] flex-col gap-6 lg:grid lg:grid-cols-12 lg:items-start">
 
-      <!-- Meeting Status -->
-      <section class="card">
-        <h2>Meeting Status</h2>
+      <!-- Left column (4/12): Request to Speak + Poll View -->
+      <div class="space-y-6 lg:col-span-4">
 
-        <div class="two">
-          <div>
-            <div class="muted small">Current speaker</div>
-            <div id="curName" class="big">--</div>
+        <!-- Request to Speak card -->
+        <section id="section-controls" class="scroll-mt-28 rounded-[28px] bg-surface-container p-5 shadow-[0_28px_80px_rgba(0,0,0,0.28)] md:p-6">
+          <div class="mb-5 flex items-center justify-between gap-3">
+            <h2 class="font-headline text-2xl font-extrabold tracking-tight text-on-surface">Request to Speak</h2>
+            <div class="rounded-full bg-tertiary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-tertiary">Live</div>
           </div>
-          <div>
-            <div class="muted small">Speaker time</div>
-            <div id="speakTimer" class="timer ok">00:00</div>
-            <div class="muted tiny" id="remaining">(remaining: 00:00)</div>
+          <div class="mt-3">
+            <input id="name" class="w-full rounded-2xl bg-background/60 px-4 py-3 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/60" placeholder="Your initials or name" maxlength="30"/>
           </div>
-          <div>
-            <div class="muted small">Meeting time</div>
-            <div id="meetingTimer" class="timer">00:00</div>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <button id="btnRequest" class="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-surface transition hover:brightness-110 active:scale-95">
+              <i class="fa-solid fa-hand"></i> Request to Speak
+            </button>
+            <button id="btnWithdraw" class="inline-flex items-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container-high active:scale-95">
+              Withdraw Request
+            </button>
           </div>
-        </div>
+          <div id="status" class="mt-3 text-sm text-on-surface-variant">Enter your initials and click Request to Speak.</div>
+        </section>
 
-        <div class="muted small">Speaking Queue (<span id="qCount">0</span>)</div>
-        <div class="queue-table-shell">
-          <div class="queue-table-core">
-            <div class="small muted">Speaking Queue</div>
-            <div class="big">Circular table</div>
-            <div class="small muted">Participants are arranged around the shared surface.</div>
-          </div>
-          <ul id="queue" class="queue-list"></ul>
-        </div>
-      </section>
-
-      <!-- Room Info -->
-      <section class="card">
-        <h2>Room Information</h2>
-        <div class="room-info">
-          <div class="room-code-large">
-            <div class="muted small">Room Code:</div>
-            <div id="roomCodeLarge" class="room-code-big">----</div>
-          </div>
-          <div class="row">
-            <button id="btnCopyCode" class="ghost"><i class="fa-solid fa-clipboard"></i> Copy Room Code</button>
-            <button id="btnShareParticipantUrl" class="primary" aria-label="Share"><i class="fa-solid fa-share-nodes" style="margin-right: 8px;"></i> Share</button>
-          </div>
-          <div id="copyStatus" class="muted small"></div>
-          
-          <!-- Meeting Topic Display -->
-          <div id="meetingTopicDisplay" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 16px; display: none;">
-            <div class="muted small" style="margin-bottom: 8px; font-weight: bold;">Meeting Topic:</div>
-            <div id="meetingTopicText" style="font-size: 1rem; font-weight: 600; color: var(--text);"></div>
-          </div>
-          
-          <!-- Configuration Display -->
-          <div id="configDisplayParticipant" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 16px; display: none;">
-            <div class="muted small" style="margin-bottom: 12px; font-weight: bold;">Selected Options:</div>
-            <div id="configDisplayTextParticipant" style="font-size: 0.85rem; line-height: 1.5;"></div>
-          </div>
-        </div>
-        
-      </section>
-
-      <!-- Poll Section (always visible for participants) -->
-      <section class="card poll-box" id="pollSection">
-        <!-- Empty/default poll view shown when no active or previous poll exists -->
+        <!-- Poll View card -->
+        <section id="pollSection" class="scroll-mt-28 glass-panel rounded-[28px] border border-white/5 p-5 shadow-[0_28px_80px_rgba(0,0,0,0.28)] md:p-6">
+          <!-- Empty / default state -->
           <div id="pollEmpty">
-            <h2>Poll View</h2>
-            <div id="pollEmptyMsg" style="font-weight: bold; margin: 12px 0; font-size: 1.1rem;">Poll View - no active poll</div>
+            <div class="mb-5 flex items-center justify-between gap-3">
+              <h2 class="font-headline text-2xl font-extrabold tracking-tight text-on-surface">Poll View</h2>
+              <span class="rounded-full bg-surface-container-high px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">Realtime</span>
+            </div>
+            <div id="pollEmptyMsg" class="text-sm text-on-surface-variant">No active poll</div>
           </div>
-        
-          <!-- Poll results (shown in participant view when no active poll) -->
+
+          <!-- Results state (shown when poll is CLOSED) -->
           <div id="pollResultsParticipant" style="display: none;">
-          <h2>Last Poll Results</h2>
-          <div id="pollResultsQuestionParticipant" style="font-weight: bold; margin: 8px 0;"></div>
-          <div id="pollResultsDataParticipant" style="margin: 8px 0;"></div>
+            <div class="mb-4 flex items-center justify-between gap-3">
+              <h2 class="font-headline text-2xl font-extrabold tracking-tight text-on-surface">Last Poll Results</h2>
+            </div>
+            <div id="pollResultsQuestionParticipant" class="mt-2 font-semibold text-on-surface"></div>
+            <div id="pollResultsDataParticipant" class="mt-2 text-sm text-on-surface-variant"></div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Center column (5/12): Circular queue display -->
+      <section id="section-center-shell" class="scroll-mt-28 flex flex-col items-center justify-center py-4 lg:col-span-5 lg:py-0">
+        <div class="queue-table-shell relative mx-auto">
+          <!-- Radial background layers -->
+          <div class="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,rgba(61,90,254,0.18)_0%,rgba(23,31,51,0.9)_43%,rgba(6,14,32,0.98)_76%)] shadow-[0_32px_90px_rgba(0,0,0,0.36)]"></div>
+          <div class="absolute inset-6 rounded-full bg-surface-container-low/80"></div>
+          <div class="absolute inset-10 rounded-full border border-white/5 bg-surface-container-low/60"></div>
+          <!-- Circular queue items (positioned by JS) -->
+          <ul id="queue" class="queue-list"></ul>
+          <!-- Center info panel -->
+          <div class="queue-table-core">
+            <div class="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant">Speaking Queue</div>
+            <div id="speakTimer" class="mt-1 font-headline text-3xl font-black tracking-tighter ok">00:00</div>
+            <div id="remaining" class="mt-1 text-sm text-on-surface-variant">(remaining: 00:00)</div>
+            <div class="mt-3 flex flex-wrap items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em]">
+              <span class="rounded-full bg-surface-container-highest px-3 py-1.5 text-on-surface-variant"><span id="meetingTimer">00:00</span> total</span>
+            </div>
+            <div class="mt-3 rounded-full bg-surface-container-highest px-4 py-2 text-center">
+              <div class="text-[10px] uppercase font-bold tracking-[0.22em] text-on-surface-variant">Current Speaker</div>
+              <div id="curName" class="mt-1 font-headline text-base font-bold text-on-surface">--</div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 text-center text-sm text-on-surface-variant">
+          <span id="qCount">0</span> waiting to speak
         </div>
       </section>
-    </main>
 
-    <footer>
-      <div class="footer-links">
-        <a href="legal.html">Imprint</a>
-        <a href="https://github.com/Agh42/SpeakRequest" target="_blank" rel="noopener noreferrer">Source</a>
-        <a href="legal.html">Legal / Data Privacy</a>
+      <!-- Right column (3/12): Room Information -->
+      <div class="space-y-6 lg:col-span-3">
+
+        <section id="section-info" class="scroll-mt-28 glass-panel rounded-[28px] border border-white/5 p-5 shadow-[0_28px_80px_rgba(0,0,0,0.24)] md:p-6">
+          <div class="mb-5 flex items-center justify-between gap-3">
+            <h2 class="font-headline text-2xl font-extrabold tracking-tight text-on-surface">Room Information</h2>
+            <div class="rounded-full bg-surface-container-high px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">Visible</div>
+          </div>
+
+          <!-- Room code + sharing -->
+          <div class="rounded-[24px] bg-surface-container-high p-4">
+            <div class="text-sm text-on-surface-variant">Share this code with others to let them join:</div>
+            <div id="roomCodeLarge" class="mt-3 font-headline text-4xl font-extrabold tracking-[0.28em] text-on-surface">----</div>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <button id="btnCopyCode" class="inline-flex items-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container active:scale-95">
+                <i class="fa-solid fa-clipboard"></i> Copy Code
+              </button>
+              <button id="btnShareParticipantUrl" class="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-surface transition hover:brightness-110 active:scale-95" aria-label="Share participation link">
+                <i class="fa-solid fa-share-nodes"></i> Share
+              </button>
+            </div>
+            <div id="copyStatus" class="mt-3 text-sm text-on-surface-variant"></div>
+          </div>
+
+          <!-- Meeting Topic (shown when set by chair) -->
+          <div id="meetingTopicDisplay" class="mt-4 rounded-[24px] bg-surface-container-high p-4" style="display: none;">
+            <div class="mb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Meeting Topic</div>
+            <div id="meetingTopicText" class="text-sm font-semibold text-on-surface"></div>
+          </div>
+
+          <!-- Meeting Configuration (shown when set by chair) -->
+          <div id="configDisplayParticipant" class="mt-4 rounded-[24px] bg-black/20 p-4" style="display: none;">
+            <div class="mb-3 text-[10px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Selected Options</div>
+            <div id="configDisplayTextParticipant" class="text-sm leading-6 text-on-surface-variant"></div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <footer class="mx-auto mt-6 max-w-[1500px] rounded-[28px] bg-surface-container px-5 py-4 text-sm text-on-surface-variant shadow-[0_20px_60px_rgba(0,0,0,0.2)]">
+      <div class="flex flex-wrap items-center gap-3">
+        <a class="transition hover:text-on-surface" href="legal.html">Imprint</a>
+        <a class="transition hover:text-on-surface" href="https://github.com/Agh42/SpeakRequest" target="_blank" rel="noopener noreferrer">Source</a>
+        <a class="transition hover:text-on-surface" href="legal.html">Legal / Data Privacy</a>
       </div>
     </footer>
-  </div>
+  </main>
 
-    <!-- Poll Overlay: shown only while poll is ACTIVE -->
+<!-- Poll Overlay: shown only while poll is ACTIVE -->
     <div id="pollOverlay" class="poll-overlay" role="dialog" aria-modal="true" aria-hidden="true">
       <div class="panel" id="pollOverlayPanel">
         <h2 id="overlayHeading">Active Poll</h2>
@@ -941,6 +661,7 @@
     // Track current vote
     let currentVote = null; // 'YES', 'NO', 'OPT_1', ... 'OPT_8', or null (for single selection)
     let selectedVotes = new Set(); // Set of vote keys for multiple selection polls
+    let dotVotes = {}; // Map of optionKey -> vote count for dot voting polls
     let currentPollType = null; // Track current poll type
     let maxVotesPerParticipant = 1; // Max votes for multiple selection
 
@@ -955,14 +676,51 @@
         if (first) first.focus();
       }, 50);
       // hide non-poll interactive controls from screen readers
-      document.querySelector('main.grid').setAttribute('aria-hidden', 'true');
+      document.querySelector('main.participant-main').setAttribute('aria-hidden', 'true');
     }
 
     function closeOverlay() {
       document.documentElement.style.overflow = '';
       elPollOverlay.style.display = 'none';
       elPollOverlay.setAttribute('aria-hidden', 'true');
-      document.querySelector('main.grid').removeAttribute('aria-hidden');
+      document.querySelector('main.participant-main').removeAttribute('aria-hidden');
+    }
+
+    // --- Avatar helpers ---
+    const tableAccentPalette = ['#62ff96', '#bbc3ff', '#00e475', '#c9e7f7', '#3d5afe', '#adcbda', '#7dd3fc', '#f9a8d4', '#f59e0b', '#fca5a5'];
+    const tableFallbackAccent = '#2d3449';
+
+    function hashString(value) {
+      let hash = 0;
+      for (const character of String(value || '').trim().toLowerCase()) {
+        hash = ((hash << 5) - hash) + character.charCodeAt(0);
+        hash |= 0;
+      }
+      return Math.abs(hash);
+    }
+
+    function getParticipantInitials(name) {
+      const cleaned = String(name || '').trim().replace(/\s+/g, ' ');
+      if (!cleaned) return '--';
+      const parts = cleaned.split(' ');
+      if (parts.length === 1) {
+        return parts[0].slice(0, 2).toUpperCase();
+      }
+      return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+    }
+
+    function getParticipantAccent(name) {
+      return tableAccentPalette[hashString(name) % tableAccentPalette.length] || tableFallbackAccent;
+    }
+
+    function getReadableInkColor(hexColor) {
+      const normalized = String(hexColor || '').replace('#', '');
+      if (normalized.length !== 6) return '#060e20';
+      const red = parseInt(normalized.slice(0, 2), 16);
+      const green = parseInt(normalized.slice(2, 4), 16);
+      const blue = parseInt(normalized.slice(4, 6), 16);
+      const luminance = (0.2126 * red) + (0.7152 * green) + (0.0722 * blue);
+      return luminance > 170 ? '#060e20' : '#f1f4ff';
     }
 
     // --- WebSocket ---
@@ -1251,6 +1009,7 @@
         currentVote = null;
         currentPollType = null;
         selectedVotes.clear();
+        dotVotes = {};
         maxVotesPerParticipant = 1;
         return;
       }
@@ -1279,6 +1038,11 @@
           elGradientsVoting.style.display = 'none';
           elMultiselectVoting.style.display = 'block';
           renderMultiselectVotingOptions(pollState.options);
+        } else if (pollState.pollType === 'DOT_VOTING') {
+          elYesNoVoting.style.display = 'none';
+          elGradientsVoting.style.display = 'none';
+          elMultiselectVoting.style.display = 'block';
+          renderDotVotingOptions(pollState.options);
         } else {
           elYesNoVoting.style.display = 'block';
           elGradientsVoting.style.display = 'none';
@@ -1288,6 +1052,8 @@
         // Update vote status message based on current vote
         if (pollState.pollType === 'MULTISELECT_MULTIPLE') {
           updateMultipleSelectionStatus();
+        } else if (pollState.pollType === 'DOT_VOTING') {
+          updateDotVotingStatus();
         } else if (currentVote) {
           elOverlayVoteStatus.textContent = `✓ You voted: ${getVoteLabel(currentVote, pollState.pollType, pollState)}`;
           elOverlayVoteStatus.className = 'ok small';
@@ -1319,7 +1085,8 @@
         
         if (pollState.pollType === 'GRADIENTS') {
           resultsHTML += renderGradientsResults(pollState.results, pollState.totalVotes);
-        } else if (pollState.pollType === 'MULTISELECT' || pollState.pollType === 'MULTISELECT_MULTIPLE') {
+        } else if (pollState.pollType === 'MULTISELECT' || pollState.pollType === 'MULTISELECT_MULTIPLE'
+            || pollState.pollType === 'DOT_VOTING') {
           resultsHTML += renderMultiselectResults(pollState.results, pollState.totalVotes, pollState.options);
         } else if (pollState.pollType === 'YES_NO') {
           // Yes/No results as bar chart
@@ -1357,6 +1124,7 @@
         currentVote = null;
         currentPollType = null;
         selectedVotes.clear();
+        dotVotes = {};
         maxVotesPerParticipant = 1;
 
         const results = pollState.lastResults;
@@ -1365,7 +1133,9 @@
         let resultsHTML = '<div style="margin-top: 8px;">';
         
         // Check pollType in lastResults if available, otherwise infer from keys
-        if (results.pollType === 'MULTISELECT' || results.pollType === 'MULTISELECT_MULTIPLE' || (results.options && results.options.length > 0)) {
+        if (results.pollType === 'MULTISELECT' || results.pollType === 'MULTISELECT_MULTIPLE'
+            || results.pollType === 'DOT_VOTING'
+            || (results.options && results.options.length > 0)) {
           resultsHTML += renderMultiselectResults(results.results, results.totalVotes, results.options);
         } else if (results.pollType === 'GRADIENTS' || Object.keys(results.results).some(k => k.startsWith('OPT_'))) {
           resultsHTML += renderGradientsResults(results.results, results.totalVotes);
@@ -1527,6 +1297,82 @@
       }
     }
     
+    function renderDotVotingOptions(options) {
+      if (!options || options.length === 0) return;
+      
+      elMultiselectOptionsDisplay.innerHTML = '';
+      
+      options.forEach((optionLabel, index) => {
+        const optionKey = `OPT_${index}`;
+        const voteCount = dotVotes[optionKey] || 0;
+        
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'display: flex; align-items: stretch; gap: 8px; margin: 6px 0;';
+        
+        // Main button — clicking adds a dot
+        const mainBtn = document.createElement('button');
+        mainBtn.className = 'gradient-btn' + (voteCount > 0 ? ' vote-selected' : '');
+        mainBtn.style.cssText = 'flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 52px;';
+        mainBtn.dataset.optionKey = optionKey;
+        mainBtn.dataset.dotOption = optionKey;
+        mainBtn.title = 'Click to add a dot vote';
+        mainBtn.innerHTML = `<strong style="flex: 1; text-align: left;">${DOMPurify.sanitize(optionLabel)}</strong>`
+          + `<span data-dot-count="${optionKey}" style="min-width: 32px; height: 32px; border-radius: 9999px; background: rgba(96,165,250,0.18); border: 1px solid rgba(96,165,250,0.35); display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem; color: #bfdbfe; flex: 0 0 auto;">${voteCount}</span>`;
+        
+        mainBtn.onclick = () => {
+          const totalVotesForUser = Object.values(dotVotes).reduce((a, b) => a + b, 0);
+          if (totalVotesForUser >= maxVotesPerParticipant) {
+            elOverlayVoteStatus.textContent = `Maximum ${maxVotesPerParticipant} dot(s) placed. Remove a dot first.`;
+            elOverlayVoteStatus.className = 'warn small';
+            return;
+          }
+          dotVotes[optionKey] = (dotVotes[optionKey] || 0) + 1;
+          client?.send(`/app/room/${roomCode}/poll/vote`, {}, JSON.stringify({vote: optionKey}));
+          updateDotVotingStatus();
+          updateVoteButtonStyles();
+        };
+        
+        // Down button — removes one dot from this option
+        const downBtn = document.createElement('button');
+        downBtn.className = 'accent';
+        downBtn.style.cssText = 'width: 44px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-size: 14px; opacity: ' + (voteCount > 0 ? '1' : '0.35') + '; cursor: ' + (voteCount > 0 ? 'pointer' : 'not-allowed') + ';';
+        downBtn.dataset.dotDown = optionKey;
+        downBtn.disabled = voteCount === 0;
+        downBtn.title = 'Remove one dot from this option';
+        downBtn.innerHTML = '<i class="fa-solid fa-chevron-down"></i>';
+        
+        downBtn.onclick = () => {
+          const count = dotVotes[optionKey] || 0;
+          if (count <= 0) return;
+          dotVotes[optionKey] = count - 1;
+          client?.send(`/app/room/${roomCode}/poll/vote`, {}, JSON.stringify({vote: `${optionKey}_DOWN`}));
+          updateDotVotingStatus();
+          updateVoteButtonStyles();
+        };
+        
+        wrapper.appendChild(mainBtn);
+        wrapper.appendChild(downBtn);
+        elMultiselectOptionsDisplay.appendChild(wrapper);
+      });
+      
+      updateDotVotingStatus();
+    }
+    
+    function updateDotVotingStatus() {
+      const totalDots = Object.values(dotVotes).reduce((a, b) => a + b, 0);
+      const remaining = maxVotesPerParticipant - totalDots;
+      if (totalDots === 0) {
+        elOverlayVoteStatus.textContent = `You have ${maxVotesPerParticipant} dot(s) to distribute`;
+        elOverlayVoteStatus.className = 'muted small';
+      } else if (remaining === 0) {
+        elOverlayVoteStatus.textContent = `✓ All ${maxVotesPerParticipant} dot(s) placed`;
+        elOverlayVoteStatus.className = 'ok small';
+      } else {
+        elOverlayVoteStatus.textContent = `✓ ${totalDots} dot(s) placed, ${remaining} remaining`;
+        elOverlayVoteStatus.className = 'ok small';
+      }
+    }
+    
     function renderMultiselectResults(results, totalVotes, options) {
       if (!options || options.length === 0) return '';
       
@@ -1617,6 +1463,28 @@
           if (selectedBtn) {
             selectedBtn.classList.add('vote-selected');
           }
+        });
+      } else if (currentPollType === 'DOT_VOTING') {
+        // Update count badges, highlight buttons with votes, toggle down-button state
+        const optionBtns = elMultiselectOptionsDisplay.querySelectorAll('button[data-dot-option]');
+        optionBtns.forEach(btn => {
+          const key = btn.dataset.dotOption;
+          const count = dotVotes[key] || 0;
+          const badge = btn.querySelector(`[data-dot-count="${key}"]`);
+          if (badge) badge.textContent = count;
+          if (count > 0) {
+            btn.classList.add('vote-selected');
+          } else {
+            btn.classList.remove('vote-selected');
+          }
+        });
+        const downBtns = elMultiselectOptionsDisplay.querySelectorAll('button[data-dot-down]');
+        downBtns.forEach(btn => {
+          const key = btn.dataset.dotDown;
+          const count = dotVotes[key] || 0;
+          btn.disabled = count === 0;
+          btn.style.opacity = count > 0 ? '1' : '0.35';
+          btn.style.cursor = count > 0 ? 'pointer' : 'not-allowed';
         });
       } else if (currentPollType === 'GRADIENTS') {
         // Remove selected class from all gradient buttons
