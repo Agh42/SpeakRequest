@@ -8,6 +8,20 @@ SpeakRequest is a hybrid meeting manager for discussion moderators and facilitat
 
 The chair can see every participant's status at a glance - who is speaking, who is next, and who is waiting - without leaving the main screen.
 
+## Current Milestone: v1.2 Improved Voting
+
+**Goal:** Deliver the existing dot voting feature as a fully verified, labeled, and tested capability across chair, participant, and popout views.
+
+**Target features:**
+- End-to-end verification: chair creates dot poll → participants vote with up/down dots → results display correctly
+- Label accuracy: "votes received" / "Total votes" → context-correct labels for dot voting
+- Backend unit tests for dot voting logic (add/remove dots, per-session limit enforcement)
+- Chair config UX: 'Dots per participant' field shows/hides correctly
+- Participant UX: up/down arrows correct at boundary conditions (0 and max dots)
+- Popout view: dot voting state visible during active poll
+
+**Out of scope:** No new poll types beyond dot voting.
+
 ## Current State
 
 **Shipped version: v1.1** — archived 2026-04-22
@@ -17,14 +31,6 @@ Both v1.0 and v1.1 are shipped. The chair surface has been fully redesigned with
 **Shipped milestones:**
 - [v1.0 — Chair View Redesign](.planning/milestones/v1.0-ROADMAP.md) — shipped 2026-03-25
 - [v1.1 — UI Improvements](.planning/milestones/v1.1-ROADMAP.md) — shipped 2026-04-22
-
-## Next Milestone Goals
-
-To be defined. Deferred items from v1.1 available for inclusion:
-- POP-01: Popout view refresh to match updated UI language
-- TIME-04: Overtime presentation (flashing/audio cues)
-
-Run `/gsd-new-milestone` to define requirements and roadmap for the next version.
 
 ## Requirements
 
@@ -59,19 +65,21 @@ Run `/gsd-new-milestone` to define requirements and roadmap for the next version
 
 ### Active
 
-- [ ] Persistent room members keyed by WebSocket session stay visible in the room state until disconnect or replacement.
-- [ ] Participant avatars continue to render inside the room circle without dropping names once they have joined the speaker set.
-- [ ] Room titles clamp to two lines and truncate with ellipsis so they remain readable inside the avatar circle.
-- [ ] Large speaking timer changes color at 25% and 10% remaining, then stays red while the elapsed timer continues past zero.
-- [ ] The chair can click the topic label to jump to the room menu section for editing.
+- [ ] Chair can start a dot voting poll with a configurable number of dots per participant.
+- [ ] Participant can distribute dots across options using up/down controls; total dots are capped at the configured limit.
+- [ ] Chair and participant views display correct dot-specific labels ('Dots per participant', 'Dots placed', 'Total dots') rather than generic vote labels.
+- [ ] Popout view reflects dot voting in-progress and result states correctly.
+- [ ] Backend enforces per-session dot limits and correctly handles dot removal via the `_DOWN` vote suffix.
+- [ ] Dot voting logic is covered by backend unit tests.
 
 ### Out of Scope
 
 <!-- Explicit boundaries. Includes reasoning to prevent re-adding. -->
 
-- Popout view changes - keep existing surface stable while the room-state and chair improvements land.
-- New routes or API surfaces - this milestone is limited to existing surfaces plus the Room entity/state contract.
-- Timer overrun counting past zero on the remaining-time display - the remaining timer stays at 00:00 as requested.
+- New poll types beyond dot voting — scope is limited to verifying and fixing the existing dot voting implementation.
+- New routes or API surfaces — this milestone only touches existing poll infrastructure.
+- Timer overrun counting past zero on the remaining-time display — the remaining timer stays at 00:00 as requested.
+- Deferred from v1.1: POP-01 popout UI refresh, TIME-04 overtime audio/flash cues — deferred to a future milestone.
 
 ## Context
 
@@ -90,9 +98,8 @@ SpeakRequest is a Spring Boot monolith with vanilla JS/STOMP static pages served
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
 | Preserve STOMP room-state contract | Existing clients rely on the current destinations and message flow | ✓ Good |
-| Keep members tied to session IDs in Room state | Allows avatars to remain stable until disconnect or name replacement | — Pending |
-| Use color warnings only on the large speaking timer | Remaining-time display should stay at 00:00 after expiry | — Pending |
-| Make the topic label jump to the room menu section | Keeps room metadata editing discoverable without adding a new route | — Pending |
+| Dot voting uses `_DOWN` suffix for vote removal | Keeps the `CastVote` wire format to a single `vote` string; down-removal is a convention, not a separate message type | — Active |
+| Dot voting `totalVotes` = total dots placed (not participants) | Percentage shows share of dots per option, not participant headcount | — Active |
 
 ## Evolution
 
@@ -118,4 +125,4 @@ This document evolves at phase transitions and milestone boundaries.
 - Phase summaries and milestone archives live under `.planning/milestones/`.
 
 ---
-*Last updated: 2026-03-28 after v1.1 milestone start*
+*Last updated: 2026-06-02 — milestone v1.2 improved-voting started*

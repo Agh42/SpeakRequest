@@ -1,16 +1,15 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: ui-improvements
-status: archived
-stopped_at: milestone archived 2026-06-02
+milestone: v1.2
+milestone_name: improved-voting
+status: planning
 last_updated: "2026-06-02T00:00:00.000Z"
 last_activity: 2026-06-02
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 15
-  completed_plans: 15
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # Project State
@@ -24,10 +23,10 @@ See: .planning/PROJECT.md (updated 2026-03-28)
 
 ## Current Position
 
-Phase: 11 complete
-Plan: 11-01
-Status: Phase 11 complete
-Last activity: 2026-04-22 — Phase 11 participant view style sync completed
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-06-02 — Milestone v1.2 improved-voting started
 
 ## Performance Metrics
 
