@@ -324,8 +324,19 @@
         </div>
       </section>
 
-      <!-- Right column (3/12): Room Information -->
+      <!-- Right column (3/12): Speakers Queue + Room Information -->
       <div class="space-y-6 lg:col-span-3">
+
+        <!-- Speakers Queue card -->
+        <section id="section-queue" class="scroll-mt-28 glass-panel rounded-[28px] border border-white/5 p-5 shadow-[0_28px_80px_rgba(0,0,0,0.24)] md:p-6">
+          <div class="mb-3 flex items-center justify-between gap-3">
+            <h2 class="font-headline text-2xl font-extrabold tracking-tight text-on-surface">Queue</h2>
+            <span id="queueBadge" class="rounded-full bg-surface-container-high px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">0 waiting</span>
+          </div>
+          <div id="participantQueueList" class="space-y-1 text-sm text-on-surface-variant">
+            <div class="text-on-surface-variant">No one in queue</div>
+          </div>
+        </section>
 
         <section id="section-info" class="scroll-mt-28 glass-panel rounded-[28px] border border-white/5 p-5 shadow-[0_28px_80px_rgba(0,0,0,0.24)] md:p-6">
           <div class="mb-5 flex items-center justify-between gap-3">
@@ -503,11 +514,15 @@
   const elConfigDisplayParticipant = $('#configDisplayParticipant');
   const elConfigDisplayTextParticipant = $('#configDisplayTextParticipant');
 
+  // Speakers queue elements
+  const elParticipantQueueList = $('#participantQueueList');
+  const elQueueBadge = $('#queueBadge');
+
     // --- State ---
     let client = null;
     let meetingStart = 0;
     let timerInterval = null;
-    let myName = '';
+    let myName = sessionStorage.getItem('speakrequest_name_' + roomCode) || '';
     let currentState = null; // Add this to store the full state
     let pendingChairRequestId = null; // Track our pending chair request
     let hasVoted = false; // Track if user has voted in current poll
@@ -740,8 +755,10 @@
           window.location.href = error.landingUrl;
         });
 
-        // Join to get initial state
-        client.send(`/app/room/${roomCode}/join`, {}, JSON.stringify({name:'Anonymous'}));
+        // Join to get initial state; use stored name if available so a STOMP
+        // reconnect doesn't overwrite the member entry with 'Anonymous'
+        const joinName = myName || 'Anonymous';
+        client.send(`/app/room/${roomCode}/join`, {}, JSON.stringify({name: joinName}));
       }, () => {
         elConn.textContent = 'Disconnected';
         elConn.classList.remove('ok');
@@ -777,6 +794,19 @@
 
       // Queue count
       elQCount.textContent = state.queue.length;
+
+      // Speakers queue in right column
+      elQueueBadge.textContent = state.queue.length === 1 ? '1 waiting' : `${state.queue.length} waiting`;
+      if (state.queue.length > 0) {
+        elParticipantQueueList.innerHTML = state.queue.map((p, i) =>
+          `<div class="flex items-center gap-2 rounded-xl bg-surface-container-high px-3 py-2">
+            <span class="w-5 shrink-0 text-center text-[11px] font-bold text-on-surface-variant">${i + 1}</span>
+            <span class="truncate font-semibold text-on-surface">${DOMPurify.sanitize(p.name)}</span>
+          </div>`
+        ).join('');
+      } else {
+        elParticipantQueueList.innerHTML = '<div class="text-on-surface-variant">No one in queue</div>';
+      }
 
       // Determine my position in queue for status display
       let myPosition = -1;
@@ -1500,6 +1530,7 @@
         return;
       }
       myName = name;
+      sessionStorage.setItem('speakrequest_name_' + roomCode, name);
       client?.send(`/app/room/${roomCode}/request`, {}, JSON.stringify({name}));
     };
 
