@@ -92,7 +92,7 @@
       backdrop-filter: blur(24px);
     }
 
-    .queue-table-shell {
+    .conference-table-shell {
       position: relative;
       width: min(100%, 820px);
       margin: 0 auto;
@@ -100,137 +100,37 @@
       min-height: 440px;
     }
 
-    .queue-table-shell::before {
-      content: '';
-      position: absolute;
-      inset: 9%;
-      border-radius: 9999px;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01) 58%, rgba(255, 255, 255, 0));
-      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02), 0 24px 60px rgba(0, 0, 0, 0.16);
-    }
-
-    .queue-table-core {
-      position: absolute;
-      inset: 28%;
-      border-radius: 9999px;
-      background: rgba(34, 42, 61, 0.9);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 6px;
-      text-align: center;
-      padding: 18px;
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.2);
-      z-index: 2;
-      pointer-events: none;
-    }
-
-    .queue-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      position: absolute;
-      inset: 0;
-      z-index: 3;
-    }
-
-    .queue-item {
+    .conference-table-seat {
       position: absolute;
       left: 50%;
       top: 50%;
-      margin: 0;
       transform-origin: center;
-      width: 150px;
-      min-height: 0;
-      padding: 0;
-      background: transparent;
-      box-shadow: none;
-      border-radius: 0;
-      display: block;
-    }
-
-    .queue-card {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 8px;
-      padding: 14px 12px;
-      border-radius: 24px;
-      background: rgba(17, 23, 38, 0.72);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
-      backdrop-filter: blur(18px);
+      justify-content: center;
+      z-index: 20;
     }
 
-    .queue-item.current .queue-card {
-      background: rgba(19, 27, 46, 0.9);
-      box-shadow: 0 0 0 2px rgba(0, 228, 117, 0.22), 0 16px 40px rgba(0, 0, 0, 0.22);
-    }
-
-    .queue-avatar {
-      width: 58px;
-      height: 58px;
+    .conference-table-avatar {
+      width: 4.2rem;
+      height: 4.2rem;
       border-radius: 9999px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: "Manrope", sans-serif;
+      font-family: Manrope, sans-serif;
       font-size: 0.92rem;
       font-weight: 800;
       letter-spacing: 0.08em;
-      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 12px 26px rgba(0, 0, 0, 0.22);
-      flex: 0 0 auto;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 12px 26px rgba(0, 0, 0, 0.22);
     }
 
-    .queue-details {
-      min-width: 0;
-      flex: 1;
-      text-align: center;
+    .conference-table-seat-avatar.current {
+      box-shadow: 0 0 0 3px rgba(0, 228, 117, 0.95), 0 0 0 8px rgba(0, 228, 117, 0.22), 0 0 18px 6px rgba(0, 228, 117, 0.40), 0 12px 26px rgba(0, 0, 0, 0.22);
     }
 
-    .queue-name {
-      font-family: "Manrope", sans-serif;
-      font-size: 1rem;
-      font-weight: 800;
-      color: #dae2fd;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .queue-subtext {
-      margin-top: 4px;
-      color: #c5c5d9;
-      font-size: 0.82rem;
-    }
-
-    .queue-position {
-      flex: 0 0 auto;
-      padding: 6px 10px;
-      border-radius: 9999px;
-      background: rgba(34, 42, 61, 0.9);
-      color: #c5c5d9;
-      font-size: 0.75rem;
-      font-weight: 800;
-      letter-spacing: 0.18em;
-    }
-
-    .queue-empty {
-      position: absolute;
-      inset: 50% auto auto 50%;
-      transform: translate(-50%, -50%);
-      width: min(260px, 50vw);
-      text-align: center;
-      color: #c5c5d9;
-      font-size: 0.92rem;
-      line-height: 1.5;
-      padding: 14px 18px;
-      border-radius: 22px;
-      background: rgba(17, 23, 38, 0.7);
-      border: 1px dashed rgba(255, 255, 255, 0.08);
+    .conference-table-seat-avatar.queue {
+      box-shadow: 0 0 0 2px rgba(141, 143, 162, 0.8), 0 12px 26px rgba(0, 0, 0, 0.22);
     }
 
     #speakTimer.ok     { color: #bbf7d0; }
@@ -313,9 +213,7 @@
     :root { color-scheme: dark; }
 
     @media (max-width: 768px) {
-      .queue-table-shell { min-height: 360px; }
-      .queue-item { width: 130px; }
-      .queue-card { padding: 12px 10px; }
+      .conference-table-shell { min-height: 360px; }
     }
   </style>
 </head>
@@ -399,24 +297,23 @@
 
       </div>
 
-      <!-- Center column (5/12): Circular queue display -->
+      <!-- Center column (5/12): Circular member display -->
       <section id="section-center-shell" class="scroll-mt-28 flex flex-col items-center justify-center py-4 lg:col-span-5 lg:py-0">
-        <div class="queue-table-shell relative mx-auto">
+        <div class="conference-table-shell relative mx-auto flex items-center justify-center">
           <!-- Radial background layers -->
           <div class="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,rgba(61,90,254,0.18)_0%,rgba(23,31,51,0.9)_43%,rgba(6,14,32,0.98)_76%)] shadow-[0_32px_90px_rgba(0,0,0,0.36)]"></div>
           <div class="absolute inset-6 rounded-full bg-surface-container-low/80"></div>
           <div class="absolute inset-10 rounded-full border border-white/5 bg-surface-container-low/60"></div>
-          <!-- Circular queue items (positioned by JS) -->
-          <ul id="queue" class="queue-list"></ul>
+          <!-- Circular member avatars (positioned by JS) -->
+          <div id="conferenceTableSeats" class="absolute inset-0 z-20"></div>
           <!-- Center info panel -->
-          <div class="queue-table-core">
-            <div class="text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant">Speaking Queue</div>
-            <div id="speakTimer" class="mt-1 font-headline text-3xl font-black tracking-tighter ok">00:00</div>
-            <div id="remaining" class="mt-1 text-sm text-on-surface-variant">(remaining: 00:00)</div>
-            <div class="mt-3 flex flex-wrap items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em]">
-              <span class="rounded-full bg-surface-container-highest px-3 py-1.5 text-on-surface-variant"><span id="meetingTimer">00:00</span> total</span>
+          <div class="absolute inset-[18%] rounded-full glass-panel shadow-[0_18px_50px_rgba(0,0,0,0.28)] flex flex-col items-center justify-center text-center px-4 py-6 z-10">
+            <div id="speakTimer" class="font-headline text-3xl font-black tracking-tighter ok">00:00</div>
+            <div id="remaining" class="mt-2 text-sm text-on-surface-variant">(remaining: 00:00)</div>
+            <div class="mt-5 flex flex-wrap items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em]">
+              <span class="rounded-full bg-surface-container-high px-3 py-1.5 text-on-surface-variant"><span id="meetingTimer">00:00</span> total</span>
             </div>
-            <div class="mt-3 rounded-full bg-surface-container-highest px-4 py-2 text-center">
+            <div class="mt-5 rounded-full bg-surface-container-high px-5 py-3 text-center">
               <div class="text-[10px] uppercase font-bold tracking-[0.22em] text-on-surface-variant">Current Speaker</div>
               <div id="curName" class="mt-1 font-headline text-base font-bold text-on-surface">--</div>
             </div>
@@ -579,7 +476,7 @@
     const elConn = $('#conn');
     const elChairStatus = $('#chairStatus');
     const elStatus = $('#status');
-    const elQueue = $('#queue'); const elQCount = $('#qCount');
+    const elConferenceTableSeats = $('#conferenceTableSeats'); const elQCount = $('#qCount');
     const elCurName = $('#curName');
     const elSpeakTimer = $('#speakTimer'); const elRemaining = $('#remaining');
     const elMeeting = $('#meetingTimer');
@@ -710,6 +607,70 @@
       return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
     }
 
+    function getParticipantAvatarLabel(name) {
+      return getParticipantInitials(name);
+    }
+
+    function getConferenceParticipants(state) {
+      const queueIds = new Set((state.queue || []).map((participant) => participant.id));
+      const currentId = state.current?.entry?.id || null;
+      const currentName = state.current?.entry?.name || null;
+      const queueNames = new Set((state.queue || []).map((participant) => participant.name));
+
+      return (state.members || []).map((member, index) => {
+        const isCurrentById = currentId && member.sessionId === currentId;
+        const isCurrentByName = !isCurrentById && currentName && member.name === currentName;
+        const isCurrent = isCurrentById || isCurrentByName;
+        const isInQueue = !isCurrent && (queueIds.has(member.sessionId) || queueNames.has(member.name));
+        return {
+          sessionId: member.sessionId,
+          name: member.name,
+          kind: isCurrent ? 'current' : (isInQueue ? 'queue' : 'member'),
+          position: index + 1,
+        };
+      });
+    }
+
+    function renderConferenceTable(state) {
+      if (!elConferenceTableSeats) {
+        return;
+      }
+
+      const participants = getConferenceParticipants(state);
+      if (participants.length === 0) {
+        elConferenceTableSeats.innerHTML = '';
+        return;
+      }
+
+      const seatCount = participants.length;
+      const shell = elConferenceTableSeats.closest('.conference-table-shell');
+      const shellSize = shell ? shell.getBoundingClientRect().width : 820;
+      const outerInsetPx = 40;
+      const innerInsetPx = shellSize * 0.18;
+      const outerEdgeRadius = (shellSize / 2) - outerInsetPx;
+      const innerEdgeRadius = (shellSize / 2) - innerInsetPx;
+      const radius = (outerEdgeRadius + innerEdgeRadius) / 2;
+      const laneWidth = Math.max(0, outerEdgeRadius - innerEdgeRadius);
+      const seatWidth = Math.max(62, Math.min(82, Math.round(laneWidth * 0.72)));
+      const angleStep = 360 / seatCount;
+      const startAngle = -90;
+
+      elConferenceTableSeats.innerHTML = participants.map((participant, index) => {
+        const angle = startAngle + (index * angleStep);
+        const accent = getParticipantAccent(participant.name);
+        const ink = getReadableInkColor(accent);
+        const initials = DOMPurify.sanitize(getParticipantAvatarLabel(participant.name));
+        const safeName = DOMPurify.sanitize(participant.name);
+        const seatTransform = `translate(-50%, -50%) rotate(${angle}deg) translate(${radius}px) rotate(${-angle}deg)`;
+        const seatStateClass = participant.kind === 'current' ? 'current' : 'queue';
+
+        return `
+          <div class="conference-table-seat" style="width:${seatWidth}px; height:${seatWidth}px; transform:${seatTransform};">
+            <div class="conference-table-avatar conference-table-seat-avatar ${seatStateClass}" style="background:${accent}; color:${ink};" aria-label="${safeName}" title="${safeName}">${initials}</div>
+          </div>`;
+      }).join('');
+    }
+
     function getParticipantAccent(name) {
       return tableAccentPalette[hashString(name) % tableAccentPalette.length] || tableFallbackAccent;
     }
@@ -814,57 +775,21 @@
         elBtnAssumeChair.style.display = 'block';
       }
 
-      // Queue
+      // Queue count
       elQCount.textContent = state.queue.length;
-      elQueue.innerHTML = '';
+
+      // Determine my position in queue for status display
       let myPosition = -1;
-      if (state.queue.length === 0) {
-        elQueue.innerHTML = '<li class="queue-empty">No one is waiting to speak yet.</li>';
-      } else {
-        const shell = elQueue.closest('.queue-table-shell');
-        const shellSize = shell ? shell.getBoundingClientRect().width : 820;
-        const outerInsetPx = 44;
-        const innerInsetPx = shellSize * 0.27;
-        const outerEdgeRadius = (shellSize / 2) - outerInsetPx;
-        const innerEdgeRadius = (shellSize / 2) - innerInsetPx;
-        const radius = (outerEdgeRadius + innerEdgeRadius) / 2;
-        const laneWidth = Math.max(0, outerEdgeRadius - innerEdgeRadius);
-        const seatWidth = Math.max(130, Math.min(176, Math.round(laneWidth * 0.84)));
-        const angleStep = 360 / state.queue.length;
-        const startAngle = -90;
-
+      if (myName) {
         state.queue.forEach((p, i) => {
-        const li = document.createElement('li');
-        const accent = getParticipantAccent(p.name);
-        const ink = getReadableInkColor(accent);
-        const initials = DOMPurify.sanitize(getParticipantInitials(p.name));
-        const safeName = DOMPurify.sanitize(p.name);
-        const isMine = p.name.toLowerCase() === myName.toLowerCase();
-        const angle = startAngle + (i * angleStep);
-        const seatTransform = `translate(-50%, -50%) rotate(${angle}deg) translate(${radius}px) rotate(${-angle}deg)`;
-
-        li.className = `queue-item${isMine ? ' current' : ''}`;
-        li.style.width = `${seatWidth}px`;
-        li.style.transform = seatTransform;
-        li.innerHTML = `
-          <div class="queue-card">
-            <div class="queue-avatar" style="background:${accent}; color:${ink};">${initials}</div>
-            <div class="queue-details">
-              <div class="queue-name">${safeName}</div>
-              <div class="queue-subtext">${isMine ? 'You are waiting to speak' : 'Waiting to speak'}</div>
-            </div>
-            <div class="queue-position">#${i + 1}</div>
-          </div>
-        `;
-
-        // Highlight my entry
-        if (isMine) {
-          myPosition = i + 1;
-        }
-
-        elQueue.appendChild(li);
+          if (p.name.toLowerCase() === myName.toLowerCase()) {
+            myPosition = i + 1;
+          }
         });
       }
+
+      // Render circular member avatars from members list (persists avatars after speaking)
+      renderConferenceTable(state);
 
       // Update status based on my position
       if (myName) {
@@ -1331,6 +1256,7 @@
         mainBtn.dataset.dotOption = optionKey;
         mainBtn.title = 'Click to add a dot vote';
         mainBtn.innerHTML = `<strong style="flex: 1; text-align: left;">${DOMPurify.sanitize(optionLabel)}</strong>`
+          + `<i class="fa-solid fa-chevron-up" style="color: rgba(96,165,250,0.7); font-size: 0.85rem; flex: 0 0 auto;"></i>`
           + `<span data-dot-count="${optionKey}" style="min-width: 32px; height: 32px; border-radius: 9999px; background: rgba(96,165,250,0.18); border: 1px solid rgba(96,165,250,0.35); display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem; color: #bfdbfe; flex: 0 0 auto;">${voteCount}</span>`;
         
         mainBtn.onclick = () => {
