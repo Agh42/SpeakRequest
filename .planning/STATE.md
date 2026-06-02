@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: ui-improvements
-status: Phase 11 complete
-stopped_at: Phase 11 complete
-last_updated: "2026-04-22T21:11:52.775Z"
-last_activity: 2026-04-22
+status: archived
+stopped_at: milestone archived 2026-06-02
+last_updated: "2026-06-02T00:00:00.000Z"
+last_activity: 2026-06-02
 progress:
   total_phases: 6
   completed_phases: 6

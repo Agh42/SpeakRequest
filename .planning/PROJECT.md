@@ -2,26 +2,29 @@
 
 ## What This Is
 
-SpeakRequest is a hybrid meeting manager for discussion moderators and facilitators. It manages speaking turns with a transparent queue, tracks speech timers, and conducts realtime polls. The current milestone focuses on improving the chair and room surfaces so active speakers stay visible, room/topic metadata is easier to edit, and the timer communicates urgency more clearly.
+SpeakRequest is a hybrid meeting manager for discussion moderators and facilitators. It manages speaking turns with a transparent queue, tracks speech timers, and conducts realtime polls.
 
 ## Core Value
 
 The chair can see every participant's status at a glance - who is speaking, who is next, and who is waiting - without leaving the main screen.
 
-## Current Milestone: v1.1 UI Improvements
-
-**Goal:** Improve the chair and room surfaces so active speakers stay visible, room/topic metadata is easier to edit, and the meeting timer communicates urgency more clearly.
-
-**Target features:**
-- Persistent room members in server-side room state, keyed by client session, so speaker avatars stay visible until disconnect or replacement.
-- Avatar circle and room title presentation fixes, including a two-line maximum for the room title with ellipsis truncation.
-- Large speaking timer warning colors at 25% and 10% remaining, then staying red while the elapsed timer continues past zero and the remaining timer stays at 00:00.
-- Clickable room topic label for the chair that jumps to the room menu section for editing.
-- Participant view style sync so participant.html picks up the chair-view visual language on shared surfaces while keeping participant-only actions and the existing poll box.
-
 ## Current State
 
-Milestone v1.0 is shipped and archived. The next milestone is being defined for UI improvements and room-state enhancements.
+**Shipped version: v1.1** — archived 2026-04-22
+
+Both v1.0 and v1.1 are shipped. The chair surface has been fully redesigned with a Tailwind/Orchestrator design system, conference-table presence model, session-keyed room members, timer urgency colors, inline topic editing, and avatar label truncation. The participant view has been restyled to match. All features are wired to the existing STOMP broadcast model.
+
+**Shipped milestones:**
+- [v1.0 — Chair View Redesign](.planning/milestones/v1.0-ROADMAP.md) — shipped 2026-03-25
+- [v1.1 — UI Improvements](.planning/milestones/v1.1-ROADMAP.md) — shipped 2026-04-22
+
+## Next Milestone Goals
+
+To be defined. Deferred items from v1.1 available for inclusion:
+- POP-01: Popout view refresh to match updated UI language
+- TIME-04: Overtime presentation (flashing/audio cues)
+
+Run `/gsd-new-milestone` to define requirements and roadmap for the next version.
 
 ## Requirements
 
