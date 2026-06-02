@@ -124,7 +124,40 @@ Then open your browser to `http://localhost:8080` or your server's IP address/do
 
 The application will start on `http://localhost:8080`
 
-## 🐳 Building the Docker Image
+## � Development Mode
+
+When working on the app locally, you can get immediate feedback on both frontend and backend changes without rebuilding the full JAR.
+
+### Running in Dev Mode
+
+Start the server in the usual way:
+
+```bash
+./gradlew bootRun
+```
+
+**Frontend (HTML / CSS / JS):** Static files are served directly from `src/main/resources/static/` while `bootRun` is active. 
+
+**Backend (Java):** Java changes require restarting the server. Stop `bootRun` with `Ctrl+C` and start it again, or use Spring Boot DevTools (see below) to have the server restart automatically.
+
+### Enabling Auto-Restart and LiveReload (optional)
+
+[Spring Boot DevTools](https://docs.spring.io/spring-boot/docs/current/reference/html/using.html#using.devtools) adds:
+- **Automatic server restart** whenever compiled Java classes change on the classpath.
+- An embedded **LiveReload server** (port 35729) that can trigger a browser refresh automatically when static files change.
+
+1. Add the dependency to `build.gradle`:
+
+   ```groovy
+   dependencies {
+       // ... existing dependencies ...
+       developmentOnly 'org.springframework.boot:spring-boot-devtools'
+   }
+   ```
+
+2. Run `./gradlew bootRun` as usual. The server will now watch for classpath changes.
+
+## �🐳 Building the Docker Image
 
 ```bash
 docker build -t speakrequest .
