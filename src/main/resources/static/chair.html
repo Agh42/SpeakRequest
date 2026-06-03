@@ -238,7 +238,7 @@
           </button>
           <button type="button" class="hidden items-center gap-2 rounded-full bg-surface-container px-3 py-2 text-sm font-medium text-on-surface transition hover:bg-surface-container-high md:inline-flex" data-menu-trigger="desktop" aria-label="Open room settings">
             <span class="material-symbols-outlined text-lg">settings</span>
-            <span>Settings</span>
+            <span>Room Settings</span>
           </button>
           <button id="btnDestroyRoom" class="hidden items-center gap-2 rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_18px_36px_rgba(127,29,29,0.35)] transition hover:bg-red-500 lg:inline-flex">
             <span class="material-symbols-outlined text-lg">delete</span>
@@ -285,7 +285,6 @@
               <div>
                 <h2 class="font-headline text-2xl font-extrabold tracking-tight text-on-surface">Meeting Controls</h2>
               </div>
-              <div class="rounded-full bg-tertiary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-tertiary">Live</div>
             </div>
 
             <div class="grid gap-2 sm:grid-cols-3">
@@ -303,7 +302,6 @@
             <div class="mt-6 rounded-[24px] bg-surface-container-high p-4">
               <div class="mb-3 flex items-center justify-between gap-3">
                 <h3 class="font-headline text-lg font-bold text-on-surface">Request To Speak On Behalf</h3>
-                <span class="text-[10px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Chair proxy</span>
               </div>
               <input id="participantName" class="w-full rounded-2xl bg-background/60 px-4 py-3 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/60" placeholder="Participant initials or name" maxlength="30"/>
               <div class="mt-3 flex flex-wrap gap-2">
@@ -311,6 +309,18 @@
                 <button id="btnParticipantWithdraw" class="rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface">Withdraw</button>
               </div>
               <div id="participantStatus" class="mt-3 text-sm text-on-surface-variant"></div>
+            </div>
+
+            <div id="agendaNavSection" class="mt-4 rounded-[24px] bg-surface-container-high p-4" style="display: none;">
+              <div class="mb-2 flex items-center justify-between gap-2">
+                <span class="text-[10px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Agenda</span>
+                <span id="agendaIndexBadge" class="text-[10px] text-on-surface-variant"></span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="btnAgendaPrev" type="button" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-surface-container-highest text-on-surface transition hover:bg-surface-container active:scale-95" aria-label="Previous agenda item"><span class="material-symbols-outlined text-base">arrow_back</span></button>
+                <div id="agendaCurrentNav" class="flex-1 truncate text-center text-sm font-semibold text-on-surface"></div>
+                <button id="btnAgendaNext" type="button" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-surface-container-highest text-on-surface transition hover:bg-surface-container active:scale-95" aria-label="Next agenda item"><span class="material-symbols-outlined text-base">arrow_forward</span></button>
+              </div>
             </div>
 
             <div class="mt-6 rounded-[24px] bg-surface-container-low p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
@@ -328,7 +338,6 @@
               <div>
                 <h2 class="font-headline text-2xl font-extrabold tracking-tight text-on-surface">Conduct Poll</h2>
               </div>
-              <span class="rounded-full bg-tertiary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-tertiary">Realtime</span>
             </div>
 
             <div id="pollSelection" style="display: block;">
@@ -425,21 +434,24 @@
           <section id="section-menu" class="scroll-mt-28 rounded-[28px] bg-surface-container p-5 shadow-[0_28px_80px_rgba(0,0,0,0.24)] md:p-6">
             <div class="mb-5 flex items-center justify-between gap-3">
               <div>
-                <h2 class="font-headline text-2xl font-extrabold tracking-tight text-on-surface">Room Information</h2>
+                <h2 class="font-headline text-2xl font-extrabold tracking-tight text-on-surface">Room Settings</h2>
               </div>
-              <div class="rounded-full bg-surface-container-high px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">Visible</div>
             </div>
 
             <div class="mt-4 rounded-[24px] bg-surface-container-high p-4">
-              <div class="mb-4 flex items-center justify-between gap-3">
-                <h3 class="font-headline text-lg font-bold text-on-surface">Meeting Configuration</h3>
-                <span class="text-[10px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Metadata</span>
-              </div>
+              <div class="mb-4">
 
               <div class="space-y-3">
                 <div>
                   <label for="configTopic" class="mb-1 block text-sm font-medium text-on-surface-variant">Topic</label>
                   <input id="configTopic" class="w-full rounded-2xl bg-background/60 px-4 py-3 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/60" type="text" placeholder="Enter meeting topic" maxlength="100"/>
+                </div>
+
+                <div>
+                  <label class="mb-1 block text-sm font-medium text-on-surface-variant">Agenda</label>
+                  <button id="btnOpenAgendaModal" type="button" class="w-full rounded-2xl bg-background/60 px-4 py-3 text-left text-sm text-on-surface-variant transition hover:bg-background/80 focus:outline-none focus:ring-2 focus:ring-primary/60">
+                    <span id="agendaBtnLabel">No agenda</span>
+                  </button>
                 </div>
 
                 <div>
@@ -549,9 +561,8 @@
           <section id="section-share" class="scroll-mt-28 glass-panel rounded-[28px] border border-white/5 p-5 shadow-[0_28px_80px_rgba(0,0,0,0.24)] md:p-6">
             <div class="mb-5 flex items-center justify-between gap-3">
               <div>
-                <h2 class="font-headline text-2xl font-extrabold tracking-tight text-on-surface">Join Link</h2>
+                <h2 class="font-headline text-2xl font-extrabold tracking-tight text-on-surface">Participant Link</h2>
               </div>
-              <div class="rounded-full bg-surface-container-high px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">Live</div>
             </div>
 
             <div class="rounded-[24px] bg-surface-container-high p-4">
@@ -655,6 +666,29 @@
       <div class="row flex flex-wrap gap-2" style="margin-top: 12px;">
         <button id="btnCreateOptions" class="primary rounded-xl bg-primary px-4 py-2 text-surface">Create Options</button>
         <button id="btnCancelPaste" class="ghost rounded-xl bg-surface-container-highest px-4 py-2">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Agenda Modal -->
+  <div id="agendaModal" class="modal fixed inset-0 z-50 bg-black/50 p-4" style="display: none;">
+    <div class="modal-content mx-auto mt-12 w-full max-w-xl rounded-2xl bg-surface-container p-5 shadow-2xl">
+      <h3 class="font-headline text-xl font-bold" style="margin-top: 0;">Meeting Agenda</h3>
+      <p class="mb-3 text-sm text-on-surface-variant">Items are shown to all participants. Use the navigation arrows in Meeting Controls to advance through items.</p>
+      <div id="agendaItemsContainer" class="space-y-2"></div>
+      <button id="btnAddAgendaItem" type="button" class="mt-2 w-full rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container-high">+ Add Item</button>
+      <div id="agendaPasteSection" style="display: none;" class="mt-3">
+        <textarea id="agendaPasteTextarea" placeholder="Enter one agenda item per line" rows="6" style="width: 100%; padding: 10px; font-size: 16px; background: #0b1020; color: #dae2fd; border-radius: 10px; font-family: inherit; resize: vertical;"></textarea>
+        <div class="mt-2 flex flex-wrap gap-2">
+          <button id="btnAgendaCreateFromPaste" type="button" class="rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-surface transition hover:brightness-110">Use these items</button>
+          <button id="btnAgendaCancelPaste" type="button" class="rounded-2xl bg-surface-container-highest px-4 py-2 text-sm font-semibold text-on-surface transition hover:bg-surface-container-high">Cancel</button>
+        </div>
+      </div>
+      <div class="mt-4 flex flex-wrap gap-2">
+        <button id="btnAgendaPasteOpen" type="button" class="rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container-high">Paste items</button>
+        <button id="btnAgendaSave" type="button" class="rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-surface transition hover:brightness-110">Save</button>
+        <button id="btnAgendaClearAll" type="button" class="rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface-variant transition hover:bg-surface-container-high">Clear all</button>
+        <button id="btnAgendaModalCancel" type="button" class="rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container-high">Cancel</button>
       </div>
     </div>
   </div>
@@ -918,6 +952,8 @@
     let selectedPollType = null; // Track which poll type is being created
     let multiselectOptions = []; // Track multiselect poll options
     let isMultipleSelection = false; // Track if this is multiple selection (vs single selection)
+    let currentSavedAgendaItems = []; // Current saved agenda (mirrors server state)
+    let agendaModalItems = []; // Working copy while modal is open
 
     // --- WebSocket ---
     function connect() {
@@ -1015,7 +1051,15 @@
       meetingStart = state.meetingStartSec;
       currentState = state; // Store the current state
       elLimit.value = state.defaultLimitSec;
-      elConferenceTableTopic.textContent = DOMPurify.sanitize((state.roomConfig?.topic || '').trim() || '[No Agendum]');
+
+      // Determine what to show in the conference table center
+      const agenda = state.roomConfig?.agenda;
+      const agendaIdx = state.currentAgendaIndex || 0;
+      if (agenda && agenda.length > 0) {
+        elConferenceTableTopic.textContent = DOMPurify.sanitize(agenda[agendaIdx] || '[No Agendum]');
+      } else {
+        elConferenceTableTopic.textContent = DOMPurify.sanitize((state.roomConfig?.topic || '').trim() || '[No Agendum]');
+      }
 
       renderQueuePanel(state);
 
@@ -1725,6 +1769,103 @@
       }
     });
 
+    // --- Agenda ---
+    function renderAgendaModalItems() {
+      const container = $('#agendaItemsContainer');
+      if (agendaModalItems.length === 0) {
+        container.innerHTML = '<div class="mb-2 text-sm text-on-surface-variant">No items yet. Click "+ Add Item" to begin.</div>';
+        return;
+      }
+      container.innerHTML = '';
+      agendaModalItems.forEach((item, i) => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center gap-2';
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.maxLength = 80;
+        input.value = item;
+        input.className = 'flex-1 rounded-2xl bg-background/60 px-4 py-3 text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/60';
+        input.placeholder = `Item ${i + 1}`;
+        input.addEventListener('input', () => { agendaModalItems[i] = input.value; });
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-surface-container-highest text-on-surface-variant transition hover:text-on-surface';
+        removeBtn.innerHTML = '<span class="material-symbols-outlined text-base">close</span>';
+        removeBtn.addEventListener('click', () => {
+          agendaModalItems.splice(i, 1);
+          renderAgendaModalItems();
+        });
+        row.appendChild(input);
+        row.appendChild(removeBtn);
+        container.appendChild(row);
+      });
+    }
+
+    document.getElementById('btnOpenAgendaModal').onclick = () => {
+      agendaModalItems = [...currentSavedAgendaItems];
+      renderAgendaModalItems();
+      document.getElementById('agendaPasteSection').style.display = 'none';
+      document.getElementById('agendaPasteTextarea').value = '';
+      document.getElementById('agendaModal').style.display = '';
+    };
+
+    document.getElementById('btnAddAgendaItem').onclick = () => {
+      agendaModalItems.push('');
+      renderAgendaModalItems();
+      // Focus last input
+      const inputs = document.getElementById('agendaItemsContainer').querySelectorAll('input');
+      if (inputs.length > 0) inputs[inputs.length - 1].focus();
+    };
+
+    document.getElementById('btnAgendaPasteOpen').onclick = () => {
+      document.getElementById('agendaPasteSection').style.display = '';
+      document.getElementById('agendaPasteTextarea').focus();
+    };
+
+    document.getElementById('btnAgendaCancelPaste').onclick = () => {
+      document.getElementById('agendaPasteSection').style.display = 'none';
+      document.getElementById('agendaPasteTextarea').value = '';
+    };
+
+    document.getElementById('btnAgendaCreateFromPaste').onclick = () => {
+      const text = document.getElementById('agendaPasteTextarea').value.trim();
+      const parsed = text.split('\n').map(l => l.trim()).filter(l => l !== '').slice(0, 10);
+      if (parsed.length > 0) {
+        agendaModalItems = parsed;
+        renderAgendaModalItems();
+      }
+      document.getElementById('agendaPasteSection').style.display = 'none';
+      document.getElementById('agendaPasteTextarea').value = '';
+    };
+
+    document.getElementById('btnAgendaSave').onclick = () => {
+      const valid = agendaModalItems.map(s => (s || '').trim()).filter(s => s !== '').slice(0, 10);
+      currentSavedAgendaItems = valid;
+      document.getElementById('agendaModal').style.display = 'none';
+      saveConfiguration();
+    };
+
+    document.getElementById('btnAgendaClearAll').onclick = () => {
+      agendaModalItems = [];
+      renderAgendaModalItems();
+    };
+
+    document.getElementById('btnAgendaModalCancel').onclick = () => {
+      document.getElementById('agendaModal').style.display = 'none';
+    };
+
+    document.getElementById('agendaModal').onclick = (e) => {
+      if (e.target.id === 'agendaModal') document.getElementById('agendaModal').style.display = 'none';
+    };
+
+    document.getElementById('btnAgendaPrev').onclick = () => {
+      client?.send(`/app/room/${roomCode}/agenda/navigate`, {}, JSON.stringify({ direction: 'prev' }));
+    };
+
+    document.getElementById('btnAgendaNext').onclick = () => {
+      client?.send(`/app/room/${roomCode}/agenda/navigate`, {}, JSON.stringify({ direction: 'next' }));
+    };
+
     // --- Room Configuration ---
     const elConfigTopic = $('#configTopic');
     const elConfigMeetingGoal = $('#configMeetingGoal');
@@ -1813,7 +1954,8 @@
         meetingGoal: elConfigMeetingGoal.value || null,
         participationFormat: elConfigParticipationFormat.value || null,
         decisionRule: elConfigDecisionRule.value || null,
-        deliverable: elConfigDeliverable.value || null
+        deliverable: elConfigDeliverable.value || null,
+        agenda: currentSavedAgendaItems.length > 0 ? currentSavedAgendaItems : null
       };
       
       client?.send(`/app/room/${roomCode}/updateConfig`, {}, JSON.stringify(config));
@@ -1864,6 +2006,21 @@
         
         // Update descriptions
         updateDescriptionDisplay();
+
+        // Update agenda button label and navigation
+        const agenda = config.agenda;
+        if (agenda && agenda.length > 0) {
+          currentSavedAgendaItems = [...agenda];
+          document.getElementById('agendaBtnLabel').textContent = agenda.length === 1 ? '1 item' : `${agenda.length} items`;
+          const idx = state.currentAgendaIndex || 0;
+          document.getElementById('agendaNavSection').style.display = '';
+          document.getElementById('agendaCurrentNav').textContent = DOMPurify.sanitize(agenda[idx] || '');
+          document.getElementById('agendaIndexBadge').textContent = `${idx + 1} of ${agenda.length}`;
+        } else {
+          currentSavedAgendaItems = [];
+          document.getElementById('agendaBtnLabel').textContent = 'No agenda';
+          document.getElementById('agendaNavSection').style.display = 'none';
+        }
       }
     }
 

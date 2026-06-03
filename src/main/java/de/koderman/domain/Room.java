@@ -23,6 +23,8 @@ public class Room {
     private ParticipationFormat participationFormat = null;
     private DecisionRule decisionRule = null;
     private Deliverable deliverable = null;
+    private List<String> agenda = null;
+    private int currentAgendaIndex = 0;
 
     // Polling state
     private String pollQuestion = null;
@@ -77,10 +79,10 @@ public class Room {
                 pollState = new PollState(null, null, null, Map.of(), 0, lastPollResults, null, null);
             }
 
-            RoomConfig roomConfig = new RoomConfig(topic, meetingGoal, participationFormat, decisionRule, deliverable);
+            RoomConfig roomConfig = new RoomConfig(topic, meetingGoal, participationFormat, decisionRule, deliverable, agenda != null ? List.copyOf(agenda) : null);
 
             return new State(List.copyOf(queue), current, meetingStartSec, defaultLimitSec, roomCode,
-                    chairSessionId != null, pollState, roomConfig, List.copyOf(members));
+                    chairSessionId != null, pollState, roomConfig, List.copyOf(members), currentAgendaIndex);
         } finally {
             lock.unlock();
         }
@@ -622,7 +624,8 @@ public class Room {
     }
 
     public void updateRoomConfig(String sessionId, String topic, MeetingGoal meetingGoal,
-            ParticipationFormat participationFormat, DecisionRule decisionRule, Deliverable deliverable) {
+            ParticipationFormat participationFormat, DecisionRule decisionRule, Deliverable deliverable,
+            List<String> agenda) {
         lock.lock();
         try {
             requireChairAccess(sessionId);
@@ -631,6 +634,32 @@ public class Room {
             this.participationFormat = participationFormat;
             this.decisionRule = decisionRule;
             this.deliverable = deliverable;
+            if (agenda == null || agenda.isEmpty()) {
+                this.agenda = null;
+                this.currentAgendaIndex = 0;
+            } else {
+                this.agenda = agenda.stream()
+                        .filter(s -> s != null && !s.isBlank())
+                        .map(s -> s.trim().length() > 80 ? s.trim().substring(0, 80) : s.trim())
+                        .limit(10)
+                        .collect(java.util.stream.Collectors.toList());
+                this.currentAgendaIndex = Math.max(0, Math.min(this.currentAgendaIndex, this.agenda.size() - 1));
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void navigateAgenda(String sessionId, String direction) {
+        lock.lock();
+        try {
+            requireChairAccess(sessionId);
+            if (agenda == null || agenda.isEmpty()) return;
+            if ("next".equals(direction)) {
+                currentAgendaIndex = Math.min(currentAgendaIndex + 1, agenda.size() - 1);
+            } else if ("prev".equals(direction)) {
+                currentAgendaIndex = Math.max(currentAgendaIndex - 1, 0);
+            }
         } finally {
             lock.unlock();
         }

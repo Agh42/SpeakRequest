@@ -357,7 +357,18 @@ public class MeetingController {
         DecisionRule decisionRule = parseEnum(DecisionRule.class, msg.decisionRule());
         Deliverable deliverable = parseEnum(Deliverable.class, msg.deliverable());
         
-        room.updateRoomConfig(sessionId, msg.topic(), meetingGoal, participationFormat, decisionRule, deliverable);
+        room.updateRoomConfig(sessionId, msg.topic(), meetingGoal, participationFormat, decisionRule, deliverable, msg.agenda());
+        broadcast(normalizedRoomCode);
+    }
+
+    @MessageMapping("/room/{roomCode}/agenda/navigate")
+    public void navigateAgenda(@DestinationVariable String roomCode, @Payload Map<String, String> msg, StompHeaderAccessor headerAccessor) {
+        String normalizedRoomCode = normalizeRoomCode(roomCode);
+        String sessionId = headerAccessor.getSessionId();
+        String direction = msg != null ? msg.get("direction") : null;
+        if (!"next".equals(direction) && !"prev".equals(direction)) return;
+        Room room = roomRepository.getByCodeOrThrow(normalizedRoomCode);
+        room.navigateAgenda(sessionId, direction);
         broadcast(normalizedRoomCode);
     }
     
