@@ -156,60 +156,29 @@
       transform: translateX(0);
     }
 
-    .conference-table-shell {
-      aspect-ratio: 1 / 1;
-      width: min(100%, 820px);
-    }
-
-    .conference-table-seat {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform-origin: center;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 20;
-    }
-
-    .conference-table-avatar {
-      width: 4.2rem;
-      height: 4.2rem;
-      border-radius: 9999px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: Manrope, sans-serif;
-      font-size: 0.92rem;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 12px 26px rgba(0, 0, 0, 0.22);
-    }
-
-    .conference-table-topic-button {
-      display: -webkit-box;
-      line-clamp: 2;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      word-break: break-word;
-    }
-
-    .conference-table-seat-avatar.current {
-      box-shadow: 0 0 0 3px rgba(0, 228, 117, 0.95), 0 0 0 8px rgba(0, 228, 117, 0.22), 0 0 18px 6px rgba(0, 228, 117, 0.40), 0 12px 26px rgba(0, 0, 0, 0.22);
-    }
-
-    .conference-table-seat-avatar.queue {
-      box-shadow: 0 0 0 2px rgba(141, 143, 162, 0.8), 0 12px 26px rgba(0, 0, 0, 0.22);
-    }
-
     #speakTimer.ok   { color: #bbf7d0; }
     #speakTimer.warn { color: #fde68a; }
     #speakTimer.danger { color: #fecaca; }
+
+    @media (max-width: 639px) {
+      /* Leave room for the full room code and the mobile menu. */
+      #conn {
+        width: 10px;
+        height: 10px;
+        flex-shrink: 0;
+        padding: 0;
+        overflow: hidden;
+        font-size: 0;
+        background: #8e8fa2;
+      }
+      #conn.ok { background: #00e475; }
+      #conn.warn { background: #ffb4ab; }
+    }
   </style>
   <script src="stomp.min.js"></script>
   <script src="purify.min.js"></script>
+  <link rel="stylesheet" href="conference-table.css?v=2"/>
+  <script src="conference-table.js?v=2"></script>
   <script src="metadata-loader.js"></script>
   <script src="share.js"></script>
 </head>
@@ -218,11 +187,11 @@
   <div id="chairShell" class="relative min-h-screen overflow-x-hidden bg-surface md:pl-[calc(var(--sidebar-width))]">
     <header class="fixed inset-x-0 top-0 z-40 border-b border-white/5 bg-background/90 backdrop-blur-xl">
       <div class="mx-auto flex max-w-[1500px] items-center justify-between gap-3 px-4 py-3 md:px-6 lg:px-8">
-        <div class="flex min-w-0 items-center gap-3 md:gap-4">
-          <a href="/landing.html" class="font-headline text-lg font-extrabold tracking-tight text-on-surface no-underline md:text-xl">SPEEK.NOW</a>
+        <div class="flex min-w-0 items-center gap-2 sm:gap-3 md:gap-4">
+          <a href="/landing.html" class="font-headline text-base font-extrabold tracking-tight text-on-surface no-underline sm:text-lg md:text-xl">SPEEK.NOW</a>
           <div class="hidden h-8 w-px bg-white/10 sm:block"></div>
-          <div class="min-w-0 rounded-full bg-surface-container-high px-3 py-2 text-sm font-semibold text-on-surface shadow-[0_10px_30px_rgba(0,0,0,0.18)]">
-            <span class="mr-2 text-[10px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Room</span>
+          <div class="shrink-0 rounded-full bg-surface-container-high px-3 py-2 text-sm font-semibold text-on-surface shadow-[0_10px_30px_rgba(0,0,0,0.18)]">
+            <span class="mr-2 hidden text-[10px] font-bold uppercase tracking-[0.22em] text-on-surface-variant sm:inline">Room</span>
             <span id="roomCodeDisplay" class="font-headline text-base font-extrabold tracking-[0.2em]">----</span>
           </div>
           <button id="btnShareParticipantUrlHeader" class="inline-flex items-center gap-2 rounded-full bg-surface-container px-3 py-2 text-sm font-medium text-on-surface transition hover:bg-surface-container-high" aria-label="Share participation link">
@@ -231,7 +200,7 @@
           </button>
         </div>
         <div class="flex items-center gap-2 md:gap-3">
-          <div id="conn" class="rounded-full bg-surface-container px-3 py-2 text-xs font-semibold text-on-surface-variant md:text-sm">Connecting…</div>
+          <div id="conn" role="status" class="rounded-full bg-surface-container px-3 py-2 text-xs font-semibold text-on-surface-variant md:text-sm">Connecting…</div>
           <div id="chairStatus" class="hidden rounded-full bg-surface-container-high px-3 py-2 text-xs font-semibold text-on-surface-variant sm:block md:text-sm">Chair: Occupied (You)</div>
           <button type="button" class="inline-flex items-center gap-2 rounded-full bg-surface-container px-3 py-2 text-sm font-medium text-on-surface transition hover:bg-surface-container-high md:hidden" data-menu-trigger="mobile" aria-label="Open menu">
             <span class="material-symbols-outlined text-lg">menu</span>
@@ -279,7 +248,65 @@
 
     <main class="px-4 pb-24 pt-24 md:px-6 lg:px-8 lg:pt-28">
       <div class="mx-auto flex max-w-[1500px] flex-col gap-6 lg:grid lg:grid-cols-12 lg:items-start">
-        <div class="space-y-6 lg:col-span-4">
+        <section id="section-center-shell" class="scroll-mt-28 min-w-0 lg:col-span-12 lg:row-start-1" aria-labelledby="conferenceHeading">
+          <div class="conference-panel">
+            <div class="conference-heading">
+              <h2><button type="button" id="conferenceHeading" data-menu-anchor="section-menu" title="Edit meeting topic" class="text-left cursor-pointer underline underline-offset-2 decoration-primary/50">[No topic]</button></h2>
+            </div>
+            <button type="button" id="conferenceTableTopic" data-menu-anchor="section-menu" title="Edit agenda" class="conference-table-topic-button conference-agenda cursor-pointer underline underline-offset-2 decoration-primary/50">[No Agendum]</button>
+            <div class="conference-table-layout">
+              <!-- Left: Quick chair controls -->
+              <div class="conference-table-controls">
+                <div class="grid gap-2 grid-cols-2">
+                  <button id="tvBtnNext" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-surface shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] transition hover:brightness-110 active:scale-95 active:brightness-90"><span class="material-symbols-outlined text-lg">mic</span> Next</button>
+                  <button id="tvBtnPlayPause" disabled class="inline-flex items-center justify-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface-variant/40 transition cursor-not-allowed opacity-50"><span class="material-symbols-outlined text-lg">pause</span> Pause</button>
+                </div>
+                <div class="rounded-2xl bg-surface-container-high/60 p-3">
+                  <div class="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">Speak on behalf</div>
+                  <input id="tvParticipantName" aria-label="Participant name or initials" class="w-full rounded-2xl bg-background/60 px-3 py-2 text-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/60" placeholder="Name or initials" maxlength="30"/>
+                  <div class="mt-2 flex gap-2">
+                    <button id="tvBtnParticipantRequest" class="flex-1 inline-flex items-center justify-center gap-1 rounded-2xl bg-primary px-3 py-2 text-xs font-semibold text-surface transition hover:brightness-110"><span class="material-symbols-outlined text-sm">pan_tool</span> Request</button>
+                    <button id="tvBtnParticipantWithdraw" class="flex-1 rounded-2xl bg-surface-container-highest px-3 py-2 text-xs font-semibold text-on-surface-variant transition hover:bg-surface-container-high hover:text-on-surface">Withdraw</button>
+                  </div>
+                  <div id="tvParticipantStatus" class="mt-2 text-xs text-on-surface-variant"></div>
+                </div>
+                <button id="tvBtnStartPoll" class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container-high active:scale-95"><span class="material-symbols-outlined text-lg">ballot</span> Start Poll</button>
+              </div>
+
+              <!-- Center: Conference table -->
+              <div class="conference-table-center">
+                <div class="conference-table-scroll" tabindex="0" role="region" aria-label="Conference table. Scroll horizontally to see all seats on a small screen.">
+                  <div class="conference-table-shell">
+                    <div id="conferenceTableSeats" role="group" aria-label="People seated at the table"></div>
+                    <div class="conference-table-info">
+                      <div class="floor-label">Current speaker</div>
+                      <div id="curName">--</div>
+                      <div id="speakTimer" class="ok">00:00</div>
+                      <div id="remaining">(remaining: 00:00)</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="conference-footer">
+                  <span class="conference-overflow" hidden aria-live="polite"></span>
+                  <span><span id="meetingTimer">00:00</span> total</span>
+                </div>
+              </div>
+
+              <!-- Right: Speaker queue -->
+              <section id="section-queue" class="conference-table-queue scroll-mt-28" aria-labelledby="speakerQueueHeading">
+                <div class="mb-3 flex items-center justify-between gap-2">
+                  <h3 id="speakerQueueHeading" class="font-headline text-sm font-extrabold tracking-tight text-on-surface">Speaker Queue</h3>
+                  <div class="rounded-full bg-surface-container-high px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-on-surface-variant"><span id="tvQCount">0</span> waiting</div>
+                </div>
+                <div id="tvQueueCurrentSpeaker" class="mb-3 rounded-2xl bg-surface-container-high/60 p-3"></div>
+                <ul id="tvQueue" class="space-y-2"></ul>
+              </section>
+            </div>
+            <span class="conference-sr-only conference-floor-status" role="status" aria-live="polite"></span>
+          </div>
+        </section>
+
+        <div class="space-y-6 lg:col-span-7">
           <section id="section-controls" class="scroll-mt-28 rounded-[28px] bg-surface-container p-5 shadow-[0_28px_80px_rgba(0,0,0,0.28)] md:p-6">
             <div class="mb-5 flex items-center justify-between gap-3">
               <div>
@@ -340,7 +367,7 @@
               </div>
             </div>
 
-            <div id="pollSelection" style="display: block;">
+            <div id="pollSelection" style="display: none;">
               <div class="mb-3 text-sm text-on-surface-variant">Select a poll type to start polling:</div>
               <div class="flex flex-wrap gap-2">
                 <button id="btnYesNoPoll" class="inline-flex items-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container"><span class="material-symbols-outlined">bar_chart</span> Yes/No Poll</button>
@@ -423,7 +450,7 @@
               </div>
             </div>
 
-            <div id="pollNone" style="display: none;">
+            <div id="pollNone" style="display: block;">
               <div class="text-sm text-on-surface-variant">No polls conducted yet</div>
               <div class="mt-3 row">
                 <button id="btnStartFirstPoll" class="inline-flex items-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container"><span class="material-symbols-outlined">bar_chart</span> Start Poll</button>
@@ -439,8 +466,6 @@
             </div>
 
             <div class="mt-4 rounded-[24px] bg-surface-container-high p-4">
-              <div class="mb-4">
-
               <div class="space-y-3">
                 <div>
                   <label for="configTopic" class="mb-1 block text-sm font-medium text-on-surface-variant">Topic</label>
@@ -536,28 +561,8 @@
           </section>
         </div>
 
-        <section id="section-center-shell" class="scroll-mt-28 hidden lg:flex lg:col-span-5 flex-col items-center justify-center py-8 lg:py-0">
-          <div class="conference-table-shell relative mx-auto flex items-center justify-center">
-            <div class="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,rgba(61,90,254,0.18)_0%,rgba(23,31,51,0.9)_43%,rgba(6,14,32,0.98)_76%)] shadow-[0_32px_90px_rgba(0,0,0,0.36)]"></div>
-            <div class="absolute inset-6 rounded-full bg-surface-container-low/80"></div>
-            <div class="absolute inset-10 rounded-full border border-white/5 bg-surface-container-low/60"></div>
-            <div id="conferenceTableSeats" class="absolute inset-0 z-20"></div>
-            <div class="absolute inset-[18%] rounded-full glass-panel shadow-[0_18px_50px_rgba(0,0,0,0.28)] flex flex-col items-center justify-center text-center lg:px-4 lg:py-6 xl:px-6 xl:py-8 z-10">
-              <div id="conferenceTableTopic" class="conference-table-topic-button w-full font-headline lg:text-sm xl:text-base font-black leading-tight tracking-tight text-on-surface">[No Agendum]</div>
-              <div id="speakTimer" class="mt-2 font-headline lg:text-3xl xl:text-4xl 2xl:text-5xl font-black tracking-tighter ok">00:00</div>
-              <div id="remaining" class="mt-2 text-sm text-on-surface-variant">(remaining: 00:00)</div>
-              <div class="mt-5 flex flex-wrap items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em]">
-                <span class="rounded-full bg-surface-container-high px-3 py-1.5 text-on-surface-variant"><span id="meetingTimer">00:00</span> total</span>
-              </div>
-              <div class="mt-5 rounded-full bg-surface-container-high px-5 py-3 text-center">
-                <div class="text-[10px] uppercase font-bold tracking-[0.22em] text-on-surface-variant">Current Speaker</div>
-                <div id="curName" class="mt-1 font-headline text-lg sm:text-xl font-bold text-on-surface">--</div>
-              </div>
-            </div>
-          </div>
-        </section>
 
-        <div class="space-y-6 lg:col-span-3">
+        <div class="space-y-6 lg:col-span-5">
           <section id="section-share" class="scroll-mt-28 glass-panel rounded-[28px] border border-white/5 p-5 shadow-[0_28px_80px_rgba(0,0,0,0.24)] md:p-6">
             <div class="mb-5 flex items-center justify-between gap-3">
               <div>
@@ -577,17 +582,7 @@
             </div>
           </section>
 
-          <section id="section-queue" class="scroll-mt-28 glass-panel rounded-[28px] border border-white/5 p-5 shadow-[0_28px_80px_rgba(0,0,0,0.26)] md:p-6">
-            <div class="mb-5 flex items-center justify-between gap-3">
-              <div>
-                <h2 class="font-headline text-2xl font-extrabold tracking-tight text-on-surface">Speaker Queue</h2>
-              </div>
-              <div class="rounded-full bg-surface-container-high px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant"><span id="qCount">0</span> waiting</div>
-            </div>
-            <div id="queueCurrentSpeaker" class="mb-4 rounded-[24px] bg-surface-container-high p-4"></div>
-            <ul id="queue" class="space-y-3"></ul>
 
-          </section>
         </div>
       </div>
 
@@ -735,168 +730,22 @@
       if (danger) el.classList.add('danger'); else if (warn) el.classList.add('warn'); else el.classList.add('ok');
     };
 
-    const tableAccentPalette = ['#62ff96', '#bbc3ff', '#00e475', '#c9e7f7', '#3d5afe', '#adcbda', '#7dd3fc', '#f9a8d4', '#f59e0b', '#fca5a5'];
-    const tableFallbackAccent = '#2d3449';
-
-    function hashString(value) {
-      let hash = 0;
-      for (const character of String(value || '').trim().toLowerCase()) {
-        hash = ((hash << 5) - hash) + character.charCodeAt(0);
-        hash |= 0;
-      }
-      return Math.abs(hash);
-    }
-
-    function getParticipantAvatarLabel(name) {
-      return getParticipantInitials(name);
-    }
-
-    function getParticipantInitials(name) {
-      const cleaned = String(name || '').trim().replace(/\s+/g, ' ');
-      if (!cleaned) return '--';
-      const parts = cleaned.split(' ');
-      if (parts.length === 1) {
-        return parts[0].slice(0, 2).toUpperCase();
-      }
-      return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-    }
-
-    function getParticipantAccent(name) {
-      return tableAccentPalette[hashString(name) % tableAccentPalette.length] || tableFallbackAccent;
-    }
-
-    function getReadableInkColor(hexColor) {
-      const normalized = String(hexColor || '').replace('#', '');
-      if (normalized.length !== 6) return '#060e20';
-      const red = parseInt(normalized.slice(0, 2), 16);
-      const green = parseInt(normalized.slice(2, 4), 16);
-      const blue = parseInt(normalized.slice(4, 6), 16);
-      const luminance = (0.2126 * red) + (0.7152 * green) + (0.0722 * blue);
-      return luminance > 170 ? '#060e20' : '#f1f4ff';
-    }
-
-    function getConferenceParticipants(state) {
-      const queueIds = new Set((state.queue || []).map((participant) => participant.id));
-      const currentId = state.current?.entry?.id || null;
-      const currentName = state.current?.entry?.name || null;
-      const queueNames = new Set((state.queue || []).map((participant) => participant.name));
-
-      return (state.members || []).map((member, index) => {
-        const isCurrentById = currentId && member.sessionId === currentId;
-        const isCurrentByName = !isCurrentById && currentName && member.name === currentName;
-        const isCurrent = isCurrentById || isCurrentByName;
-        const isInQueue = !isCurrent && (queueIds.has(member.sessionId) || queueNames.has(member.name));
-        return {
-          sessionId: member.sessionId,
-          name: member.name,
-          kind: isCurrent ? 'current' : (isInQueue ? 'queue' : 'member'),
-          position: index + 1,
-        };
-      });
-    }
-
     function renderConferenceTable(state) {
-      if (!elConferenceTableSeats) {
-        return;
-      }
-
-      const participants = getConferenceParticipants(state);
-      if (participants.length === 0) {
-        elConferenceTableSeats.innerHTML = '';
-        return;
-      }
-
-      const seatCount = participants.length;
-      const shell = elConferenceTableSeats.closest('.conference-table-shell');
-      const shellSize = shell ? shell.getBoundingClientRect().width : 820;
-      const outerInsetPx = 40;
-      const innerInsetPx = shellSize * 0.18;
-      const outerEdgeRadius = (shellSize / 2) - outerInsetPx;
-      const innerEdgeRadius = (shellSize / 2) - innerInsetPx;
-      const radius = (outerEdgeRadius + innerEdgeRadius) / 2;
-      const laneWidth = Math.max(0, outerEdgeRadius - innerEdgeRadius);
-      const seatWidth = Math.max(62, Math.min(82, Math.round(laneWidth * 0.72)));
-      const angleStep = 360 / seatCount;
-      const startAngle = -90;
-
-      elConferenceTableSeats.innerHTML = participants.map((participant, index) => {
-        const angle = startAngle + (index * angleStep);
-        const accent = getParticipantAccent(participant.name);
-        const ink = getReadableInkColor(accent);
-        const initials = DOMPurify.sanitize(getParticipantAvatarLabel(participant.name));
-        const safeName = DOMPurify.sanitize(participant.name);
-        const seatTransform = `translate(-50%, -50%) rotate(${angle}deg) translate(${radius}px) rotate(${-angle}deg)`;
-        const seatStateClass = participant.kind === 'current' ? 'current' : 'queue';
-
-        return `
-          <div class="conference-table-seat" style="width:${seatWidth}px; height:${seatWidth}px; transform:${seatTransform};">
-            <div class="conference-table-avatar conference-table-seat-avatar ${seatStateClass}" style="background:${accent}; color:${ink};" aria-label="${safeName}" title="${safeName}">${initials}</div>
-          </div>`;
-      }).join('');
+      ConferenceTableView.render(elConferenceTableSeats, state);
     }
 
     function renderQueuePanel(state) {
-      if (!elQueueCurrentSpeaker || !elQueue || !elQCount) {
-        return;
-      }
-
-      elQCount.textContent = state.queue.length;
-
-      if (state.current?.entry?.name) {
-        const safeName = DOMPurify.sanitize(state.current.entry.name);
-
-        elQueueCurrentSpeaker.innerHTML = `
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <div class="text-[11px] font-bold uppercase tracking-[0.22em] text-on-surface-variant">Current speaker</div>
-              <div class="mt-2 font-headline text-lg font-bold text-on-surface">${safeName}</div>
-              <div class="mt-1 text-sm text-on-surface-variant">Speaking now</div>
-            </div>
-            <div class="rounded-full bg-tertiary/10 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-tertiary">Live</div>
-          </div>`;
-      } else {
-        elQueueCurrentSpeaker.innerHTML = `
-          <div class="rounded-2xl border border-dashed border-white/10 bg-background/30 p-4 text-sm text-on-surface-variant">
-            No current speaker is active right now.
-          </div>`;
-      }
-
-      if (state.queue.length === 0) {
-        elQueue.innerHTML = `
-          <li class="rounded-2xl border border-dashed border-white/10 bg-background/30 p-4 text-sm text-on-surface-variant">
-            The queue is empty.
-          </li>`;
-        return;
-      }
-
-      elQueue.innerHTML = state.queue.map((participant, index) => {
-        const accent = getParticipantAccent(participant.name);
-        const ink = getReadableInkColor(accent);
-        const initials = DOMPurify.sanitize(getParticipantInitials(participant.name));
-        const safeName = DOMPurify.sanitize(participant.name);
-
-        return `
-          <li class="rounded-2xl bg-surface-container p-4 shadow-[0_16px_40px_rgba(0,0,0,0.18)]">
-            <div class="flex items-center gap-3">
-              <div class="flex h-11 w-11 items-center justify-center rounded-full font-headline text-sm font-extrabold tracking-[0.16em]" style="background:${accent}; color:${ink};">${initials}</div>
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center justify-between gap-2">
-                  <div class="truncate font-semibold text-on-surface">${safeName}</div>
-                  <div class="rounded-full bg-surface-container-high px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-on-surface-variant">#${index + 1}</div>
-                </div>
-              </div>
-            </div>
-          </li>`;
-      }).join('');
+      elTvQCount.textContent = state.queue.length;
+      SpeakerView.renderCurrent(elTvQueueCurrentSpeaker, state);
+      SpeakerView.renderQueue(elTvQueue, state);
     }
 
     // --- DOM refs ---
     const elConn = $('#conn');
-    const elQueue = $('#queue'); const elQCount = $('#qCount');
-    const elQueueCurrentSpeaker = $('#queueCurrentSpeaker');
     const elCurName = $('#curName');
     const elSpeakTimer = $('#speakTimer'); const elRemaining = $('#remaining');
     const elMeeting = $('#meetingTimer'); const elLimit = $('#limit');
+    const elConferenceHeading = $('#conferenceHeading');
     const elConferenceTableTopic = $('#conferenceTableTopic');
     const elConferenceTableSeats = $('#conferenceTableSeats');
     
@@ -904,6 +753,17 @@
     const elParticipantName = $('#participantName');
     const elParticipantStatus = $('#participantStatus');
     
+    // Table-view quick controls
+    const elTvBtnNext = $('#tvBtnNext');
+    const elTvBtnPlayPause = $('#tvBtnPlayPause');
+    const elTvParticipantName = $('#tvParticipantName');
+    const elTvBtnParticipantRequest = $('#tvBtnParticipantRequest');
+    const elTvBtnParticipantWithdraw = $('#tvBtnParticipantWithdraw');
+    const elTvParticipantStatus = $('#tvParticipantStatus');
+    const elTvQCount = $('#tvQCount');
+    const elTvQueue = $('#tvQueue');
+    const elTvQueueCurrentSpeaker = $('#tvQueueCurrentSpeaker');
+
     // Poll controls
     const elPollSelection = $('#pollSelection');
     const elPollCreation = $('#pollCreation');
@@ -1030,7 +890,7 @@
         setTimeout(() => {
           elConn.textContent = 'Assuming chair role...';
           client.send(`/app/room/${roomCode}/assumeChair`, {}, JSON.stringify({
-            participantName: 'chair',
+            participantName: 'Chair',
             requestId: 'chair-access-' + Date.now()
           }));
         }, 500); // Small delay to ensure connection is established
@@ -1052,7 +912,8 @@
       currentState = state; // Store the current state
       elLimit.value = state.defaultLimitSec;
 
-      // Determine what to show in the conference table center
+      // Show the meeting topic above the current agenda item.
+      elConferenceHeading.textContent = DOMPurify.sanitize((state.roomConfig?.topic || '').trim() || '[No topic]');
       const agenda = state.roomConfig?.agenda;
       const agendaIdx = state.currentAgendaIndex || 0;
       if (agenda && agenda.length > 0) {
@@ -1080,11 +941,14 @@
     }
     
     function updatePollUI(state) {
-      // Check if user is currently configuring a poll - if so, don't update the UI
-      const isConfiguringPoll = elPollCreation.style.display === 'block' || 
+      const pollActive = state.pollState?.status === 'ACTIVE';
+      $('#tvBtnStartPoll').innerHTML = '<span class="material-symbols-outlined text-lg">ballot</span> ' + (pollActive ? 'View Poll' : 'Start Poll');
+      // Keep type selection and drafts open through unrelated speaker/queue updates.
+      const isConfiguringPoll = elPollSelection.style.display === 'block' ||
+                                elPollCreation.style.display === 'block' ||
                                 elMultiselectPollCreation.style.display === 'block';
-      
-      if (isConfiguringPoll) {
+
+      if (isConfiguringPoll && !pollActive) {
         // User is in the middle of configuring a poll, don't reset the UI
         return;
       }
@@ -1273,28 +1137,59 @@
       const pauseClass = 'inline-flex items-center justify-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-4 text-sm font-semibold text-on-surface transition hover:bg-surface-container-high active:scale-95 active:brightness-75';
       const resumeClass = 'inline-flex items-center justify-center gap-2 rounded-2xl bg-tertiary px-4 py-4 text-sm font-semibold text-[#042112] transition hover:brightness-110 active:scale-95 active:brightness-90';
 
+      const nextLabel = c
+        ? '<span class="material-symbols-outlined">mic</span> Next'
+        : '<span class="material-symbols-outlined">play_arrow</span> Start';
+      const tvNextLabel = c
+        ? '<span class="material-symbols-outlined text-lg">mic</span> Next'
+        : '<span class="material-symbols-outlined text-lg">play_arrow</span> Start';
+
       const btnNext = $('#btnNext');
-      if (btnNext) {
-        btnNext.innerHTML = c
-          ? '<span class="material-symbols-outlined">mic</span> Next'
-          : '<span class="material-symbols-outlined">play_arrow</span> Start';
-      }
+      if (btnNext) btnNext.innerHTML = nextLabel;
+      if (elTvBtnNext) elTvBtnNext.innerHTML = tvNextLabel;
+
+      const pauseLabel = '<span class="material-symbols-outlined">pause</span> Pause';
+      const resumeLabel = '<span class="material-symbols-outlined">play_arrow</span> Resume';
+      const tvPauseLabel = '<span class="material-symbols-outlined text-lg">pause</span> Pause';
+      const tvResumeLabel = '<span class="material-symbols-outlined text-lg">play_arrow</span> Resume';
+
+      const tvDisabledClass = 'inline-flex items-center justify-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface-variant/40 transition cursor-not-allowed opacity-50';
+      const tvPauseClass = 'inline-flex items-center justify-center gap-2 rounded-2xl bg-surface-container-highest px-4 py-3 text-sm font-semibold text-on-surface transition hover:bg-surface-container-high active:scale-95';
+      const tvResumeClass = 'inline-flex items-center justify-center gap-2 rounded-2xl bg-tertiary px-4 py-3 text-sm font-semibold text-[#042112] transition hover:brightness-110 active:scale-95';
 
       if (!c) {
-        btn.innerHTML = '<span class="material-symbols-outlined">pause</span> Pause';
+        btn.innerHTML = pauseLabel;
         btn.className = disabledClass;
         btn.disabled = true;
         btn.onclick = null;
+        if (elTvBtnPlayPause) {
+          elTvBtnPlayPause.innerHTML = tvPauseLabel;
+          elTvBtnPlayPause.className = tvDisabledClass;
+          elTvBtnPlayPause.disabled = true;
+          elTvBtnPlayPause.onclick = null;
+        }
       } else if (c.running) {
-        btn.innerHTML = '<span class="material-symbols-outlined">pause</span> Pause';
+        btn.innerHTML = pauseLabel;
         btn.className = pauseClass;
         btn.disabled = false;
         btn.onclick = () => client?.send(`/app/room/${roomCode}/timer`, {}, JSON.stringify({action:'pause'}));
+        if (elTvBtnPlayPause) {
+          elTvBtnPlayPause.innerHTML = tvPauseLabel;
+          elTvBtnPlayPause.className = tvPauseClass;
+          elTvBtnPlayPause.disabled = false;
+          elTvBtnPlayPause.onclick = () => client?.send(`/app/room/${roomCode}/timer`, {}, JSON.stringify({action:'pause'}));
+        }
       } else {
-        btn.innerHTML = '<span class="material-symbols-outlined">play_arrow</span> Resume';
+        btn.innerHTML = resumeLabel;
         btn.className = resumeClass;
         btn.disabled = false;
         btn.onclick = () => client?.send(`/app/room/${roomCode}/timer`, {}, JSON.stringify({action:'start'}));
+        if (elTvBtnPlayPause) {
+          elTvBtnPlayPause.innerHTML = tvResumeLabel;
+          elTvBtnPlayPause.className = tvResumeClass;
+          elTvBtnPlayPause.disabled = false;
+          elTvBtnPlayPause.onclick = () => client?.send(`/app/room/${roomCode}/timer`, {}, JSON.stringify({action:'start'}));
+        }
       }
 
       if (btnReset) {
@@ -1404,6 +1299,74 @@
       const sec = parseInt(elLimit.value, 10);
       if (sec >= 10) client?.send(`/app/room/${roomCode}/setLimit`, {}, JSON.stringify({seconds:sec}));
     };
+
+    // Table-view quick controls
+    if (elTvBtnNext) {
+      elTvBtnNext.onclick = () => {
+        if (!currentState?.queue?.length && !currentState?.current) {
+          showToast('Cannot start, no one requested to speak yet.');
+          return;
+        }
+        client?.send(`/app/room/${roomCode}/next`, {}, '{}');
+      };
+    }
+    if (elTvBtnParticipantRequest) {
+      elTvBtnParticipantRequest.onclick = () => {
+        const name = elTvParticipantName.value.trim();
+        if (!name) {
+          elTvParticipantStatus.textContent = 'Enter a name first';
+          elTvParticipantStatus.className = 'text-xs text-error';
+          return;
+        }
+        client?.send(`/app/room/${roomCode}/request`, {}, JSON.stringify({name}));
+        elTvParticipantStatus.textContent = `Requested for ${name}`;
+        elTvParticipantStatus.className = 'text-xs text-on-surface-variant';
+      };
+    }
+    if (elTvBtnParticipantWithdraw) {
+      elTvBtnParticipantWithdraw.onclick = () => {
+        const name = elTvParticipantName.value.trim();
+        if (!name) {
+          elTvParticipantStatus.textContent = 'Enter a name first';
+          elTvParticipantStatus.className = 'text-xs text-error';
+          return;
+        }
+        client?.send(`/app/room/${roomCode}/withdraw`, {}, JSON.stringify({name}));
+        elTvParticipantStatus.textContent = `Withdrawn for ${name}`;
+        elTvParticipantStatus.className = 'text-xs text-on-surface-variant';
+      };
+    }
+    if (elTvParticipantName) {
+      elTvParticipantName.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          const name = elTvParticipantName.value.trim();
+          if (!name) {
+            elTvParticipantStatus.textContent = 'Enter a name first';
+            elTvParticipantStatus.className = 'text-xs text-error';
+            return;
+          }
+          const inQueue = currentState && currentState.queue.some(p => p.name.toLowerCase() === name.toLowerCase());
+          if (inQueue) elTvBtnParticipantWithdraw?.click();
+          else elTvBtnParticipantRequest?.click();
+        }
+      });
+      elTvParticipantName.addEventListener('focus', () => elTvParticipantName.select());
+    }
+    if ($('#tvBtnStartPoll')) {
+      $('#tvBtnStartPoll').onclick = () => {
+        const configuring = elPollCreation.style.display === 'block' ||
+                            elMultiselectPollCreation.style.display === 'block';
+        if (currentState?.pollState?.status !== 'ACTIVE' && !configuring) {
+          $('#btnNewPoll').click();
+        }
+        scrollToSection('section-poll');
+        const focusTarget = currentState?.pollState?.status === 'ACTIVE' ? $('#btnEndPoll')
+          : elPollCreation.style.display === 'block' ? elPollQuestion
+          : elMultiselectPollCreation.style.display === 'block' ? elMultiselectPollQuestion
+          : $('#btnYesNoPoll');
+        focusTarget.focus({ preventScroll: true });
+      };
+    }
 
     $('#btnPopout').onclick = () => {
       const url = `/popout.html?room=${roomCode}`;

@@ -11,6 +11,7 @@ public class Room {
     private final String roomCode;
     private final List<Participant> queue = new ArrayList<>();
     private final List<RoomMember> members = new ArrayList<>();
+    private final ConferenceTable conferenceTable = new ConferenceTable();
     private Current current = null;
     private final long meetingStartSec = Instant.now().getEpochSecond();
     private int defaultLimitSec = 180; // per-speaker
@@ -82,7 +83,8 @@ public class Room {
             RoomConfig roomConfig = new RoomConfig(topic, meetingGoal, participationFormat, decisionRule, deliverable, agenda != null ? List.copyOf(agenda) : null);
 
             return new State(List.copyOf(queue), current, meetingStartSec, defaultLimitSec, roomCode,
-                    chairSessionId != null, pollState, roomConfig, List.copyOf(members), currentAgendaIndex);
+                    chairSessionId != null, pollState, roomConfig, List.copyOf(members), currentAgendaIndex,
+                    chairSessionId, conferenceTable.snapshot(members, chairSessionId, current, queue));
         } finally {
             lock.unlock();
         }
@@ -114,7 +116,7 @@ public class Room {
 
             RoomMember existing = members.get(existingIndex);
             if (!existing.name().equals(trimmedName)) {
-                members.set(existingIndex, new RoomMember(sessionId, trimmedName, existing.joinedAtSec()));
+                members.set(existingIndex, new RoomMember(sessionId, trimmedName, existing.joinedAtSec(), existing.id(), false));
                 log.info("Room[{}] upsertMember: Replaced member name for session {} from {} to {}", roomCode, sessionId, existing.name(), trimmedName);
             }
         } finally {
@@ -141,7 +143,7 @@ public class Room {
                 return;
             }
 
-            members.add(new RoomMember(sessionId, trimmedName, Instant.now().getEpochSecond()));
+            members.add(new RoomMember(sessionId, trimmedName, Instant.now().getEpochSecond(), UUID.randomUUID().toString(), true));
             log.info("Room[{}] addProxyMember: Added proxy member {} for session {}", roomCode, trimmedName, sessionId);
         } finally {
             lock.unlock();
@@ -203,7 +205,7 @@ public class Room {
 
     private int findIndexBySessionIdUnsafe(String sessionId) {
         for (int i = 0; i < members.size(); i++) {
-            if (members.get(i).sessionId().equals(sessionId)) {
+            if (!members.get(i).proxy() && members.get(i).sessionId().equals(sessionId)) {
                 return i;
             }
         }
@@ -316,10 +318,13 @@ public class Room {
         lock.lock();
         try {
             requireChairAccess(sessionId);
+            // Reconcile membership before the turn so replacement preserves existing slots.
+            conferenceTable.snapshot(members, chairSessionId, current, queue);
             current = null;
             if (!queue.isEmpty()) {
                 Participant next = queue.remove(0);
                 current = new Current(next, Instant.now().getEpochSecond(), 0, true, defaultLimitSec);
+                conferenceTable.speakerStarted(next, members);
                 log.info("Room[{}] nextParticipant: Set {} as current speaker (by chair session {})", 
                          roomCode, next.name(), sessionId);
             } else {

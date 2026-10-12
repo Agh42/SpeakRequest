@@ -19,13 +19,14 @@ class ChairSurfaceRequirementsTest {
     }
 
     @Test
-    void roomTitleIsClampedInsideTheAvatarCircle() throws IOException {
+    void roomTitleIsClampedAboveTheConferenceTable() throws IOException {
         String html = chairHtml();
 
+        String css = Files.readString(Path.of("src/main/resources/static/conference-table.css"));
         assertAll(
             () -> assertTrue(html.contains("conference-table-topic-button"), "topic button class is present"),
-            () -> assertTrue(html.contains("-webkit-line-clamp: 2;"), "topic is clamped to two lines"),
-            () -> assertTrue(html.contains("text-overflow: ellipsis;"), "topic uses ellipsis overflow handling")
+            () -> assertTrue(css.contains("-webkit-line-clamp: 2;"), "topic is clamped to two lines"),
+            () -> assertTrue(css.contains("text-overflow: ellipsis;"), "topic uses ellipsis overflow handling")
         );
     }
 
@@ -64,15 +65,18 @@ class ChairSurfaceRequirementsTest {
     }
 
     @Test
-    void avatarLabelTruncatesToThreeCharacterPrefixForLongNames() throws IOException {
-        String html = chairHtml();
-
-        // names up to 5 chars show fully; longer names (e.g. 'annemarie') truncate to 'ann…'
-        assertAll(
-            () -> assertTrue(html.contains("cleaned.length <= 5"), "avatar label helper shows names up to 5 characters fully"),
-            () -> assertTrue(html.contains("cleaned.slice(0, 3)"), "avatar label helper uses three-character prefix plus ellipsis"),
-            () -> assertFalse(html.contains("cleaned.slice(0, 7)"), "old seven-character truncation is removed")
-        );
+    void bothPagesUseTheSharedConferenceTable() throws IOException {
+        for (String page : new String[] {"chair", "participant"}) {
+            String html = Files.readString(Path.of("src/main/resources/static/" + page + ".html"));
+            assertAll(
+                () -> assertTrue(html.contains("src=\"conference-table.js?v=2\"")),
+                () -> assertTrue(html.contains("href=\"conference-table.css?v=2\"")),
+                () -> assertTrue(html.contains("ConferenceTableView.render(elConferenceTableSeats, state)")),
+                () -> assertTrue(html.contains("elConferenceHeading.textContent = DOMPurify.sanitize((state.roomConfig?.topic || '').trim() || '[No topic]');")),
+                () -> assertFalse(html.contains("Green arrow · has the floor")),
+                () -> assertFalse(html.contains("getParticipantAvatarLabel"))
+            );
+        }
     }
 
     @Test

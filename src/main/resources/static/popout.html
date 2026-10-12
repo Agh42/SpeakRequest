@@ -103,6 +103,8 @@
   <script src="stomp.min.js"></script>
   <script src="qrcode.min.js"></script>
   <script src="purify.min.js"></script>
+  <link rel="stylesheet" href="conference-table.css?v=2"/>
+  <script src="conference-table.js?v=2"></script>
   <script src="metadata-loader.js"></script>
 </head>
 <body>
@@ -133,7 +135,7 @@
     <div id="normalDisplay">
       <div class="card">
         <div class="muted small">Current Speaker</div>
-        <div id="currentSpeaker" class="big">--</div>
+        <div class="speaker-current"><span id="currentSpeakerAvatar"></span><div id="currentSpeaker" class="big">--</div></div>
         <div id="currentRole" class="muted medium">--</div>
         <div class="muted small">Speaker Time</div>
         <div id="speakerTimer" class="timer ok">00:00</div>
@@ -484,6 +486,10 @@
       elPollResultsCard.style.display = 'none';
       elNormalDisplay.style.display = 'block';
       
+      const speakerAvatar = document.getElementById('currentSpeakerAvatar');
+      speakerAvatar.replaceChildren();
+      if (state.current) speakerAvatar.append(SpeakerView.avatar(state.current.entry, state));
+
       // Current speaker
       if (state.current) {
         const c = state.current;
@@ -494,16 +500,8 @@
         elCurrentRole.textContent = '--';
       }
 
-      // Queue - display speakers vertically
       elQueueCount.textContent = state.queue.length;
-      if (state.queue.length > 0) {
-        const queueHtml = state.queue.map((p, index) =>
-          `<div style="margin-bottom: 5px;">${index + 1}. ${DOMPurify.sanitize(p.name)}</div>`
-        ).join('');
-        elQueueList.innerHTML = queueHtml;
-      } else {
-        elQueueList.innerHTML = '<div>--</div>';
-      }
+      SpeakerView.renderQueue(elQueueList, state);
 
       // Show last poll results if available (for CLOSED state)
       if (state.pollState && state.pollState.lastResults) {
